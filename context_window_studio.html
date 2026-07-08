@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Context Window Studio — watch the tokens burn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-editor:#1e1e1e; --bg-sidebar:#252526; --bg-activity:#333333; --bg-titlebar:#3c3c3c;
+    --tab-inactive:#2d2d2d; --border:#2d2d2d; --text:#d4d4d4; --text-dim:#8a8a8a;
+    --accent-blue:#007acc; --accent-blue-bright:#3794ff;
+    --sys:#569cd6; --user:#4ec9b0; --asst:#ce9178; --free:#3a3d41; --reserve:#facc15; --danger:#f14c4c; --warn:#e2a336; --ok:#4ec9b0;
+    --mono:'Space Mono',monospace; --ui:'Spline Sans',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:#111;color:var(--text);font-family:var(--ui);overflow:hidden}
+
+  /* ---------- title bar ---------- */
+  .titlebar{height:30px;background:var(--bg-titlebar);display:flex;align-items:center;padding:0 10px;gap:8px;font-size:12px;color:#ccc;border-bottom:1px solid #000}
+  .dots{display:flex;gap:6px}
+  .dots span{width:11px;height:11px;border-radius:50%}
+  .dots .r{background:#ff5f56}.dots .y{background:#ffbd2e}.dots .g{background:#27c93f}
+  .titlebar .path{flex:1;text-align:center;color:#9a9a9a;font-size:12px}
+  .titlebar .badge{background:var(--accent-blue);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-family:var(--mono);letter-spacing:.5px}
+
+  /* ---------- app grid ---------- */
+  html{height:100%}
+  .app{display:grid;grid-template-columns:46px 190px 1fr 360px;height:calc(100vh - 30px - 22px);min-height:0}
+
+  .activitybar{background:var(--bg-activity);display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:22px;border-right:1px solid #000}
+  .activitybar .icon{width:24px;height:24px;opacity:.55;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .activitybar .icon.active{opacity:1;border-left:2px solid #fff;margin-left:2px}
+
+  .sidebar{background:var(--bg-sidebar);border-right:1px solid #000;padding:10px 0;font-size:13px;overflow:auto;min-height:0}
+  .sidebar h4{font-size:11px;letter-spacing:1px;color:#bbb;margin:0 14px 8px;font-weight:600}
+  .sidebar .file{padding:3px 14px;display:flex;align-items:center;gap:6px;color:#c9c9c9;white-space:nowrap;cursor:default}
+  .sidebar .file.dim{color:#7a7a7a}
+  .sidebar .file .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-blue-bright);margin-left:auto}
+  .sidebar .sep{height:1px;background:#333;margin:10px 0}
+  .sidebar .hint{margin:14px 14px 0;padding:10px;background:#1e1e1e;border:1px dashed #444;border-radius:6px;font-size:11.5px;line-height:1.5;color:#9d9d9d}
+  .sidebar .hint b{color:#e6c07b}
+
+  /* ---------- editor ---------- */
+  .editor{display:flex;flex-direction:column;background:var(--bg-editor);min-width:0;min-height:0;overflow:hidden}
+  .tabs{display:flex;background:var(--bg-sidebar);border-bottom:1px solid #000;flex-shrink:0}
+  .tab{padding:8px 16px;font-size:12.5px;color:#8a8a8a;border-right:1px solid #000;display:flex;align-items:center;gap:8px;cursor:default}
+  .tab.active{background:var(--bg-editor);color:#fff;border-top:1px solid var(--accent-blue-bright)}
+  .tab .lang-dot{width:8px;height:8px;border-radius:50%;background:#e8ab53}
+
+  .editor-body{flex:1;padding:20px 26px;overflow:auto;min-height:0}
+  .capacity-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .capacity-row .left h2{margin:0;font-size:15px;color:#fff;font-weight:600}
+  .capacity-row .left p{margin:4px 0 0;color:var(--text-dim);font-size:12px;max-width:560px;line-height:1.5}
+  .model-select{background:#1e1e1e;color:#eee;border:1px solid #3c3c3c;border-radius:4px;padding:6px 10px;font-family:var(--mono);font-size:12px}
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+  .kpi{background:#181818;border:1px solid #2d2d2d;border-radius:8px;padding:10px 12px}
+  .kpi .lbl{font-size:10px;letter-spacing:.8px;color:#8a8a8a;text-transform:uppercase}
+  .kpi .val{font-family:var(--mono);font-size:20px;margin-top:4px;font-weight:700}
+  .kpi.sys .val{color:var(--sys)} .kpi.used .val{color:#fff} .kpi.free .val{color:var(--ok)} .kpi.reserve .val{color:var(--reserve)} .kpi.pct .val{color:var(--warn)}
+  .kpi.cost .val{color:#e879f9}
+
+  /* signature element: the context tape */
+  .tape-wrap{background:#161616;border:1px solid #2d2d2d;border-radius:10px;padding:16px 16px 12px}
+  .tape-wrap h3{margin:0 0 10px;font-size:11.5px;letter-spacing:1px;color:#9a9a9a;text-transform:uppercase;display:flex;justify-content:space-between}
+  .tape-wrap h3 span.note{text-transform:none;letter-spacing:0;color:#6f6f6f;font-family:var(--mono);font-size:11px}
+  .tape{position:relative;height:56px;border:2px solid #454545;border-radius:6px;display:flex;overflow:hidden;background:repeating-linear-gradient(90deg,#1a1a1a,#1a1a1a 9px,#202020 10px)}
+  .seg{height:100%;flex-shrink:0;transition:width .45s ease, opacity .4s ease;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:#0b0b0b;overflow:hidden;white-space:nowrap;border-right:1px solid rgba(0,0,0,.35)}
+  .seg.sys{background:var(--sys)}
+  .seg.user{background:var(--user)}
+  .seg.asst{background:var(--asst)}
+  .seg.free{background:var(--free);color:#7d7d7d}
+  .seg.reserve{background:repeating-linear-gradient(45deg,#facc15,#facc15 6px,#b58f0a 6px,#b58f0a 12px);color:#3a2c00}
+  .seg.proj{background:#818cf8;color:#151530}
+  .seg.proj.overflow{background:repeating-linear-gradient(45deg,#f14c4c,#f14c4c 7px,#8f1d1d 7px,#8f1d1d 14px);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+  .seg.evicting{opacity:0;width:0 !important;margin-left:-2px}
+  .ruler{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:#666;margin-top:5px}
+  .legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:11px;color:#aaa}
+  .legend .lg{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:10px;height:10px;border-radius:2px}
+
+  .forgotten{margin-top:14px}
+  .forgotten .flabel{font-size:11px;color:#7a7a7a;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .forgotten .flabel .x{color:var(--danger)}
+  .fmsg{font-size:11.5px;color:#666;text-decoration:line-through;padding:3px 0;font-family:var(--mono)}
+
+  .toast{margin-top:12px;padding:9px 12px;border-radius:6px;background:#3a2b0e;border:1px solid var(--warn);color:#f0c975;font-size:12px;display:none;align-items:center;gap:8px;font-family:var(--mono)}
+  .toast.show{display:flex}
+
+  /* ---------- chat panel ---------- */
+  .chatpanel{background:var(--bg-sidebar);border-left:1px solid #000;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+  .chat-head{padding:10px 14px;border-bottom:1px solid #000;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .chat-head .title{font-size:12px;font-weight:600;letter-spacing:.4px;color:#eee;display:flex;align-items:center;gap:8px}
+  .chat-head .title .glow{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok)}
+  .chat-head .turns{font-family:var(--mono);font-size:11px;color:#8a8a8a}
+
+  .chat-log{flex:1;overflow-y:auto;min-height:0;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .bubble{max-width:92%;padding:9px 11px;border-radius:9px;font-size:12.5px;line-height:1.5}
+  .bubble.user{align-self:flex-end;background:#0e3a34;border:1px solid #17554b;color:#c9f4ea}
+  .bubble.asst{align-self:flex-start;background:#1e1e1e;border:1px solid #333;color:#e6c8ba}
+  .bubble .meta{font-family:var(--mono);font-size:9.5px;opacity:.6;margin-top:5px}
+  .collapsed-note{align-self:center;font-size:10.5px;color:#6f6f6f;background:#1a1a1a;border:1px dashed #3a3a3a;padding:4px 10px;border-radius:12px;font-family:var(--mono)}
+  .sys-note{align-self:center;font-size:11px;color:#e2a336;background:#2a2210;border:1px solid #4a3a12;padding:5px 10px;border-radius:6px;font-family:var(--mono);text-align:center}
+
+  .chat-input-wrap{border-top:1px solid #000;padding:10px 12px 12px;background:#20232a;flex-shrink:0}
+  textarea#draft{width:100%;resize:none;height:58px;background:#111;border:1px solid #3c3c3c;border-radius:6px;color:#eee;padding:8px 10px;font-family:var(--ui);font-size:12.5px;outline:none}
+  textarea#draft:focus{border-color:var(--accent-blue-bright)}
+  .draft-meter{display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px;font-family:var(--mono);font-size:10.5px;color:#8a8a8a}
+  .draft-meter .bar{flex:1;height:5px;background:#111;border-radius:3px;margin:0 10px;overflow:hidden}
+  .draft-meter .bar i{display:block;height:100%;background:var(--ok);width:0%;transition:width .15s, background .15s}
+  .btnrow{display:flex;gap:8px}
+  button{cursor:pointer;font-family:var(--ui);border:none;border-radius:6px;font-size:12.5px;padding:8px 12px;font-weight:600}
+  #sendBtn{background:var(--accent-blue);color:#fff;flex:1}
+  #sendBtn:hover{background:var(--accent-blue-bright)}
+  #nextBtn{background:#333;color:#ddd;border:1px solid #4a4a4a}
+  #nextBtn:hover{background:#3d3d3d}
+  #resetBtn{background:transparent;color:#8a8a8a;border:1px solid #3a3a3a;padding:8px 10px}
+  #resetBtn:hover{color:#f14c4c;border-color:#f14c4c}
+
+  /* ---------- status bar ---------- */
+  .statusbar{height:22px;flex-shrink:0;background:var(--accent-blue);color:#fff;display:flex;align-items:center;padding:0 12px;font-size:11.5px;gap:18px;font-family:var(--mono);transition:background .3s}
+  .statusbar.warn{background:#c98a1f}
+  .statusbar.danger{background:#b03636}
+  .statusbar span{display:flex;align-items:center;gap:5px}
+  .statusbar .flash{animation:flash 1s ease-in-out 2}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.35}}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#4a4a4a;border-radius:5px}
+  ::-webkit-scrollbar-track{background:#1a1a1a}
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+  <div class="path">context-window-studio — token_burn_demo.session</div>
+  <div class="badge">LIVE CLASSROOM DEMO</div>
+</div>
+
+<div class="app">
+
+  <div class="activitybar">
+    <div class="icon active">📄</div>
+    <div class="icon">🔍</div>
+    <div class="icon">⌥</div>
+    <div class="icon">🧩</div>
+    <div class="icon">☁️</div>
+  </div>
+
+  <div class="sidebar">
+    <h4>EXPLORER</h4>
+    <div class="file">📁 CONTEXT-WINDOW-STUDIO</div>
+    <div class="file dim" style="padding-left:26px">📄 system_prompt.md<span class="dot"></span></div>
+    <div class="file dim" style="padding-left:26px">📄 conversation_history.log</div>
+    <div class="file" style="padding-left:26px">📄 context_ruler.viz</div>
+    <div class="file dim" style="padding-left:26px">📄 reserved_output.buf</div>
+    <div class="sep"></div>
+    <h4>MODEL</h4>
+    <div style="padding:0 14px">
+      <select id="modelSel" class="model-select" style="width:100%" onchange="onModelChange()">
+        <optgroup label="Anthropic — Claude">
+          <option value="haiku45">Claude Haiku 4.5 — 200K ctx</option>
+          <option value="sonnet5" selected>Claude Sonnet 5 — 1M ctx</option>
+          <option value="opus48">Claude Opus 4.8 — 1M ctx</option>
+        </optgroup>
+        <optgroup label="OpenAI">
+          <option value="gpt55">GPT-5.5 — 1M ctx</option>
+        </optgroup>
+        <optgroup label="Google">
+          <option value="gemini31pro">Gemini 3.1 Pro — 2M ctx</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="sep"></div>
+    <h4>PROJECT LOADER</h4>
+    <div style="padding:0 14px;display:flex;flex-direction:column;gap:6px">
+      <button class="projbtn" onclick="loadProject('small')" style="background:#1e2b23;color:#8fe3b0;border:1px solid #2d5c40;text-align:left;padding:8px 9px">📁 Small project<br><span style="font-weight:400;color:#7fae94;font-size:10.5px">100 files · ~15K tok</span></button>
+      <button class="projbtn" onclick="loadProject('medium')" style="background:#2b2610;color:#e3c88f;border:1px solid #5c4a1c;text-align:left;padding:8px 9px">📁 Medium project<br><span style="font-weight:400;color:#ae9a6f;font-size:10.5px">1,000 files · ~600K tok</span></button>
+      <button class="projbtn" onclick="loadProject('large')" style="background:#2b1414;color:#f0a0a0;border:1px solid #5c2323;text-align:left;padding:8px 9px">📁 Large project<br><span style="font-weight:400;color:#c98686;font-size:10.5px">5,000 files · ~3.25M tok</span></button>
+    </div>
+    <div class="hint">💡 <b>Teaching tip:</b> pick <b>Claude Haiku 4.5 (200K)</b>, then mash <b>Next Turn</b>. Watch the tape fill and turns get evicted below. Then switch models mid-lesson — notice <b>Session cost</b> climbs turn over turn, because every resend of the history gets billed again as input on each new call.</div>
+  </div>
+
+  <div class="editor">
+    <div class="tabs">
+      <div class="tab"><span class="lang-dot"></span>system_prompt.md</div>
+      <div class="tab active"><span class="lang-dot" style="background:#4ec9b0"></span>context_ruler.viz</div>
+    </div>
+    <div class="editor-body">
+      <div class="capacity-row">
+        <div class="left">
+          <h2>Context Window Ruler</h2>
+          <p>Every turn — yours and the assistant's — gets permanently added to what the model re-reads on the <i>next</i> turn. Nothing is free. Watch the tape below fill up as you chat, and watch what happens when it runs out of room.</p>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi sys"><div class="lbl">System prompt</div><div class="val" id="kSys">0</div></div>
+        <div class="kpi used"><div class="lbl">History used</div><div class="val" id="kUsed">0</div></div>
+        <div class="kpi free"><div class="lbl">Free space</div><div class="val" id="kFree">0</div></div>
+        <div class="kpi reserve"><div class="lbl">Reserved output</div><div class="val" id="kReserve">0</div></div>
+        <div class="kpi pct"><div class="lbl">Window filled</div><div class="val" id="kPct">0%</div></div>
+      </div>
+      <div class="kpis" style="grid-template-columns:1fr 1fr 1fr;margin-top:-8px">
+        <div class="kpi cost"><div class="lbl">Session cost</div><div class="val" id="kCost">$0.0000</div></div>
+        <div class="kpi cost"><div class="lbl">Last call cost</div><div class="val" id="kLastCost">$0.0000</div></div>
+        <div class="kpi cost"><div class="lbl">Rate (in / out per 1M)</div><div class="val" id="kRate" style="font-size:14px">$0 / $0</div></div>
+      </div>
+
+      <div class="tape-wrap">
+        <h3>Token tape <span class="note" id="tapeCaption">0 / 32,000 tokens</span></h3>
+        <div class="tape" id="tape"></div>
+        <div class="ruler"><span>0</span><span id="rulerMid">16,000</span><span id="rulerEnd">32,000</span></div>
+        <div class="legend">
+          <div class="lg"><span class="sw" style="background:var(--sys)"></span>System prompt (fixed)</div>
+          <div class="lg"><span class="sw" style="background:var(--user)"></span>Your messages</div>
+          <div class="lg"><span class="sw" style="background:var(--asst)"></span>Assistant replies</div>
+          <div class="lg"><span class="sw" style="background:#818cf8"></span>Loaded project files</div>
+          <div class="lg"><span class="sw" style="background:var(--free)"></span>Free space</div>
+          <div class="lg"><span class="sw" style="background:repeating-linear-gradient(45deg,#facc15,#facc15 3px,#b58f0a 3px,#b58f0a 6px)"></span>Reserved for output</div>
+        </div>
+        <div class="toast" id="toast">⚠️ <span id="toastText">Context full — oldest turn evicted to make room.</span></div>
+        <div class="toast" id="overflowBanner" style="border-color:var(--danger);background:#3a1414;color:#ffb3b3;flex-direction:column;align-items:stretch;gap:8px">
+          <div id="overflowText">🚫 This project doesn't fit.</div>
+          <button onclick="ragFix()" style="align-self:flex-start;background:var(--danger);color:#fff;padding:6px 10px;font-size:11px">Simulate RAG fix — retrieve only what fits ▸</button>
+        </div>
+        <div class="forgotten" id="forgottenWrap" style="display:none">
+          <div class="flabel"><span class="x">✕</span> Evicted from context (model can no longer see these)</div>
+          <div id="forgottenList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatpanel">
+    <div class="chat-head">
+      <div class="title"><span class="glow"></span>CONTEXT COACH</div>
+      <div class="turns">Turn <span id="turnNo">0</span></div>
+    </div>
+
+    <div class="chat-log" id="chatLog">
+      <div class="sys-note">System prompt loaded — costs tokens on every single turn, forever.</div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <textarea id="draft" placeholder="Type a prompt… or just keep clicking Next Turn" oninput="onDraftInput()"></textarea>
+      <div class="draft-meter">
+        <span id="draftTokens">draft: 0 tok</span>
+        <span class="bar"><i id="draftBar"></i></span>
+        <span id="draftPreview">if sent: 0 / 0</span>
+      </div>
+      <div class="btnrow">
+        <button id="sendBtn" onclick="sendDraft()">Send ▸</button>
+        <button id="nextBtn" onclick="autoNext()">Next Turn ⟳</button>
+        <button id="resetBtn" onclick="resetAll()">↺</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="statusbar" id="statusbar">
+  <span>⎔ <span id="sbModel">Haiku-class</span></span>
+  <span>◱ <span id="sbUsed">180</span> / <span id="sbCap">32,000</span> tokens</span>
+  <span>▤ <span id="sbPct">1%</span> full</span>
+  <span id="sbEvent" style="margin-left:auto"></span>
+</div>
+
+<script>
+/* ---------------- token estimator ---------------- */
+function estimateTokens(text){
+  const t = (text||'').trim();
+  if(!t) return 0;
+  // rough real-world heuristic: ~4 chars/token, plus a small per-message overhead
+  return Math.max(1, Math.ceil(t.length/4)) + 4;
+}
+function fmt(n){ return Number(Math.round(n)).toLocaleString(); }
+
+/* ---------------- state ---------------- */
+const SYS_TOKENS = 180;
+let RESERVE_TOKENS = 1200;
+let CAPACITY = 32000;
+let messages = [];   // {role:'user'|'asst'|'proj', text, tokens, turn, noEvict?}
+let forgotten = [];  // same shape, evicted
+let turnCount = 0;
+let cumulativeCost = 0;
+let overflowActive = false;
+
+/* Real published per-1M-token pricing (input/output), context window size.
+   Sources: platform.claude.com/docs pricing; anthropic.com/news/claude-sonnet-5;
+   openai.com/index/introducing-gpt-5-5; ai.google.dev/gemini-api/docs/pricing — July 2026. */
+const MODELS = {
+  haiku45:     { label:'Claude Haiku 4.5',  capacity:200000,   inPrice:1.00, outPrice:5.00  },
+  sonnet5:     { label:'Claude Sonnet 5',   capacity:1000000,  inPrice:2.00, outPrice:10.00 }, // intro price thru Aug 31 2026
+  opus48:      { label:'Claude Opus 4.8',   capacity:1000000,  inPrice:5.00, outPrice:25.00 },
+  gpt55:       { label:'GPT-5.5',           capacity:1000000,  inPrice:5.00, outPrice:30.00 },
+  gemini31pro: { label:'Gemini 3.1 Pro',    capacity:2000000,  inPrice:2.00, outPrice:12.00 }  // ≤200K tier rate
+};
+let CUR_MODEL = MODELS.sonnet5;
+
+/* canned auto-demo prompts — increasing realism/length to show burn */
+const demoQueue = [
+  "Hi! Can you explain what this repo does?",
+  "Show me the function that connects to the Jira API in server.py.",
+  "Here's the error I'm getting:\n\nTraceback (most recent call last):\n  File \"server.py\", line 214, in fetch_issues\n    resp = session.get(url, headers=headers, timeout=10)\nrequests.exceptions.ConnectionError: HTTPSConnectionPool(host='sukhadainfosystems.atlassian.net', port=443): Max retries exceeded",
+  "Can you refactor move_subtasks.py to add retry logic with exponential backoff and better logging?",
+  "Now write unit tests for that retry logic using pytest, covering timeout, 500 errors, and success on the 3rd attempt.",
+  "Paste the whole updated server.py back to me with inline comments explaining every function.",
+  "Also update README.md to document the new .env variables and the retry behaviour we just added.",
+  "One more thing — summarize everything we've changed in this session as a changelog entry."
+];
+let demoIdx = 0;
+
+const asstReplies = [
+  "Sure — that adds roughly {t} tokens to the tape. Running total is now {u} of {c} ({p}%).",
+  "Done. This reply itself cost about {t} tokens — notice it never gets cheaper, only the free-space bar does.",
+  "Good catch. That pushed us to {p}% of the window. Everything above is now permanently part of what I re-read next turn.",
+  "Here you go. Small nuance: my own answer counts against the *next* turn's budget too — {t} tokens just added.",
+  "Noted. We're at {u}/{c} tokens now ({p}%). At this rate we've got about {left} tokens of headroom left."
+];
+
+/* ---------------- rendering ---------------- */
+function historyTokens(){ return messages.reduce((s,m)=>s+m.tokens,0); }
+
+function render(){
+  const available = CAPACITY - SYS_TOKENS - RESERVE_TOKENS;
+  // evict oldest evictable turns while over budget (project-load blocks are marked noEvict)
+  let evictedThisPass = [];
+  while(historyTokens() > available){
+    const idx = messages.findIndex(m=>!m.noEvict);
+    if(idx === -1) break; // nothing left we're allowed to evict
+    const gone = messages.splice(idx,1)[0];
+    forgotten.push(gone);
+    evictedThisPass.push(gone);
+  }
+  if(evictedThisPass.length){
+    showToast(evictedThisPass.length===1
+      ? `Context full — evicted 1 message from turn ${evictedThisPass[0].turn} to make room.`
+      : `Context full — evicted ${evictedThisPass.length} messages to make room.`);
+    flashStatus();
+  }
+
+  const used = historyTokens();
+  const free = Math.max(0, available - used);
+  const total = SYS_TOKENS + used + RESERVE_TOKENS;
+  const pct = Math.min(999, (total/CAPACITY*100));
+  overflowActive = used > available;
+
+  document.getElementById('kSys').textContent = fmt(SYS_TOKENS);
+  document.getElementById('kUsed').textContent = fmt(used);
+  document.getElementById('kFree').textContent = fmt(free);
+  document.getElementById('kReserve').textContent = fmt(RESERVE_TOKENS);
+  document.getElementById('kPct').textContent = pct.toFixed(1)+'%';
+  document.getElementById('kCost').textContent = '$'+cumulativeCost.toFixed(4);
+  document.getElementById('kRate').textContent = '$'+CUR_MODEL.inPrice.toFixed(2)+' / $'+CUR_MODEL.outPrice.toFixed(2);
+  document.getElementById('tapeCaption').textContent = `${fmt(total)} / ${fmt(CAPACITY)} tokens`;
+  document.getElementById('rulerMid').textContent = fmt(Math.round(CAPACITY/2));
+  document.getElementById('rulerEnd').textContent = fmt(CAPACITY);
+  document.getElementById('turnNo').textContent = turnCount;
+
+  // tape segments
+  const tape = document.getElementById('tape');
+  tape.innerHTML = '';
+  const mk = (cls, tokens, label) => {
+    const d = document.createElement('div');
+    d.className = 'seg '+cls;
+    d.style.width = Math.max(0.3,(tokens/CAPACITY*100))+'%';
+    if(tokens/CAPACITY > 0.035) d.textContent = label;
+    d.title = label+' — '+fmt(tokens)+' tokens';
+    return d;
+  };
+  tape.appendChild(mk('sys', SYS_TOKENS, 'system'));
+  messages.forEach(m=>{
+    let cls = m.role==='user' ? 'user' : (m.role==='proj' ? 'proj' : 'asst');
+    if(m.role==='proj' && overflowActive) cls += ' overflow';
+    const label = m.role==='user' ? 'you T'+m.turn : (m.role==='proj' ? 'project files' : 'ai T'+m.turn);
+    tape.appendChild(mk(cls, m.tokens, label));
+  });
+  if(free>0) tape.appendChild(mk('free', free, 'free'));
+  if(!overflowActive) tape.appendChild(mk('reserve', RESERVE_TOKENS, 'reserved'));
+
+  // overflow banner (separate from the transient eviction toast — this one stays up)
+  const ob = document.getElementById('overflowBanner');
+  if(overflowActive){
+    ob.classList.add('show');
+    const overBy = used - available;
+    document.getElementById('overflowText').textContent =
+      `🚫 ${fmt(used)} tokens of context won't fit in ${CUR_MODEL.label}'s ${fmt(CAPACITY)}-token window — over by ${fmt(overBy)} tokens (reserved output + system prompt need room too). This request would be rejected. Sending/chatting is paused until this is resolved.`;
+  } else {
+    ob.classList.remove('show');
+  }
+
+  // status bar
+  const sb = document.getElementById('statusbar');
+  sb.classList.remove('warn','danger');
+  if(pct>=90) sb.classList.add('danger'); else if(pct>=65) sb.classList.add('warn');
+  document.getElementById('sbUsed').textContent = fmt(total);
+  document.getElementById('sbCap').textContent = fmt(CAPACITY);
+  document.getElementById('sbPct').textContent = pct.toFixed(0)+'%';
+
+  // forgotten list
+  const fw = document.getElementById('forgottenWrap');
+  const fl = document.getElementById('forgottenList');
+  if(forgotten.length){
+    fw.style.display='block';
+    fl.innerHTML = forgotten.map(m=>`<div class="fmsg">✕ Turn ${m.turn} · ${m.role==='user'?'you':(m.role==='proj'?'project files':'assistant')} · ${fmt(m.tokens)} tok · "${m.text.slice(0,60).replace(/\n/g,' ')}${m.text.length>60?'…':''}"</div>`).join('');
+    // remove matching bubbles from chat log visually
+    document.querySelectorAll('.bubble').forEach(b=>{
+      const id = b.getAttribute('data-id');
+      if(forgotten.some(f=>f.id===id) && !b.classList.contains('gone')){
+        b.classList.add('gone');
+        b.style.opacity='0.25';
+        b.style.textDecoration='line-through';
+      }
+    });
+  } else {
+    fw.style.display='none';
+  }
+
+  onDraftInput(); // refresh live preview against new totals
+}
+
+let toastTimer;
+function showToast(text){
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 4200);
+}
+function flashStatus(){
+  const sb = document.getElementById('statusbar');
+  sb.classList.add('flash');
+  setTimeout(()=>sb.classList.remove('flash'),2000);
+}
+
+/* ---------------- chat mechanics ---------------- */
+let msgSeq = 0;
+function pushBubble(role, text, tokens, turn, callCost){
+  const id = 'm'+(msgSeq++);
+  messages.push({id, role, text, tokens, turn});
+  const log = document.getElementById('chatLog');
+  const b = document.createElement('div');
+  b.className = 'bubble '+(role==='user'?'user':'asst');
+  b.setAttribute('data-id', id);
+  const costPart = (typeof callCost === 'number') ? ` · call cost $${callCost.toFixed(4)}` : '';
+  b.innerHTML = escapeHtml(text) + `<div class="meta">${role==='user'?'you':'assistant'} · turn ${turn} · ${fmt(tokens)} tok${costPart}</div>`;
+  log.appendChild(b);
+  log.scrollTop = log.scrollHeight;
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function runTurn(userText){
+  if(!userText || !userText.trim()) return;
+  turnCount++;
+  const histBeforeThisCall = historyTokens(); // everything the model must re-read before seeing the new message
+  const uTok = estimateTokens(userText);
+  pushBubble('user', userText, uTok, turnCount);
+  render();
+
+  // simulated assistant reply, meta-honest about its own cost
+  setTimeout(()=>{
+    const used = historyTokens();
+    const total = SYS_TOKENS + used + RESERVE_TOKENS;
+    const pct = (total/CAPACITY*100).toFixed(1);
+    const left = Math.max(0, CAPACITY - SYS_TOKENS - RESERVE_TOKENS - used);
+    let template = asstReplies[(turnCount-1) % asstReplies.length];
+    // placeholder pass 1: everything except {t}, since {t} depends on final rendered text length
+    let draftReply = template.replaceAll('{u}', fmt(total)).replaceAll('{c}', fmt(CAPACITY)).replaceAll('{p}', pct).replaceAll('{left}', fmt(left)).replaceAll('{t}','~');
+    const aTok = estimateTokens(draftReply);
+    draftReply = draftReply.replace('~', fmt(aTok));
+
+    // real cost math: this call's INPUT is system + everything already in history + the new user message.
+    // this call's OUTPUT is the assistant reply. This is exactly why cost per turn climbs over a long chat
+    // (unless the provider is caching the repeated prefix).
+    const inputTokThisCall = SYS_TOKENS + histBeforeThisCall + uTok;
+    const outputTokThisCall = aTok;
+    const callCost = (inputTokThisCall/1e6)*CUR_MODEL.inPrice + (outputTokThisCall/1e6)*CUR_MODEL.outPrice;
+    cumulativeCost += callCost;
+    document.getElementById('kLastCost').textContent = '$'+callCost.toFixed(4);
+
+    pushBubble('asst', draftReply, aTok, turnCount, callCost);
+    render();
+  }, 380);
+}
+
+function sendDraft(){
+  if(overflowActive){ showToast('Context window is over budget — resolve the overflow before sending.'); flashStatus(); return; }
+  const el = document.getElementById('draft');
+  const text = el.value;
+  el.value = '';
+  onDraftInput();
+  runTurn(text);
+}
+function autoNext(){
+  if(overflowActive){ showToast('Context window is over budget — resolve the overflow before sending.'); flashStatus(); return; }
+  const text = demoQueue[demoIdx % demoQueue.length];
+  demoIdx++;
+  runTurn(text);
+}
+
+function onDraftInput(){
+  const el = document.getElementById('draft');
+  const dTok = estimateTokens(el.value);
+  document.getElementById('draftTokens').textContent = `draft: ${fmt(dTok)} tok`;
+  const available = CAPACITY - SYS_TOKENS - RESERVE_TOKENS;
+  const used = historyTokens();
+  const wouldTotal = SYS_TOKENS + used + dTok + RESERVE_TOKENS;
+  const wouldFitPct = Math.min(100, (dTok/(available - used || 1))*100);
+  const bar = document.getElementById('draftBar');
+  bar.style.width = Math.max(0,Math.min(100,wouldFitPct))+'%';
+  bar.style.background = (used+dTok > available) ? 'var(--danger)' : (wouldFitPct>70 ? 'var(--warn)':'var(--ok)');
+  document.getElementById('draftPreview').textContent = `if sent: ${fmt(SYS_TOKENS+used+dTok)} / ${fmt(CAPACITY-RESERVE_TOKENS)}`;
+}
+document.getElementById('draft').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendDraft(); }
+});
+
+/* ---------------- model + reset ---------------- */
+const PROJECT_SIZES = {
+  small:  { files:100,  tokens:15000,    label:'small-project/'  },
+  medium: { files:1000, tokens:600000,   label:'medium-project/' },
+  large:  { files:5000, tokens:3250000,  label:'large-project/'  }
+};
+function loadProject(sizeKey){
+  const s = PROJECT_SIZES[sizeKey];
+  resetAll(); // a fresh project load starts a clean session — this is the first thing in context
+  const id = 'proj'+(msgSeq++);
+  messages.push({id, role:'proj', text:`${s.label} (${fmt(s.files)} files)`, tokens:s.tokens, turn:0, noEvict:true});
+
+  const log = document.getElementById('chatLog');
+  const note = document.createElement('div');
+  const available = CAPACITY - SYS_TOKENS - RESERVE_TOKENS;
+  const fits = s.tokens <= available;
+  note.className = 'sys-note';
+  note.style.color = fits ? '#8fe3b0' : '#f0a0a0';
+  note.style.borderColor = fits ? '#2d5c40' : '#5c2323';
+  note.style.background = fits ? '#152018' : '#2a1414';
+  note.textContent = `📂 Loading ${s.label} — ${fmt(s.files)} files, ${fmt(s.tokens)} tokens → ${fits ? 'fits in '+CUR_MODEL.label+"'s window ✅" : 'does NOT fit in '+CUR_MODEL.label+"'s window ❌"}`;
+  log.appendChild(note);
+  render();
+}
+function ragFix(){
+  const proj = messages.find(m=>m.role==='proj');
+  if(!proj) return;
+  const available = CAPACITY - SYS_TOKENS - RESERVE_TOKENS;
+  const keepTokens = Math.max(1000, Math.floor(available*0.9)); // leave a little headroom, like a real retriever would
+  const droppedTokens = proj.tokens - keepTokens;
+  proj.tokens = keepTokens;
+  proj.text = proj.text.replace(/\(\d[\d,]* files\)/, '(retrieved subset — top-matching chunks only)');
+
+  const log = document.getElementById('chatLog');
+  const note = document.createElement('div');
+  note.className = 'sys-note';
+  note.textContent = `🔍 RAG fix applied — embedded the project, retrieved only the top-matching ${fmt(keepTokens)} tokens instead of all ${fmt(keepTokens+droppedTokens)}. ${fmt(droppedTokens)} tokens stayed out of context (available on demand via search, not pre-loaded).`;
+  log.appendChild(note);
+  render();
+}
+
+function onModelChange(){
+  const key = document.getElementById('modelSel').value;
+  CUR_MODEL = MODELS[key];
+  CAPACITY = CUR_MODEL.capacity;
+  RESERVE_TOKENS = Math.max(400, Math.round(CAPACITY*0.04));
+  document.getElementById('sbModel').textContent = CUR_MODEL.label;
+  document.getElementById('rulerEnd').textContent = fmt(CAPACITY);
+  resetAll(); // switching models starts a fresh chat — capacities & prices differ, so the running session doesn't carry over
+}
+function resetAll(){
+  messages = []; forgotten = []; turnCount = 0; demoIdx = 0; cumulativeCost = 0; overflowActive = false;
+  document.getElementById('chatLog').innerHTML = '<div class="sys-note">System prompt loaded — costs tokens on every single turn, forever.</div>';
+  document.getElementById('toast').classList.remove('show');
+  document.getElementById('overflowBanner').classList.remove('show');
+  const lc = document.getElementById('kLastCost'); if(lc) lc.textContent = '$0.0000';
+  render();
+}
+
+onModelChange();
+</script>
+</body>
+</html>

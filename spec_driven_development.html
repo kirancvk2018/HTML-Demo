@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Prompt Engineering to Specification-Driven Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDEFE9; --paper:#FFFFFF; --panel2:#F4F6F0; --ink:#1C2530;
+    --muted:#6B7480; --line:#DBDFD3; --rule:#C6CCBC;
+    --input:#2B6E8C; --core:#A8432B; --norm:#B8862E; --output:#2E7D5B;
+    --accent:#2E7D5B; --hot:#B23A2E;
+    --mono:'IBM Plex Mono',monospace; --body:'IBM Plex Sans',sans-serif; --disp:'Newsreader',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;
+    background-image:
+      linear-gradient(rgba(28,37,48,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(28,37,48,.035) 1px,transparent 1px),
+      radial-gradient(circle at 15% 0%,rgba(43,110,140,.06),transparent 45%),
+      radial-gradient(circle at 90% 100%,rgba(46,125,91,.06),transparent 45%);
+    background-size:34px 34px,34px 34px,auto,auto;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:44px 28px 120px}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:10px;margin-bottom:14px;border-bottom:1px dashed var(--rule);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  header h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4.4vw,46px);line-height:1.12;letter-spacing:-.01em;color:var(--ink)}
+  header h1 em{font-style:italic;font-weight:500;color:var(--output)}
+  header p{color:var(--muted);max-width:700px;margin-top:16px;font-size:16px}
+
+  .control{margin:32px 0 8px;background:var(--paper);border:1px solid var(--line);border-radius:6px;
+    padding:22px 24px 24px;box-shadow:0 1px 2px rgba(28,37,48,.04),0 10px 26px rgba(28,37,48,.05)}
+  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .iorow{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .toggle{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px;font-family:var(--mono);font-size:12.5px}
+  .toggle span{padding:9px 16px;border-radius:4px;color:var(--muted);transition:.2s}
+  .toggle span.on{background:var(--ink);color:#fff}
+  button.run{background:transparent;color:var(--output);border:1.5px solid var(--output);border-radius:6px;padding:13px 24px;
+    font-family:var(--mono);font-weight:600;font-size:13.5px;cursor:pointer;letter-spacing:.04em;transition:.2s}
+  button.run:hover{background:var(--output);color:#fff}
+  button.run:disabled{opacity:.4;cursor:wait}
+  .answer{margin-top:20px;display:flex;align-items:center;gap:14px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+  .stamp{font-family:var(--mono);font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:8px 16px;border:3px double var(--hot);color:var(--hot);border-radius:5px;transform:rotate(-3deg);
+    opacity:0;transition:.4s;display:inline-block}
+  .stamp.show{opacity:1}
+  .stamp.good{border-color:var(--output);color:var(--output)}
+
+  .stage{display:grid;grid-template-columns:250px 1fr;gap:26px;margin-top:34px}
+  @media(max-width:820px){.stage{grid-template-columns:1fr}}
+
+  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start;max-height:92vh;overflow-y:auto;padding:2px 6px 2px 2px}
+  .blk{border:1px solid var(--line);border-radius:6px;padding:11px 14px 11px 44px;background:var(--paper);cursor:pointer;
+    transition:.18s;position:relative;box-shadow:0 1px 2px rgba(28,37,48,.03)}
+  .blk .num{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--muted);width:26px;text-align:center}
+  .blk:hover{border-color:var(--ink)}
+  .blk.active{border-color:var(--ink);background:var(--panel2);box-shadow:0 0 0 1px var(--ink) inset}
+  .blk.done::after{content:"✓";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--output);font-size:12px;font-weight:600}
+  .blk.done .num{color:var(--output)}
+  .blk .t{font-weight:600;font-size:13px;color:var(--ink)}
+  .blk .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+  .blk[data-c=input]{border-left:3px solid var(--input)}
+  .blk[data-c=core]{border-left:3px solid var(--core)}
+  .blk[data-c=norm]{border-left:3px solid var(--norm)}
+  .blk[data-c=output]{border-left:3px solid var(--output)}
+  .arrow{height:14px;display:flex;justify-content:center;align-items:center}
+  .arrow::before{content:'';width:0;height:100%;border-left:1px dashed var(--rule)}
+  .glabel{font-family:var(--mono);font-size:9.5px;color:var(--muted);text-align:center;letter-spacing:.04em;
+    border:1px dashed var(--rule);border-radius:5px;padding:5px;margin:6px 0;background:var(--panel2)}
+
+  .detail{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:30px 32px;min-height:440px;
+    position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(28,37,48,.04),0 14px 30px rgba(28,37,48,.05)}
+  .detail::before{content:'';position:absolute;top:0;right:0;width:0;height:0;
+    border-style:solid;border-width:0 30px 30px 0;border-color:transparent var(--panel2) transparent transparent;
+    box-shadow:-2px 2px 3px rgba(28,37,48,.08)}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 12px;border-radius:20px;margin-bottom:16px;border:1px solid currentColor;background:transparent}
+  .detail h2{font-family:var(--disp);font-weight:500;font-style:italic;font-size:29px;letter-spacing:-.01em;color:var(--ink)}
+  .detail .lead{color:var(--ink);margin-top:12px;font-size:15.5px;max-width:640px}
+  .detail .viz{margin-top:22px;background:var(--panel2);border:1px dashed var(--rule);border-radius:6px;padding:20px;overflow-x:auto}
+  .detail .note{margin-top:18px;color:var(--muted);font-size:13.5px;border-top:1px dashed var(--rule);padding-top:14px}
+
+  .toks{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12.5px;padding:7px 11px;border-radius:5px;background:var(--paper);border:1px solid var(--line)}
+  .chip.hot{border-color:var(--hot);color:var(--hot)}
+  .chip.good{border-color:var(--output);color:var(--output)}
+  .vec{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--paper);padding:6px 9px;border-radius:5px;border:1px solid var(--line)}
+
+  .bar{display:flex;align-items:center;gap:10px;margin:7px 0;font-family:var(--mono);font-size:12px}
+  .bar .lbl{width:150px;text-align:right;color:var(--ink)}
+  .bar .track{flex:1;height:14px;background:var(--paper);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:3px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .bar .pct{width:80px;color:var(--muted);font-size:11px}
+
+  .legend{display:flex;gap:0;flex-wrap:wrap;margin-top:30px;font-family:var(--mono);font-size:11px;color:var(--muted);
+    border:1px solid var(--line);border-radius:6px;background:var(--paper);width:fit-content;overflow:hidden}
+  .legend span{display:flex;align-items:center;padding:9px 14px;border-right:1px solid var(--line)}
+  .legend span:last-child{border-right:none}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;vertical-align:middle}
+  .ffn{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:12px}
+  .ffn .box{border:1px solid var(--line);border-radius:5px;padding:10px 12px;background:var(--paper);text-align:center}
+  .ffn .ar{color:var(--muted)}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="eyebrow"><span>Field note · AI-assisted engineering</span><span>Spec 04 — Prompt → Specification</span></div>
+<header>
+  <h1>Why prompts alone <em>don't scale</em>:<br>the path to <em>specification-driven development</em>.</h1>
+  <p>Click any clause on the left to inspect it, or run the walkthrough to move bottom to top — from the first productivity win of prompt engineering, through the ten ways it breaks at enterprise scale, to specifications as the new source of truth.</p>
+</header>
+
+<div class="control">
+  <label>Current approach</label>
+  <div class="iorow">
+    <div class="toggle" id="toggle"><span id="tPrompt">Prompt-only</span><span id="tSpec">Spec-driven</span></div>
+    <button class="run" id="run">▶ Run the walkthrough</button>
+  </div>
+  <div class="answer">
+    <span>Enterprise outcome:</span>
+    <span class="stamp show" id="outTok">draft · ungoverned</span>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="pipe" id="pipe">
+    <div class="blk" data-c=output data-k="benefits"><span class="num">6</span><div class="t">Benefits of SDD</div><div class="s">what changes org-wide</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=output data-k="specs"><span class="num">5</span><div class="t">Anatomy of a Spec</div><div class="s">the new source of truth</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=output data-k="sdd"><span class="num">4</span><div class="t">Specification-Driven Dev</div><div class="s">AI follows, not guesses</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=norm data-k="enterprise"><span class="num">3</span><div class="t">Enterprise Requirements</div><div class="s">beyond productivity</div></div>
+    <div class="arrow"></div>
+    <div class="glabel">10 failure modes of prompt-only development</div>
+    <div class="blk" data-c=norm data-k="knowledge"><span class="num">2.10</span><div class="t">Knowledge Loss</div><div class="s">leaves with the architect</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=norm data-k="governance"><span class="num">2.7–9</span><div class="t">Traceability, Collab &amp; Governance</div><div class="s">no shared source</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=core data-k="hallucination"><span class="num">2.6</span><div class="t">Hallucinations</div><div class="s">gaps get invented</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=core data-k="ctxWindow"><span class="num">2.5</span><div class="t">Context Window Limits</div><div class="s">enterprise ≫ tokens</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=core data-k="assumptions"><span class="num">2.4</span><div class="t">Hidden Assumptions</div><div class="s">unstated ≠ unnecessary</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=core data-k="driftRandom"><span class="num">2.2–3</span><div class="t">Drift &amp; Non-Determinism</div><div class="s">same ask, new answer</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=core data-k="ctxLoss"><span class="num">2.1</span><div class="t">No Persistent Context</div><div class="s">every prompt starts blank</div></div>
+    <div class="arrow"></div>
+    <div class="blk" data-c=input data-k="rise"><span class="num">1</span><div class="t">The Rise of Prompt Engineering</div><div class="s">fast wins, then a plateau</div></div>
+  </div>
+
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="legend">
+  <span><i style="background:var(--input)"></i>Foundation</span>
+  <span><i style="background:var(--core)"></i>Failure modes</span>
+  <span><i style="background:var(--norm)"></i>Governance gaps</span>
+  <span><i style="background:var(--output)"></i>Spec-driven outcome</span>
+</div>
+<div class="hint">Tip: click "▶ Run the walkthrough" to animate the full path, or click any clause to inspect it.</div>
+</div>
+
+<script>
+const content = {
+  rise:{c:'input',tag:'1 · Foundation',title:'The Rise of Prompt Engineering',
+    lead:'Prompt engineering — carefully crafted natural-language instructions — let developers generate code, tests, documentation, and architecture suggestions on demand. Tools like Claude Code, Cursor, GitHub Copilot, Windsurf, and Codex all lean on this. It dramatically boosts productivity at first, but the gains plateau as project complexity grows.',
+    viz:()=>`<div class="toks">${['Generate a REST API','Write unit tests','Explain a class','Refactor this function','Create SQL queries','Generate documentation'].map(t=>`<span class="chip">${t}</span>`).join('')}</div>`,
+    note:'Each of these is a one-off, self-contained ask — great for a single task, silent on everything the task depends on.'},
+
+  ctxLoss:{c:'core',tag:'2.1 · Failure mode',title:'No Persistent Context',
+    lead:'Every interaction depends only on the current prompt. The model has no lasting grip on business objectives, architecture decisions, coding standards, domain terms, security requirements, or prior design calls — so developers keep re-explaining the same ground.',
+    viz:()=>`<div class="ffn"><span class="box">Dev A: "Build a payment service"</span><span class="ar">…later…</span><span class="box" style="border-color:var(--hot);color:var(--hot)">Dev B: "Add refunds"</span><span class="ar">→</span><span class="box" style="border-color:var(--hot);color:var(--hot)">no shared memory of A's design</span></div>`,
+    note:'Unless every prior decision is re-typed back in, the two implementations drift apart from day one.'},
+
+  driftRandom:{c:'core',tag:'2.2–2.3 · Failure mode',title:'Prompt Drift & Non-Determinism',
+    lead:'Instructions mutate slightly every time someone re-explains them across conversations — prompt drift — until nobody agrees on the intended architecture. Compounding that, LLMs are probabilistic: the identical prompt can yield different outputs on different runs, while enterprise systems need exactly one approved implementation.',
+    viz:()=>`<div class="bar"><span class="lbl">Run 1 output</span><div class="track"><div class="fill" style="width:100%;background:var(--core)"></div></div><span class="pct">variant A</span></div>
+      <div class="bar"><span class="lbl">Run 2, same prompt</span><div class="track"><div class="fill" style="width:100%;background:var(--norm)"></div></div><span class="pct">variant B</span></div>
+      <div class="bar"><span class="lbl">Run 3, same prompt</span><div class="track"><div class="fill" style="width:100%;background:var(--hot)"></div></div><span class="pct">variant C</span></div>`,
+    note:'Unlike design documents, prompts are rarely version controlled — so drift is invisible until the implementations no longer match.'},
+
+  assumptions:{c:'core',tag:'2.4 · Failure mode',title:'Hidden Assumptions',
+    lead:'Humans assume knowledge the model was never given. A developer picturing Oracle, Kafka, internal auth, and house coding standards might simply type "Build customer registration module." The model fills the gaps with statistical likelihood, not organizational fact.',
+    viz:()=>`<div class="toks">${['Oracle database','Kafka messaging','Internal auth','Company coding standards'].map(t=>`<span class="chip">assumed: ${t}</span>`).join('')}</div>
+      <div style="margin-top:10px" class="vec">prompt actually sent → "Build customer registration module."</div>`,
+    note:'The gap between what\'s assumed and what\'s stated is exactly where probability takes over from policy.'},
+
+  ctxWindow:{c:'core',tag:'2.5 · Failure mode',title:'Context Window Limits',
+    lead:'Context windows are large, but enterprise systems — requirements, architecture, APIs, design docs, security policies, coding standards, past releases, infrastructure definitions — routinely exceed millions of tokens. Not everything fits in one prompt, so information falls outside the window unnoticed.',
+    viz:()=>`<div class="bar"><span class="lbl">Fits in one prompt</span><div class="track"><div class="fill" style="width:18%;background:var(--output)"></div></div><span class="pct">small slice</span></div>
+      <div class="bar"><span class="lbl">Falls outside window</span><div class="track"><div class="fill" style="width:82%;background:var(--hot)"></div></div><span class="pct">most of it</span></div>`,
+    note:'Illustrative, not measured — the point is directional: enterprise context is bigger than any single prompt.'},
+
+  hallucination:{c:'core',tag:'2.6 · Failure mode',title:'Hallucinations',
+    lead:'When information is missing, the model invents it rather than leaving a blank. Prompt engineering can reduce how often this happens, but it cannot eliminate it.',
+    viz:()=>`<div class="toks">${['Imaginary APIs','Non-existent DB columns','Invalid configuration','Fake business rules','Unsupported framework methods'].map(t=>`<span class="chip hot">${t}</span>`).join('')}</div>`,
+    note:'Every one of these looks plausible in isolation — that\'s what makes them expensive to catch.'},
+
+  governance:{c:'norm',tag:'2.7–2.9 · Governance gap',title:'Traceability, Collaboration & Governance',
+    lead:'Enterprises need to answer "why was this built," "which requirement does it satisfy," "who approved it." Prompts give almost no audit trail. Two developers writing different prompts get different implementations — quality, architecture, naming, and APIs all diverge. And prompts can\'t easily enforce security, compliance, privacy, risk, or regulatory rules.',
+    viz:()=>`<div class="bar"><span class="lbl">Why was this built?</span><div class="track"><div class="fill" style="width:8%;background:var(--hot)"></div></div><span class="pct">rarely traced</span></div>
+      <div class="bar"><span class="lbl">Who approved it?</span><div class="track"><div class="fill" style="width:8%;background:var(--hot)"></div></div><span class="pct">rarely traced</span></div>
+      <div class="bar"><span class="lbl">Consistent across teams?</span><div class="track"><div class="fill" style="width:22%;background:var(--norm)"></div></div><span class="pct">diverges</span></div>`,
+    note:'Without a shared specification, governance has nothing stable to check against.'},
+
+  knowledge:{c:'norm',tag:'2.10 · Governance gap',title:'Knowledge Loss',
+    lead:'Experienced architects often encode critical decisions inside private prompts. When they leave, that reasoning leaves with them. Durable knowledge belongs in reusable specifications, not personal prompt libraries.',
+    viz:()=>`<div class="ffn"><span class="box">Architect's private prompts</span><span class="ar">→</span><span class="box" style="border-color:var(--hot);color:var(--hot)">architect leaves</span><span class="ar">→</span><span class="box" style="border-color:var(--hot);color:var(--hot)">decisions gone</span></div>`,
+    note:'Compare this to a specification: it stays with the organization regardless of who wrote it.'},
+
+  enterprise:{c:'norm',tag:'Section 3 · Requirement gap',title:'Enterprise Requirements Beyond Prompts',
+    lead:'Enterprise software demands deterministic outputs, reproducibility, auditability, governance, security, scalability, compliance, collaboration, reusability, and long-term maintainability. Prompt engineering addresses productivity — not these engineering concerns.',
+    viz:()=>`<div class="toks">${['Deterministic outputs','Reproducibility','Auditability','Governance','Security','Scalability','Compliance','Collaboration','Reusability','Maintainability'].map(t=>`<span class="chip">${t}</span>`).join('')}</div>`,
+    note:'None of these were the job prompt engineering was hired to do.'},
+
+  sdd:{c:'output',tag:'Section 4 · Outcome',title:'Specification-Driven Development',
+    lead:'Specification-Driven Development introduces structured specifications as the primary source of truth. The model no longer guesses — it follows approved specifications.',
+    viz:()=>`<div class="ffn"><span class="box" style="border-color:var(--hot);color:var(--hot)">Prompt (guess)</span><span class="ar">replaced by →</span><span class="box" style="border-color:var(--output);color:var(--output)">Specification (approved)</span><span class="ar">→</span><span class="box">AI follows it</span></div>`,
+    note:'The shift is from "explain it well" to "point at the approved source."'},
+
+  specs:{c:'output',tag:'Section 5 · Outcome',title:'Anatomy of an Enterprise Specification',
+    lead:'A specification captures business goals, functional requirements, constraints, business rules, acceptance criteria, non-functional requirements, security requirements, architecture guidelines, data models, APIs, and validation rules — and unlike prompts, it\'s version controlled, reviewable, reusable, testable, governed, and traceable.',
+    viz:()=>`<div class="toks">${['Business goals','Functional requirements','Constraints','Business rules','Acceptance criteria','NFRs','Security requirements','Architecture guidelines','Data models','APIs','Validation rules'].map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+      <div class="toks" style="margin-top:10px">${['Version controlled','Reviewable','Reusable','Testable','Governed','Traceable'].map(t=>`<span class="chip good">${t}</span>`).join('')}</div>`,
+    note:'A spec is what a prompt was always missing: something that can be checked, reused, and defended.'},
+
+  benefits:{c:'output',tag:'Section 6 · Outcome',title:'Benefits of Moving Beyond Prompt Engineering',
+    lead:'Organizations adopting Specification-Driven Development see higher code consistency, fewer hallucinations, better architecture compliance, stronger reuse of engineering knowledge, faster developer onboarding, less rework, better documentation, stronger governance, more predictable outputs, and easier cross-team collaboration.',
+    viz:()=>`<div class="toks">${['Higher code consistency','Reduced hallucinations','Improved architecture compliance','Better knowledge reuse','Faster onboarding','Reduced rework','Better documentation','Strong governance','Predictable AI outputs','Easier collaboration'].map(t=>`<span class="chip good">✓ ${t}</span>`).join('')}</div>`,
+    note:'None of these came from a better prompt. They came from giving the AI something stable to follow.'}
+};
+
+const detail=document.getElementById('detail');
+const blks=[...document.querySelectorAll('.blk')];
+const cmap={input:'var(--input)',core:'var(--core)',norm:'var(--norm)',output:'var(--output)'};
+
+function show(k){
+  const d=content[k];
+  blks.forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+  const viz=typeof d.viz==='function'?d.viz():d.viz;
+  detail.innerHTML=`<span class="tag" style="color:${cmap[d.c]}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${viz}</div><div class="note">${d.note}</div>`;
+}
+
+blks.forEach(b=>b.addEventListener('click',()=>show(b.dataset.k)));
+show('rise');
+
+const order=['rise','ctxLoss','driftRandom','assumptions','ctxWindow','hallucination','governance','knowledge','enterprise','sdd','specs','benefits'];
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+const tPrompt=document.getElementById('tPrompt');
+const tSpec=document.getElementById('tSpec');
+
+runBtn.addEventListener('click',()=>{
+  blks.forEach(b=>b.classList.remove('done'));
+  outTok.classList.remove('good');
+  outTok.textContent='draft · ungoverned';
+  tPrompt.classList.add('on'); tSpec.classList.remove('on');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){
+      runBtn.disabled=false;
+      outTok.classList.add('good');
+      outTok.textContent='✓ approved · governed';
+      tPrompt.classList.remove('on'); tSpec.classList.add('on');
+      return;
+    }
+    const k=order[i];
+    show(k);
+    const b=blks.find(x=>x.dataset.k===k);
+    if(b){b.scrollIntoView({block:'nearest'});b.classList.add('done');}
+    if(k==='sdd'){
+      outTok.classList.add('good');
+      outTok.textContent='→ switching to specifications…';
+      tPrompt.classList.remove('on'); tSpec.classList.add('on');
+    }
+    i++;
+    setTimeout(tick,780);
+  };
+  tick();
+});
+</script>
+</body>
+</html>

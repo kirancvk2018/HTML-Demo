@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Evolution: From Waterfall to Spec-Driven Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
+    --muted:#8a8d99; --line:#2a2d39;
+    --input:#5b9dff; --core:#b06cff; --norm:#ffb454; --hotp:#ff4d6d; --output:#ff6b5b;
+    --accent:#7df0c0; --hot:#ff4d6d;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%,rgba(91,157,255,.08),transparent 40%),
+                     radial-gradient(circle at 88% 92%,rgba(125,240,192,.08),transparent 42%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,5vw,50px);line-height:1.05;letter-spacing:-.02em}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header p{color:var(--muted);max-width:720px;margin-top:14px;font-size:16px}
+
+  .control{margin:34px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px}
+  .iorow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  button.run{background:var(--accent);color:#05140d;border:none;border-radius:12px;padding:14px 26px;
+    font-family:var(--mono);font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:.2s}
+  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
+  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
+  .answer{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:15px;color:var(--muted)}
+  .answer .tok{font-family:var(--disp);font-weight:600;font-size:24px;color:var(--accent);opacity:0;transition:.4s}
+  .answer .tok.show{opacity:1}
+
+  .stage{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:34px}
+  @media(max-width:820px){.stage{grid-template-columns:1fr}}
+
+  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start}
+  .blk{border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--panel);cursor:pointer;
+    transition:.18s;position:relative}
+  .blk:hover{border-color:var(--accent)}
+  .blk.active{border-color:var(--accent);background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
+  .blk.done::after{content:"✓";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:12px}
+  .blk .t{font-weight:600;font-size:13.5px}
+  .blk .s{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .blk[data-c=waterfall]{border-left:3px solid var(--input)}
+  .blk[data-c=agile]{border-left:3px solid var(--core)}
+  .blk[data-c=devops]{border-left:3px solid var(--norm)}
+  .blk[data-c=platform]{border-left:3px solid var(--hotp)}
+  .blk[data-c=ai]{border-left:3px solid var(--output)}
+  .blk[data-c=sdd]{border-left:3px solid var(--accent)}
+  .arrow{height:16px;display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:13px}
+
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px 30px;min-height:460px}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 11px;border-radius:20px;margin-bottom:14px}
+  .detail h2{font-family:var(--disp);font-weight:600;font-size:29px;letter-spacing:-.01em}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:15.5px}
+  .detail .viz{margin-top:22px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto}
+  .detail .viz2{margin-top:14px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto}
+  .detail .note{margin-top:18px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:14px}
+  .vizlabel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12.5px;padding:7px 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+
+  .ffn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px}
+  .ffn .box{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--panel2);text-align:center}
+  .ffn .ar{color:var(--muted)}
+
+  .bar{display:flex;align-items:center;gap:10px;margin:7px 0;font-family:var(--mono);font-size:11.5px}
+  .bar .lbl{width:150px;text-align:right;color:var(--ink);flex-shrink:0}
+  .bar .track{flex:1;height:16px;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .bar .pct{width:190px;color:var(--muted);flex-shrink:0}
+  .bar.active .lbl{color:var(--accent);font-weight:700}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:24px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>How software got built:<br>Waterfall to <em>Spec-Driven Development.</em></h1>
+  <p>Six eras, one throughline: every generation shortens the gap between "we decided to build this" and "it is running in front of a user." Click any era on the left to inspect it, or hit play to walk the whole timeline.</p>
+</header>
+
+<div class="control">
+  <div class="iorow">
+    <label>Timeline</label>
+    <button class="run" id="run">▶ Play the evolution</button>
+  </div>
+  <div class="answer">
+    <span>Where the industry is heading:</span>
+    <span class="tok" id="outTok">Specification-Driven Development</span>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="pipe" id="pipe">
+    <div class="blk" data-c=waterfall data-k="waterfall"><div class="t">Traditional SDLC</div><div class="s">1970s – 1990s · Waterfall</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=agile data-k="agile"><div class="t">Agile</div><div class="s">1990s – 2000s · Sprints</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=devops data-k="devops"><div class="t">DevOps</div><div class="s">2007 – 2015 · CI/CD</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=platform data-k="platform"><div class="t">Platform Engineering</div><div class="s">2018 – present · IDPs</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=ai data-k="ai"><div class="t">AI-Assisted Development</div><div class="s">2021 – present · Copilots → agents</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=sdd data-k="sdd"><div class="t">Spec-Driven Development</div><div class="s">2024 – present · Intent as source of truth</div></div>
+  </div>
+
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="legend">
+  <span><i style="background:var(--input)"></i>Traditional SDLC</span>
+  <span><i style="background:var(--core)"></i>Agile</span>
+  <span><i style="background:var(--norm)"></i>DevOps</span>
+  <span><i style="background:var(--hotp)"></i>Platform Engineering</span>
+  <span><i style="background:var(--output)"></i>AI-Assisted Dev</span>
+  <span><i style="background:var(--accent)"></i>Spec-Driven Dev</span>
+</div>
+<div class="hint">Tip: click "▶ Play the evolution" to animate the path, or click any era to inspect it directly.</div>
+</div>
+
+<script>
+const ERAS=[
+  {k:'waterfall', label:'Traditional SDLC', dur:'6–18 months per release', pct:100, color:'var(--input)'},
+  {k:'agile',     label:'Agile',             dur:'1–4 week sprints',       pct:62,  color:'var(--core)'},
+  {k:'devops',    label:'DevOps',            dur:'hours – 1 day, commit to prod', pct:38, color:'var(--norm)'},
+  {k:'platform',  label:'Platform Engineering', dur:'minutes – hours, idea to running env', pct:24, color:'var(--hotp)'},
+  {k:'ai',        label:'AI-Assisted Dev',   dur:'minutes to a first draft', pct:14, color:'var(--output)'},
+  {k:'sdd',       label:'Spec-Driven Dev',   dur:'minutes — and stays minutes when requirements change', pct:8, color:'var(--accent)'}
+];
+
+function feedbackBars(activeKey){
+  let h='<div class="vizlabel">Feedback loop: idea → running in production</div>';
+  ERAS.forEach(e=>{
+    const isActive=e.k===activeKey;
+    const fill=isActive?e.color:'var(--line)';
+    h+=`<div class="bar${isActive?' active':''}"><span class="lbl">${e.label}</span><div class="track"><div class="fill" style="width:${e.pct}%;background:${fill}"></div></div><span class="pct">${e.dur}</span></div>`;
+  });
+  return h;
+}
+
+function chain(steps){
+  return '<div class="ffn">'+steps.map((s,i)=>`<span class="box"${s.hl?` style="border-color:${s.hl}"`:''}>${s.t}</span>`+(i<steps.length-1?'<span class="ar">→</span>':'')).join('')+'</div>';
+}
+
+const content={
+  waterfall:{c:'waterfall',tag:'Era 1 · 1970s – 1990s',title:'Traditional SDLC (Waterfall)',
+    lead:'Requirements are gathered once, frozen, and handed down through a chain of gated phases — like water flowing over a series of dams. Each phase needs formal sign-off before the next can begin.',
+    viz:()=>chain([{t:'Requirements'},{t:'Design'},{t:'Build'},{t:'Test'},{t:'Deploy'},{t:'Maintain'}]),
+    viz2:()=>feedbackBars('waterfall'),
+    note:'A misunderstood requirement discovered at UAT can mean months of rework. The model assumes the world holds still while you build — in practice, it rarely does.'},
+
+  agile:{c:'agile',tag:'Era 2 · 1990s – 2000s (Manifesto, 2001)',title:'Agile',
+    lead:'The waterfall is chopped into short, repeatable cycles. A cross-functional team plans, builds, and reviews a thin slice of the product every one to four weeks, then adapts based on what it actually learns.',
+    viz:()=>chain([{t:'Plan'},{t:'Build'},{t:'Review'},{t:'Retro'},{t:'↻ next sprint',hl:'var(--core)'}]),
+    viz2:()=>feedbackBars('agile'),
+    note:'The feedback loop shrinks from months to weeks. But "done" inside a sprint usually still means "merged," not "running in front of a real user" — deployment itself remains a separate, often manual, event.'},
+
+  devops:{c:'devops',tag:'Era 3 · 2007 – 2015',title:'DevOps',
+    lead:'Dev and Ops stop being separate departments connected by a ticket queue. CI/CD pipelines, infrastructure-as-code, and automated testing mean a merged change can reach production the same day.',
+    viz:()=>chain([{t:'Commit'},{t:'Build'},{t:'Test'},{t:'Deploy'},{t:'Monitor',hl:'var(--norm)'}]),
+    viz2:()=>feedbackBars('devops'),
+    note:'The loop compresses to hours. The bottleneck shifts again — less about the mechanics of shipping, more about how much scaffolding every individual team still has to rebuild for itself.'},
+
+  platform:{c:'platform',tag:'Era 4 · 2018 – present',title:'Platform Engineering',
+    lead:'Instead of every product team hand-rolling its own CI/CD, provisioning, and observability, a platform team builds an Internal Developer Platform: golden paths and self-service tooling that make the well-lit path also the easy path.',
+    viz:()=>'<div class="chips">'+['Service catalog','Golden paths','Self-service provisioning','Paved roads','Backstage-style portals'].map(c=>`<span class="chip">${c}</span>`).join('')+'</div>',
+    viz2:()=>feedbackBars('platform'),
+    note:'Standardizes operations at scale and removes queueing on central ops. It also quietly sets up what comes next: AI agents now have a small, well-defined, guard-railed surface to operate within, instead of an unbounded infrastructure surface.'},
+
+  ai:{c:'ai',tag:'Era 5 · 2021 – present',title:'AI-Assisted Development',
+    lead:'LLM copilots start by autocompleting lines, move to writing whole functions via chat, then to autonomous agents shipping entire features. The volume of code a team can produce explodes — often faster than the team\'s shared understanding of what that code actually does.',
+    viz:()=>'<div class="chips">'+['Autocomplete','Chat-assisted coding','Agentic coding (Claude Code, Cursor…)'].map(c=>`<span class="chip">${c}</span>`).join('')+'</div>',
+    viz2:()=>feedbackBars('ai'),
+    note:'The constraint moves again. It is no longer "can we write the code fast enough" — it is "can we describe the intent precisely enough" that an agent, or a teammate reading the diff, builds the right thing.'},
+
+  sdd:{c:'sdd',tag:'Destination · 2024 – present',title:'Specification-Driven Development',
+    lead:'The artifact hierarchy flips. A structured, testable, machine-readable spec becomes the primary source of truth; code becomes a generated, disposable byproduct that an agent regenerates whenever intent changes. Tools like GitHub Spec Kit formalize this as a command sequence.',
+    viz:()=>chain([{t:'/specify'},{t:'/plan'},{t:'/tasks'},{t:'/implement',hl:'var(--accent)'},{t:'tests validate ↺ spec'}]),
+    viz2:()=>feedbackBars('sdd'),
+    note:'This closes the loop Waterfall opened fifty years earlier — both put the specification first. The difference is that here the spec is cheap to change and the code is cheap to regenerate, because an agent, not a person, pays the cost of translating intent into implementation, every single time.'}
+};
+
+const detail=document.getElementById('detail');
+const blks=[...document.querySelectorAll('.blk')];
+const cmap={waterfall:'var(--input)',agile:'var(--core)',devops:'var(--norm)',platform:'var(--hotp)',ai:'var(--output)',sdd:'var(--accent)'};
+
+function show(k){
+  const d=content[k];
+  blks.forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+  const viz=typeof d.viz==='function'?d.viz():d.viz;
+  const viz2=typeof d.viz2==='function'?d.viz2():d.viz2;
+  detail.innerHTML=`<span class="tag" style="background:${cmap[d.c]}22;color:${cmap[d.c]}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${viz}</div><div class="viz2">${viz2}</div><div class="note">${d.note}</div>`;
+}
+
+blks.forEach(b=>b.addEventListener('click',()=>show(b.dataset.k)));
+show('waterfall');
+
+const order=['waterfall','agile','devops','platform','ai','sdd'];
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+runBtn.addEventListener('click',()=>{
+  blks.forEach(b=>b.classList.remove('done'));
+  outTok.classList.remove('show');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){runBtn.disabled=false;outTok.classList.add('show');return;}
+    const k=order[i];
+    show(k);
+    const b=blks.find(x=>x.dataset.k===k);
+    if(b){b.scrollIntoView({block:'nearest'});b.classList.add('done');}
+    i++;
+    setTimeout(tick,900);
+  };
+  tick();
+});
+</script>
+</body>
+</html>

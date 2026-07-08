@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How RAG Answers "What is our refund policy for damaged items?"</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
+    --muted:#8a8d99; --line:#2a2d39;
+    --ingest:#ffb454; --query:#5b9dff; --retrieve:#b06cff; --augment:#ff8fd6; --gen:#ff6b5b;
+    --accent:#7df0c0; --hot:#ff4d6d;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%,rgba(255,180,84,.07),transparent 40%),
+                     radial-gradient(circle at 88% 92%,rgba(91,157,255,.08),transparent 42%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,5vw,52px);line-height:1.02;letter-spacing:-.02em}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header p{color:var(--muted);max-width:680px;margin-top:14px;font-size:16px}
+
+  .control{margin:34px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px}
+  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .iorow{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .prompt{flex:1;min-width:260px;background:#0a0b0f;border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;color:var(--ink);font-family:var(--mono);font-size:15px}
+  .prompt:focus{outline:none;border-color:var(--query)}
+  button.run{background:var(--accent);color:#05140d;border:none;border-radius:12px;padding:14px 26px;
+    font-family:var(--mono);font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:.2s}
+  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
+  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
+  .answer{margin-top:16px;display:flex;align-items:flex-start;gap:12px;font-size:15px;color:var(--muted)}
+  .answer .tok{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--accent);opacity:0;transition:.4s;line-height:1.35;max-width:720px}
+  .answer .tok.show{opacity:1}
+  .answer .tok cite{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--query);
+    border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+
+  .stage{display:grid;grid-template-columns:262px 1fr;gap:24px;margin-top:34px}
+  @media(max-width:860px){.stage{grid-template-columns:1fr}}
+
+  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start}
+  .phase{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    border:1px dashed var(--line);border-radius:8px;padding:5px 8px;text-align:center;margin:6px 0}
+  .blk{border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--panel);cursor:pointer;
+    transition:.18s;position:relative}
+  .blk:hover{border-color:var(--accent)}
+  .blk.active{border-color:var(--accent);background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
+  .blk.done::after{content:"✓";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:12px}
+  .blk .t{font-weight:600;font-size:13.5px}
+  .blk .s{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .blk[data-c=ingest]{border-left:3px solid var(--ingest)}
+  .blk[data-c=query]{border-left:3px solid var(--query)}
+  .blk[data-c=retrieve]{border-left:3px solid var(--retrieve)}
+  .blk[data-c=augment]{border-left:3px solid var(--augment)}
+  .blk[data-c=gen]{border-left:3px solid var(--gen)}
+  .arrow{height:16px;display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:13px}
+
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px 30px;min-height:460px}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 11px;border-radius:20px;margin-bottom:14px}
+  .detail h2{font-family:var(--disp);font-weight:600;font-size:30px;letter-spacing:-.01em}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:15.5px}
+  .detail .viz{margin-top:22px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto}
+  .detail .note{margin-top:18px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:14px}
+
+  .toks{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:13px;padding:7px 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+  .chip .id{display:block;font-size:10px;color:var(--query);margin-top:3px}
+  .vec{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--panel2);padding:6px 9px;border-radius:7px;border:1px solid var(--line)}
+
+  /* document / chunk cards */
+  .docgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+  .doc{border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:11px 12px;font-size:12px}
+  .doc .dt{font-family:var(--mono);font-size:10px;color:var(--ingest);letter-spacing:.06em;text-transform:uppercase}
+  .doc .dx{margin-top:5px;color:var(--ink);font-size:12px;line-height:1.45}
+  .doc.win{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .doc .score{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:6px}
+  .doc.dim{opacity:.45}
+
+  /* bars */
+  .bar{display:flex;align-items:center;gap:10px;margin:7px 0;font-family:var(--mono);font-size:12px}
+  .bar .lbl{width:148px;text-align:right;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .track{flex:1;height:18px;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .bar .pct{width:58px;color:var(--muted)}
+
+  /* assembled prompt */
+  .promptbox{font-family:var(--mono);font-size:11.8px;line-height:1.7;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .promptbox .seg{padding:10px 14px;border-bottom:1px solid var(--line)}
+  .promptbox .seg:last-child{border-bottom:none}
+  .promptbox .seg b{display:block;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .seg.sys{background:rgba(255,180,84,.06)} .seg.sys b{color:var(--ingest)}
+  .seg.ctx{background:rgba(176,108,255,.07)} .seg.ctx b{color:var(--retrieve)}
+  .seg.usr{background:rgba(91,157,255,.07)} .seg.usr b{color:var(--query)}
+
+  .ffn{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:12px}
+  .ffn .box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel2);text-align:center}
+  .ffn .ar{color:var(--muted)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:24px;text-align:center}
+
+  /* typing answer */
+  .stream{font-family:var(--mono);font-size:13px;line-height:1.8;color:var(--ink)}
+  .stream .cur{display:inline-block;width:8px;height:15px;background:var(--accent);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Beyond the model's memory:<br>how RAG turns <em>“what's the refund policy?”</em> into a <em>grounded answer.</em></h1>
+  <p>A plain LLM only knows what it saw in training — nothing about <b>your</b> documents. Retrieval-Augmented Generation fixes that: it fetches the right passages from a knowledge base and hands them to the model alongside your question. Click any block, or hit run to walk the full path.</p>
+</header>
+
+<div class="control">
+  <label>Your question (about a private knowledge base the LLM never trained on)</label>
+  <div class="iorow">
+    <input class="prompt" id="prompt" value="What is our refund policy for damaged items?" spellcheck="false">
+    <button class="run" id="run">▶ Run the pipeline</button>
+  </div>
+  <div class="answer">
+    <span>Grounded answer:</span>
+    <span class="tok" id="outTok">Damaged items can be refunded within 30 days with photo proof; shipping is covered by us. <cite>policy_v3.pdf · §4.2</cite></span>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="pipe" id="pipe">
+    <div class="blk" data-c=gen data-k="answer"><div class="t">Grounded Answer + Citations</div><div class="s">traceable to sources</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=gen data-k="generate"><div class="t">LLM Generation</div><div class="s">transformer reads context</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=augment data-k="augment"><div class="t">Prompt Augmentation</div><div class="s">system + context + question</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=retrieve data-k="rerank"><div class="t">Reranking</div><div class="s">cross-encoder re-scores top-k</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=retrieve data-k="search"><div class="t">Vector Similarity Search</div><div class="s">cosine sim vs. millions of chunks</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=query data-k="qembed"><div class="t">Query Embedding</div><div class="s">question → vector</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=query data-k="input"><div class="t">“What is our refund…”</div><div class="s">raw user question</div></div>
+    <div class="phase">▲ Query time (online, every request)</div>
+    <div class="phase" style="margin-top:14px">▼ Indexing (offline, done once + updates)</div>
+    <div class="blk" data-c=ingest data-k="docs"><div class="t">Source Documents</div><div class="s">PDFs · wikis · tickets · DBs</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=ingest data-k="chunk"><div class="t">Chunking</div><div class="s">split into passages + overlap</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=ingest data-k="dembed"><div class="t">Chunk Embeddings</div><div class="s">each chunk → vector</div></div>
+    <div class="arrow">↓</div>
+    <div class="blk" data-c=ingest data-k="store"><div class="t">Vector Database</div><div class="s">indexed for fast lookup</div></div>
+  </div>
+
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="legend">
+  <span><i style="background:var(--ingest)"></i>Indexing (offline)</span>
+  <span><i style="background:var(--query)"></i>Query processing</span>
+  <span><i style="background:var(--retrieve)"></i>Retrieval</span>
+  <span><i style="background:var(--augment)"></i>Augmentation</span>
+  <span><i style="background:var(--gen)"></i>Generation</span>
+</div>
+<div class="hint">Tip: click “▶ Run the pipeline” to animate the path — indexing first, then the live query. Or click any block to inspect it.</div>
+</div>
+
+<script>
+function rnd(n){return Array.from({length:n},()=>(Math.random()*2-1).toFixed(2))}
+
+const CHUNKS=[
+  {src:'policy_v3.pdf · §4.2',txt:'Damaged items: refund within 30 days with photo proof. Return shipping covered by company.',score:.91,rr:.97},
+  {src:'policy_v3.pdf · §4.1',txt:'Standard returns accepted within 14 days, item unused, original packaging required.',score:.82,rr:.71},
+  {src:'faq.md · "refunds"',txt:'Refunds are issued to the original payment method within 5–7 business days.',score:.78,rr:.88},
+  {src:'tickets/2024-318',txt:'Customer reported damaged mug; agent approved refund per damaged-goods policy.',score:.74,rr:.42},
+  {src:'shipping.md · §2',txt:'Express shipping available in metro areas; 2-day delivery guarantee.',score:.41,rr:.08},
+];
+
+function docCards(list,withScore,topN){
+  return `<div class="docgrid">${list.map((c,i)=>{
+    const win = withScore && topN!=null && i<topN;
+    const dim = withScore && topN!=null && i>=topN;
+    return `<div class="doc ${win?'win':''} ${dim?'dim':''}">
+      <div class="dt">${c.src}</div><div class="dx">${c.txt}</div>
+      ${withScore?`<div class="score">sim ${c.score.toFixed(2)}${win?' ✓ selected':''}</div>`:''}</div>`;
+  }).join('')}</div>`;
+}
+
+const content = {
+  /* ---------- indexing phase ---------- */
+  docs:{c:'ingest',tag:'Indexing · Step 1',title:'Source Documents',
+    lead:'Everything starts with <em>your</em> knowledge: policy PDFs, wikis, support tickets, product specs. The LLM has never seen any of this — it lives outside the model, which means it can be updated any time without retraining.',
+    viz:()=>docCards(CHUNKS.slice(0,4).map(c=>({...c,txt:c.txt})),false),
+    note:'This is what makes RAG different from fine-tuning: knowledge lives in a database you control, not frozen inside model weights.'},
+
+  chunk:{c:'ingest',tag:'Indexing · Step 2',title:'Chunking',
+    lead:'Long documents are split into small passages (~200–800 tokens), often with overlap so sentences aren\'t cut mid-thought. Chunk size is a real tradeoff: too big and retrieval gets fuzzy, too small and context is lost.',
+    viz:()=>`<div class="ffn"><span class="box">policy_v3.pdf<br><span style="color:var(--muted)">48 pages</span></span><span class="ar">→ split →</span>
+      <span class="box" style="border-color:var(--ingest)">§4.1</span><span class="box" style="border-color:var(--ingest)">§4.2</span>
+      <span class="box" style="border-color:var(--ingest)">§4.3</span><span class="ar">…</span>
+      <span class="box" style="border-color:var(--ingest)">312 chunks</span></div>`,
+    note:'Each chunk keeps metadata — source file, section, page — which later powers the citations in the final answer.'},
+
+  dembed:{c:'ingest',tag:'Indexing · Step 3',title:'Chunk Embeddings',
+    lead:'An <em>embedding model</em> (smaller than the LLM) converts each chunk into a dense vector — e.g. 1536 numbers — where meaning becomes geometry. Chunks about refunds land near each other, far from chunks about shipping.',
+    viz:()=>`<div class="toks" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div class="vec">"Damaged items: refund within 30 days…" → [ ${rnd(4).join(', ')} … ]</div>
+      <div class="vec">"Standard returns accepted within 14 days…" → [ ${rnd(4).join(', ')} … ]</div>
+      <div class="vec">"Express shipping available in metro…" → [ ${rnd(4).join(', ')} … ]</div>
+      <div class="vec" style="color:var(--muted)">…1536 dimensions per chunk…</div></div>`,
+    note:'Same idea as token embeddings inside a transformer — but here a whole passage gets one vector capturing its overall meaning.'},
+
+  store:{c:'ingest',tag:'Indexing · Step 4',title:'Vector Database',
+    lead:'All chunk vectors are stored in a vector DB (Pinecone, FAISS, pgvector, Chroma…) with an index built for <em>approximate nearest-neighbor</em> search — finding the closest vectors among millions in milliseconds.',
+    viz:()=>`<div class="ffn"><span class="box" style="border-color:var(--ingest)">312 vectors<br><span style="color:var(--muted)">+ metadata</span></span><span class="ar">→ index →</span>
+      <span class="box" style="border-color:var(--accent)">HNSW graph<br><span style="color:var(--muted)">ANN search ≈ O(log n)</span></span></div>`,
+    note:'Indexing is done once (and on document updates). Everything below this point is offline. Now a user shows up…'},
+
+  /* ---------- query phase ---------- */
+  input:{c:'query',tag:'Query · Step 1',title:'Raw user question',
+    lead:'A user asks something the base LLM <em>cannot</em> answer from training data — it concerns private, recent, or niche information. Without retrieval, the model would have to guess (and likely hallucinate).',
+    viz:`<div class="vec" style="font-size:14px">"What is our refund policy for damaged items?"</div>`,
+    note:'Nothing computed yet. The question is just a string — and crucially, the answer exists only in the vector DB built above.'},
+
+  qembed:{c:'query',tag:'Query · Step 2',title:'Query Embedding',
+    lead:'The question is run through the <em>same embedding model</em> used for the chunks, producing a vector in the same space. Now "where is the answer?" becomes a geometry problem: which chunk vectors sit closest to this one?',
+    viz:()=>`<div class="toks" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div class="vec">"What is our refund policy for damaged items?"</div>
+      <div class="vec" style="border-color:var(--query)">→ [ ${rnd(6).join(', ')} … ] <span style="color:var(--query)">(1536-dim)</span></div></div>`,
+    note:'Using the same model for both sides is essential — vectors from different models live in incompatible spaces.'},
+
+  search:{c:'retrieve',tag:'Retrieval · Step 3',title:'Vector Similarity Search',
+    lead:'The vector DB computes cosine similarity between the query vector and every indexed chunk (via the ANN index), returning the <em>top-k</em> closest. Notice the damaged-items chunk scores highest — the shipping chunk barely registers.',
+    viz:()=>CHUNKS.map(c=>`<div class="bar"><span class="lbl">${c.src}</span><div class="track"><div class="fill" style="width:${c.score*100}%;background:${c.score>.7?'var(--retrieve)':'var(--muted)'}"></div></div><span class="pct">${c.score.toFixed(2)}</span></div>`).join('')
+      +'<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px">cosine similarity, top-5 of 312 chunks shown · top-k=4 pass to the next stage</div>',
+    note:'This is semantic, not keyword search: a query phrased "broken product money back" would still hit the same chunks.'},
+
+  rerank:{c:'retrieve',tag:'Retrieval · Step 4',title:'Reranking',
+    lead:'Embedding search is fast but coarse. A <em>cross-encoder</em> reranker reads the query and each candidate chunk <em>together</em> and re-scores them precisely. Watch the order shuffle: the old support ticket drops, the FAQ rises.',
+    viz:()=>[...CHUNKS.slice(0,4)].sort((a,b)=>b.rr-a.rr).map((c,i)=>`<div class="bar"><span class="lbl">${c.src}</span><div class="track"><div class="fill" style="width:${c.rr*100}%;background:${i<3?'var(--accent)':'var(--muted)'}"></div></div><span class="pct">${c.rr.toFixed(2)}</span></div>`).join('')
+      +'<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px">cross-encoder relevance · top-3 survive into the prompt</div>',
+    note:'Bi-encoder (fast, millions of chunks) then cross-encoder (slow, a handful) — a classic two-stage retrieve-and-rerank funnel.'},
+
+  augment:{c:'augment',tag:'Augmentation · Step 5',title:'Prompt Augmentation',
+    lead:'This is the "A" in RAG — and it\'s almost embarrassingly simple. The winning chunks are pasted into a prompt template, between a system instruction and the user\'s question. The LLM will read all of it as one input.',
+    viz:()=>`<div class="promptbox">
+      <div class="seg sys"><b>System instruction</b>Answer using ONLY the context below. Cite sources. If the context doesn't contain the answer, say so.</div>
+      <div class="seg ctx"><b>Retrieved context</b>[1] policy_v3.pdf §4.2 — Damaged items: refund within 30 days with photo proof…<br>[2] faq.md — Refunds issued to original payment method within 5–7 business days…<br>[3] policy_v3.pdf §4.1 — Standard returns accepted within 14 days…</div>
+      <div class="seg usr"><b>User question</b>What is our refund policy for damaged items?</div></div>`,
+    note:'The "ONLY the context" instruction is the anti-hallucination lever: it grounds the model in retrieved facts instead of its training memory.'},
+
+  generate:{c:'gen',tag:'Generation · Step 6',title:'LLM Generation',
+    lead:'The augmented prompt enters a transformer — tokenization, embeddings, attention, the whole machine. Attention now does the heavy lifting: the answer tokens attend to the <em>retrieved context</em>, not to fuzzy training memories.',
+    viz:()=>`<div class="ffn"><span class="box" style="border-color:var(--augment)">augmented prompt<br><span style="color:var(--muted)">~900 tokens</span></span><span class="ar">→</span>
+      <span class="box" style="border-color:var(--gen)">tokenize → embed →<br>attention × N → softmax</span><span class="ar">→</span>
+      <span class="box" style="border-color:var(--accent)">tokens, one at a time</span></div>
+      <div class="stream" style="margin-top:16px" id="genstream">Damaged items can be refunded within 30 days…<span class="cur"></span></div>`,
+    note:'Everything from the transformer demo happens right here, inside this single block. RAG doesn\'t change the model — it changes what the model reads.'},
+
+  answer:{c:'gen',tag:'Output · Step 7',title:'Grounded Answer + Citations',
+    lead:'The final answer is assembled from retrieved facts and can cite exactly where each claim came from. If the knowledge base changes tomorrow, tomorrow\'s answer changes too — no retraining needed.',
+    viz:()=>`<div class="doc win" style="max-width:560px"><div class="dt">final answer</div>
+      <div class="dx" style="font-size:13.5px">Damaged items can be refunded within <b>30 days</b> with photo proof, and return shipping is covered by us. The refund reaches your original payment method in 5–7 business days.</div>
+      <div class="score">sources: policy_v3.pdf §4.2 · faq.md "refunds"</div></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:14px">vs. plain LLM: <span style="color:var(--hot)">"Refund policies typically allow returns within 30–90 days…"</span> — a generic guess, no grounding.</div>`,
+    note:'Three wins in one: fresh knowledge without retraining, fewer hallucinations, and verifiable answers users can audit.'}
+};
+
+const detail=document.getElementById('detail');
+const blks=[...document.querySelectorAll('.blk')];
+const cmap={ingest:'var(--ingest)',query:'var(--query)',retrieve:'var(--retrieve)',augment:'var(--augment)',gen:'var(--gen)'};
+
+function show(k){
+  const d=content[k];
+  blks.forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+  const viz=typeof d.viz==='function'?d.viz():d.viz;
+  detail.innerHTML=`<span class="tag" style="background:${cmap[d.c]}22;color:${cmap[d.c]}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${viz}</div><div class="note">${d.note}</div>`;
+}
+
+blks.forEach(b=>b.addEventListener('click',()=>show(b.dataset.k)));
+show('docs');
+
+// run animation: indexing first (top-down in its column), then query (bottom-up)
+const order=['docs','chunk','dembed','store','input','qembed','search','rerank','augment','generate','answer'];
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+runBtn.addEventListener('click',()=>{
+  blks.forEach(b=>b.classList.remove('done'));
+  outTok.classList.remove('show');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){runBtn.disabled=false;outTok.classList.add('show');return;}
+    const k=order[i];
+    show(k);
+    const b=blks.find(x=>x.dataset.k===k);
+    if(b){b.scrollIntoView({block:'nearest'});b.classList.add('done');}
+    i++;
+    setTimeout(tick,900);
+  };
+  tick();
+});
+
+// reflect custom question in the input block label (cosmetic)
+const promptEl=document.getElementById('prompt');
+promptEl.addEventListener('input',()=>{
+  const v=promptEl.value.trim()||'your question';
+  const lbl=blks.find(b=>b.dataset.k==='input').querySelector('.t');
+  lbl.textContent='“'+v.slice(0,22)+(v.length>22?'…':'')+'”';
+  content.input.viz=`<div class="vec" style="font-size:14px">"${v}"</div>`;
+});
+</script>
+</body>
+</html>

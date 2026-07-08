@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Engineering Explainers — Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDEFE9; --paper:#FFFFFF; --panel2:#F4F6F0; --ink:#1C2530;
+    --muted:#6B7480; --line:#DBDFD3; --rule:#C6CCBC;
+    --c1:#2B6E8C; --c2:#A8432B; --c3:#B8862E; --c4:#2E7D5B; --c5:#6E5AA6;
+    --mono:'IBM Plex Mono',monospace; --body:'IBM Plex Sans',sans-serif; --disp:'Newsreader',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;
+    background-image:
+      linear-gradient(rgba(28,37,48,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(28,37,48,.035) 1px,transparent 1px),
+      radial-gradient(circle at 12% 0%,rgba(43,110,140,.06),transparent 45%),
+      radial-gradient(circle at 92% 100%,rgba(46,125,91,.06),transparent 45%);
+    background-size:34px 34px,34px 34px,auto,auto;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 100px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:10px;margin-bottom:16px;border-bottom:1px dashed var(--rule);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4.4vw,46px);letter-spacing:-.01em}
+  h1 em{font-style:italic;font-weight:500;color:var(--c4)}
+  header p{color:var(--muted);max-width:680px;margin-top:14px;font-size:16px}
+
+  .searchrow{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  #search{flex:1;min-width:220px;background:var(--paper);border:1px solid var(--line);border-radius:6px;
+    padding:12px 14px;font-family:var(--mono);font-size:13.5px;color:var(--ink)}
+  #search:focus{outline:none;border-color:var(--ink)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px}
+  .filters button{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:8px 14px;
+    color:var(--muted);cursor:pointer;transition:.15s}
+  .filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .grid{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:20px 22px;text-decoration:none;color:var(--ink);
+    display:block;position:relative;box-shadow:0 1px 2px rgba(28,37,48,.03);transition:.18s}
+  .card:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 10px 22px rgba(28,37,48,.08)}
+  .card .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:16px;border:1px solid currentColor;margin-bottom:12px}
+  .card h3{font-family:var(--disp);font-weight:600;font-size:19px;line-height:1.25}
+  .card p{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.5}
+  .card .go{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:14px;display:flex;align-items:center;gap:6px}
+  .card:hover .go{color:var(--ink)}
+  .card.empty{border-style:dashed;color:var(--muted);display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:12px;text-align:center;min-height:120px}
+
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:40px;text-align:center}
+  .count{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow"><span>AbilEq · AI Training Library</span><span id="dateStamp"></span></div>
+  <header>
+    <h1>A library of <em>interactive explainers</em> for AI-assisted engineering.</h1>
+    <p>Pick a topic below to open its walkthrough. Each one is a standalone, click-through or run-through demo — built for training sessions, self-study, or handouts.</p>
+  </header>
+
+  <div class="searchrow">
+    <input id="search" placeholder="Search by title, keyword…" autocomplete="off">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="count" id="count"></div>
+
+  <div class="grid" id="grid"></div>
+  <div class="hint">Add new entries by editing the ENTRIES array at the top of the script below — no build step required.</div>
+</div>
+
+<script>
+/* ============================================================
+   EDIT THIS LIST — one object per demo.
+   file:  the .html filename, sitting in the SAME folder as this index.html
+   title: shown on the card
+   desc:  one-line description
+   tag:   short category label, shown as a pill (also used for filtering)
+   color: one of --c1..--c5 (cycles automatically if omitted)
+   ============================================================ */
+const ENTRIES = [
+  { file:"transformer_demo.html", title:"Inside a Transformer", desc:"How a transformer turns a prompt into an answer, step by step.", tag:"Architecture" },
+  { file:"rag_demo.html", title:"How RAG Answers a Question", desc:"Retrieval-augmented generation, from query to grounded answer.", tag:"Architecture" },
+  { file:"spec_driven_development.html", title:"Prompt Engineering → SDD", desc:"Why prompts alone don't scale, and how specifications fix it.", tag:"Workflow" },
+  { file:"spec_driven_development_evolution.html", title:"Waterfall → Spec-Driven Dev", desc:"How software delivery evolved, from waterfall to SDD.", tag:"Workflow" },
+  { file:"context_window_studio.html", title:"Context Window Studio", desc:"Watch tokens fill the context window in real time.", tag:"Cost & Tokens" },
+  { file:"LLM_Context_Window_Simulator_v5_Interactive.html", title:"Context Window Simulator", desc:"Slider-driven model of system, history, docs, prompt & output budget.", tag:"Cost & Tokens" },
+  { file:"ClaudeCode_Reverse_Budget_Calculator.html", title:"Reverse Budget Calculator", desc:"Enter a monthly budget, see how much Claude Code usage it buys.", tag:"Cost & Tokens" },
+  { file:"Enterprise_Token_Burn_Dashboard.html", title:"Enterprise Token Burn Dashboard", desc:"Simulate repo-scale retrieval, tool calls, and iteration cost.", tag:"Cost & Tokens" },
+  // Add new demos here as you build them — same shape as the entries above.
+  // { file:"new_demo.html", title:"…", desc:"…", tag:"…" },
+];
+
+const colors = ['c1','c2','c3','c4','c5'];
+const grid = document.getElementById('grid');
+const filtersEl = document.getElementById('filters');
+const searchEl = document.getElementById('search');
+const countEl = document.getElementById('count');
+
+document.getElementById('dateStamp').textContent = new Date().toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'});
+
+const tags = ['All', ...new Set(ENTRIES.map(e=>e.tag))];
+let activeTag = 'All';
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const filtered = ENTRIES.filter(e=>{
+    const matchesTag = activeTag==='All' || e.tag===activeTag;
+    const matchesQ = !q || (e.title+e.desc+e.tag).toLowerCase().includes(q);
+    return matchesTag && matchesQ;
+  });
+
+  grid.innerHTML = filtered.map((e,i)=>{
+    const c = `var(--${e.color || colors[i % colors.length]})`;
+    return `<a class="card" href="${e.file}" style="color:${c}">
+      <span class="tag">${e.tag}</span>
+      <h3 style="color:var(--ink)">${e.title}</h3>
+      <p>${e.desc}</p>
+      <span class="go">Open walkthrough →</span>
+    </a>`;
+  }).join('') || `<div class="card empty">No demos match "${q}"</div>`;
+
+  countEl.textContent = `${filtered.length} of ${ENTRIES.length} demos`;
+}
+
+filtersEl.innerHTML = tags.map(t=>`<button data-t="${t}" class="${t==='All'?'on':''}">${t}</button>`).join('');
+filtersEl.addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  activeTag = b.dataset.t;
+  [...filtersEl.children].forEach(x=>x.classList.toggle('on', x===b));
+  render();
+});
+searchEl.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
