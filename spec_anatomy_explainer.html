@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomy of a Specification: Types, Quality, Lifecycle, Living Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
+    --muted:#8a8d99; --line:#2a2d39;
+    --input:#5b9dff; --core:#b06cff; --norm:#ffb454; --hotp:#ff4d6d; --output:#ff6b5b;
+    --accent:#7df0c0; --hot:#ff4d6d;
+    --c6:#4dd4ff; --c7:#c9ff4d; --c8:#ff9de2; --c9:#9d8cff; --c10:#f2c14e;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%,rgba(91,157,255,.08),transparent 40%),
+                     radial-gradient(circle at 88% 92%,rgba(125,240,192,.08),transparent 42%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4.6vw,46px);line-height:1.08;letter-spacing:-.02em}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header p{color:var(--muted);max-width:760px;margin-top:14px;font-size:15.5px}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:32px 0 0;border-bottom:1px solid var(--line);padding-bottom:0}
+  .tab{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--muted);background:none;border:none;
+    padding:13px 6px;cursor:pointer;position:relative;transition:.18s}
+  .tab .n{color:var(--muted);margin-right:7px}
+  .tab:hover{color:var(--ink)}
+  .tab.active{color:var(--ink)}
+  .tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+  @media(max-width:720px){.tabs{gap:2px}.tab{font-size:10.5px;padding:11px 5px}}
+
+  .panelIntro{margin:22px 0 6px;color:var(--muted);font-size:14px;max-width:760px}
+
+  /* grid tile layout (types / quality / living) */
+  .tilegrid{display:grid;gap:10px;margin-top:18px}
+  .tilegrid.cols5{grid-template-columns:repeat(5,1fr)}
+  .tilegrid.cols4{grid-template-columns:repeat(4,1fr)}
+  .tilegrid.cols2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.tilegrid.cols5{grid-template-columns:repeat(3,1fr)}.tilegrid.cols4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.tilegrid.cols5{grid-template-columns:repeat(2,1fr)}.tilegrid.cols2{grid-template-columns:1fr}}
+
+  .tile{border:1px solid var(--line);border-radius:12px;padding:14px 14px 13px;background:var(--panel);cursor:pointer;
+    transition:.18s;border-top:3px solid var(--line)}
+  .tile:hover{border-color:var(--accent)}
+  .tile.active{background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
+  .tile .idx{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .tile .t{font-weight:600;font-size:13.5px;margin-top:4px}
+  .tile .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4}
+
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 28px;min-height:280px;margin-top:20px}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 11px;border-radius:20px;margin-bottom:14px}
+  .detail h2{font-family:var(--disp);font-weight:600;font-size:26px;letter-spacing:-.01em}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:15px}
+  .detail .viz{margin-top:20px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:18px;overflow-x:auto}
+  .detail .note{margin-top:16px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:13px}
+  .vizlabel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+
+  .snippet{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;white-space:pre-wrap}
+  .snippet .k{color:var(--accent)}
+
+  .badbox{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media(max-width:640px){.badbox{grid-template-columns:1fr}}
+  .badbox .col{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .badbox .col.bad{border-left:3px solid var(--hotp)}
+  .badbox .col.good{border-left:3px solid var(--accent)}
+  .badbox .col .h{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+  .badbox .col p{font-size:13px}
+
+  /* pipeline layout (lifecycle) */
+  .stage{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:22px}
+  @media(max-width:820px){.stage{grid-template-columns:1fr}}
+  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start}
+  .blk{border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--panel);cursor:pointer;
+    transition:.18s;position:relative}
+  .blk:hover{border-color:var(--accent)}
+  .blk.active{border-color:var(--accent);background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
+  .blk .t{font-weight:600;font-size:13.5px}
+  .blk .s{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .arrow{height:16px;display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:13px}
+  .loopback{font-family:var(--mono);font-size:10.5px;color:var(--accent);text-align:center;margin-top:6px;padding-top:8px;border-top:1px dashed var(--line)}
+
+  .control{margin:20px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .iorow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  button.run{background:var(--accent);color:#05140d;border:none;border-radius:10px;padding:11px 20px;
+    font-family:var(--mono);font-weight:700;font-size:12.5px;cursor:pointer;letter-spacing:.04em;transition:.2s}
+  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
+  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
+
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Anatomy of a <em>Specification.</em></h1>
+  <p>A spec isn't one document — it's a family of documents, a checklist of what "good" contains, a lifecycle it moves through, and a set of practices that keep it alive after approval. Explore each layer below.</p>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="types"><span class="n">01</span>Specification Types</button>
+  <button class="tab" data-tab="quality"><span class="n">02</span>High-Quality Specification</button>
+  <button class="tab" data-tab="lifecycle"><span class="n">03</span>Lifecycle</button>
+  <button class="tab" data-tab="living"><span class="n">04</span>Living Specifications</button>
+</div>
+
+<div id="content"></div>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const PALETTE=['var(--input)','var(--core)','var(--norm)','var(--hotp)','var(--accent)','var(--output)','var(--c6)','var(--c7)','var(--c8)','var(--c9)','var(--c10)'];
+
+const TYPES=[
+ {k:'business',t:'Business',s:'Why we\'re building this',tag:'Type 01 · Commercial context',
+  lead:'Captures the commercial case: the problem worth solving, who benefits, and how success is measured in business terms. Written for sponsors and stakeholders, not engineers.',
+  chips:['Business case','ROI model','Stakeholder map','OKRs / KPIs'],
+  note:'If a business spec can\'t answer "why does this deserve budget and attention right now," it isn\'t finished.'},
+ {k:'functional',t:'Functional',s:'What the system does',tag:'Type 02 · User-facing behavior',
+  lead:'Describes observable behavior from the user\'s point of view — workflows, inputs, outputs, and business rules — without prescribing how it\'s implemented.',
+  chips:['User stories','Workflows','Business rules','State diagrams'],
+  note:'Functional specs answer "what happens when," never "which framework." That line keeps them stable while implementations change underneath.'},
+ {k:'technical',t:'Technical',s:'How it\'s built',tag:'Type 03 · Architecture & design',
+  lead:'Translates functional intent into architecture: components, data models, integration points, and the technology choices that realize the behavior.',
+  chips:['Architecture diagram','Data model','Tech stack','Sequence diagrams'],
+  note:'The technical spec is where an AI coding agent — or a new engineer — should be able to start building without guessing.'},
+ {k:'api',t:'API',s:'Contracts between systems',tag:'Type 04 · Interface contract',
+  lead:'Defines the precise, versioned contract two systems agree to: endpoints, payload schemas, status/error codes, auth, and rate limits.',
+  chips:['OpenAPI / Swagger','Request & response schemas','Error codes','Rate limits'],
+  note:'Machine-readable by design — this is often the one spec type an agent can validate against automatically, not just read.'},
+ {k:'ux',t:'UX',s:'Screens, flows, interaction',tag:'Type 05 · Experience design',
+  lead:'Specifies the experience: wireframes, navigation flows, interaction and state patterns, content tone, and accessibility requirements.',
+  chips:['Wireframes','User flows','Design system tokens','WCAG accessibility checklist'],
+  note:'A UX spec that only shows the happy-path screen leaves error states, empty states, and loading states to be improvised later.'},
+ {k:'security',t:'Security',s:'Threat model & controls',tag:'Type 06 · Risk & compliance',
+  lead:'Documents the threat model, authentication/authorization rules, data classification, and the regulatory controls the system must satisfy.',
+  chips:['Threat model (STRIDE)','AuthN / AuthZ rules','Data classification','Compliance mapping (SOC2, GDPR, HIPAA)'],
+  note:'For an AI agent building autonomously, the security spec doubles as the fence — it defines what the agent must never be allowed to weaken.'},
+ {k:'infra',t:'Infrastructure',s:'Environments & topology',tag:'Type 07 · Platform & operations',
+  lead:'Specifies deployment topology, environments, scaling policy, and infrastructure-as-code — the operational substrate the system runs on.',
+  chips:['Deployment topology','IaC (Terraform / Pulumi)','Scaling policy','DR & backup plan'],
+  note:'Increasingly generated and enforced by the platform team\'s golden paths rather than hand-written per project.'},
+ {k:'testing',t:'Testing',s:'How we prove it works',tag:'Type 08 · Verification strategy',
+  lead:'Lays out the test strategy: what gets tested, at what level (unit/integration/e2e), with what data, and in which environments.',
+  chips:['Test plan','Test cases','Synthetic test data','Coverage targets'],
+  note:'In spec-driven development this is often generated straight from acceptance criteria, so tests and requirements can\'t silently drift apart.'},
+ {k:'acceptance',t:'Acceptance',s:'The definition of done',tag:'Type 09 · Sign-off criteria',
+  lead:'The explicit checklist stakeholders use to agree the work is complete — the bridge between "the code passes tests" and "the business accepts it."',
+  chips:['Definition of Done','UAT checklist','Sign-off criteria','Demo script'],
+  note:'If acceptance criteria are ambiguous, every other spec type is just an opinion — there\'s no shared finish line.'},
+ {k:'aiagent',t:'AI Agent',s:'Guardrails for autonomous work',tag:'Type 10 · Agentic behavior',
+  lead:'The newest category: what an AI coding agent is allowed to touch, which tools it may call, and how its output is evaluated — a spec written for a non-human implementer.',
+  chips:['Tool allow-list','Guardrail rules','Prompt / context spec','Eval harness & scoring'],
+  note:'This type didn\'t exist a few years ago. As agents do more of the "execution" stage, this spec is what keeps their autonomy bounded.'}
+];
+
+const QUALITY=[
+ {k:'goals',t:'Goals',s:'The outcome we\'re after',ex:'Reduce checkout abandonment by 15% within Q3.',
+  lead:'The outcome the spec exists to produce — stated as a measurable change, not an activity.',
+  bad:'Improve the checkout experience.', good:'Reduce checkout abandonment from 22% to ≤18.7% by end of Q3, measured weekly.'},
+ {k:'scope',t:'Scope',s:'In and out of bounds',ex:'In: web checkout flow.\nOut: mobile app, B2B bulk orders.',
+  lead:'Draws the boundary explicitly — what this spec covers, and just as important, what it deliberately excludes.',
+  bad:'Covers the checkout system.', good:'In scope: web checkout (cart→payment→confirmation). Out of scope: native mobile app, B2B bulk-order flow — tracked separately.'},
+ {k:'constraints',t:'Constraints',s:'Non-negotiable limits',ex:'Must integrate with legacy SAP inventory; no new vendor contracts this quarter.',
+  lead:'Hard limits the solution must operate within — technical, budgetary, regulatory, or organizational.',
+  bad:'Should be efficient and cost-effective.', good:'Must run within existing AWS account (no new vendor); must integrate with SAP ERP via existing SOAP interface.'},
+ {k:'assumptions',t:'Assumptions',s:'What we\'re taking as given',ex:'Payment gateway uptime ≥ 99.9%; users have a valid email on file.',
+  lead:'Facts treated as true without proof — surfaced explicitly so they can be challenged before they become surprises.',
+  bad:'The system will work as expected.', good:'Assumes Stripe SLA of 99.9% uptime holds; assumes 95%+ of users have verified email at checkout time.'},
+ {k:'dependencies',t:'Dependencies',s:'What this relies on',ex:'Requires Fraud-Check API v3; blocked on Identity team\'s SSO rollout.',
+  lead:'Other teams, systems, or specs this one can\'t proceed without — named, not implied.',
+  bad:'Depends on other teams finishing their work.', good:'Blocked on Identity team SSO GA (target: Aug 15); requires Fraud-Check API v3 (owner: Risk Platform).'},
+ {k:'rules',t:'Business Rules',s:'Policy encoded as logic',ex:'Orders >$10,000 require manager approval before checkout completes.',
+  lead:'The policies the system must enforce — the "if this, then that" logic that isn\'t obvious from the goal alone.',
+  bad:'Apply appropriate approval logic.', good:'IF order total > $10,000 THEN require manager approval (role=MANAGER) before payment capture, ELSE proceed.'},
+ {k:'acceptance',t:'Acceptance Criteria',s:'Testable pass/fail statements',ex:'Given a valid cart, when user submits payment, then confirmation shows within 2s.',
+  lead:'Concrete, testable conditions — usually Given/When/Then — that prove the goal has actually been met.',
+  bad:'Checkout should work correctly.', good:'Given a valid cart and payment method, when the user submits payment, then an order confirmation renders within 2 seconds.'},
+ {k:'edge',t:'Edge Cases',s:'What breaks the happy path',ex:'Cart abandoned mid-payment; duplicate submit on double-click; currency rounding at 3 decimals.',
+  lead:'The unusual, boundary, and concurrent situations the happy-path description conveniently skips.',
+  bad:'Handle errors gracefully.', good:'Double-click on Pay must not create duplicate orders (idempotency key required); mid-payment tab close must release inventory hold after 10 min.'},
+ {k:'nfr',t:'NFRs',s:'How well, not just what',ex:'P95 latency < 300ms; 99.95% availability; WCAG 2.1 AA.',
+  lead:'Non-functional requirements: performance, availability, accessibility, scalability — quality attributes, not features.',
+  bad:'The system should be fast and reliable.', good:'P95 response time < 300ms under 500 rps; 99.95% monthly availability; WCAG 2.1 AA conformance on all checkout screens.'},
+ {k:'failure',t:'Failure Conditions',s:'What happens when it breaks',ex:'Payment gateway timeout → retry 3x with backoff, then queue for manual review.',
+  lead:'Explicit behavior for the failure paths — what the system does, not just what it should avoid doing.',
+  bad:'Handle payment failures appropriately.', good:'On gateway timeout: retry 3x with exponential backoff (1s/2s/4s); on final failure, hold order and notify user + queue for manual review within 15 min.'},
+ {k:'guardrails',t:'Guardrails',s:'Bounds on the implementer',ex:'Agent may modify checkout-service code only; must not touch payments-core or run migrations unsupervised.',
+  lead:'Explicit limits on what the implementer — human or AI agent — is authorized to change or execute.',
+  bad:'Implement carefully and don\'t break anything.', good:'Agent may edit /checkout-service only; may not modify /payments-core; may not run DB migrations without human approval step.'},
+ {k:'metrics',t:'Success Metrics',s:'How we\'ll know it worked',ex:'Cart abandonment ↓15%, support tickets ↓20%, checkout completion time ↓1.2s avg.',
+  lead:'The measurements checked after launch to confirm the goal was actually achieved in production — closing the loop back to Goals.',
+  bad:'Monitor performance after launch.', good:'Track weekly: cart abandonment rate (target ≤18.7%), checkout-related support tickets (target ↓20%), P95 completion time (target ↓1.2s).'}
+];
+
+const LIFECYCLE=[
+ {k:'discovery',t:'Discovery',s:'Explore the problem space',tag:'Stage 01',
+  lead:'Stakeholders and researchers explore the problem before committing to a solution — interviews, data, and rough goals, not yet a formal document.',
+  chips:['Stakeholder interviews','Problem framing','Competitive/market scan','Rough goals & constraints'],
+  out:'Output: a problem statement and a first-pass goal, loose enough to still be wrong.'},
+ {k:'refinement',t:'Refinement',s:'Turn intent into structure',tag:'Stage 02',
+  lead:'The rough problem statement is structured into a real spec: scope, acceptance criteria, edge cases, NFRs — the anatomy from tab 02, filled in.',
+  chips:['Draft acceptance criteria','Identify edge cases & NFRs','Cross-functional input','Iterative review drafts'],
+  out:'Output: a reviewable draft spec, precise enough to disagree with.'},
+ {k:'approval',t:'Approval',s:'Stakeholders sign off',tag:'Stage 03',
+  lead:'Business, technical, and security stakeholders formally review and sign off. The spec is baselined — a known version everyone agreed to.',
+  chips:['Architecture review','Security review','Business sign-off','Version baseline (v1.0)'],
+  out:'Output: an approved, versioned spec — the source of truth execution will build against.'},
+ {k:'execution',t:'Execution',s:'Build against the spec',tag:'Stage 04',
+  lead:'The approved spec drives implementation — by a human team, an AI coding agent, or both — with the spec as the primary artifact, code as the derived one.',
+  chips:['Human implementation','AI agent implementation','Spec-generated tests','Continuous diff-vs-spec checks'],
+  out:'Output: working code and tests, traceable back to specific spec clauses.'},
+ {k:'validation',t:'Validation',s:'Prove it matches the spec',tag:'Stage 05',
+  lead:'The implementation is verified against acceptance criteria and NFRs — not just "does it work" but "does it match what was specified."',
+  chips:['Acceptance testing','NFR verification','UAT walkthrough','Validation report'],
+  out:'Output: a validation report — pass/fail against every acceptance criterion, not a vibe check.'},
+ {k:'evolution',t:'Continuous Evolution',s:'The spec keeps living',tag:'Stage 06',
+  lead:'Requirements change, reality intrudes, and the spec is amended — not abandoned. The update feeds back into Discovery/Refinement for the next version.',
+  chips:['Change requests','Impact analysis','Version bump (v1.1 / v2.0)','Feeds back into Discovery'],
+  out:'Output: a new spec version and a changelog — the loop closes and starts again.'}
+];
+
+const LIVING=[
+ {k:'versioning',t:'Versioning',s:'Specs are versioned, not overwritten',tag:'Practice 01',
+  lead:'Specs are treated like code: diffable, versioned, and traceable to the release they governed — not silently overwritten.',
+  chips:['v1.0 baseline','v1.1 minor clarification','v2.0 breaking scope change','Git-tracked spec files'],
+  note:'A spec with no version history can\'t tell you which requirement was live when a given bug shipped.'},
+ {k:'reviews',t:'Reviews',s:'Scheduled and triggered checkpoints',tag:'Practice 02',
+  lead:'Specs are reviewed on a cadence and whenever triggered by a change request — not just once at approval.',
+  chips:['Peer review','Architecture review board','Security review','Stakeholder walkthrough'],
+  note:'A spec no one has reviewed since launch has quietly drifted from what the system actually does.'},
+ {k:'change',t:'Change Management',s:'A formal process to amend',tag:'Practice 03',
+  lead:'Amending an approved spec follows a defined process — impact analysis and re-approval, not a quiet edit.',
+  chips:['Change request','Impact analysis','Re-approval','Linked to version bump'],
+  note:'Without change management, "living" specs slide into specs nobody trusts — because anyone could\'ve edited them, unreviewed.'},
+ {k:'ownership',t:'Ownership',s:'Someone is accountable',tag:'Practice 04',
+  lead:'Every spec has a named, accountable owner — plus clear contributors, approvers, and who\'s kept informed.',
+  chips:['Spec owner (accountable)','Contributors','Approvers','Consulted / informed'],
+  note:'A spec with no owner is a spec nobody will notice has gone stale.'}
+];
+
+/* ---------- RENDER HELPERS ---------- */
+const content=document.getElementById('content');
+
+function chipsHtml(list){return '<div class="chips">'+list.map(c=>`<span class="chip">${c}</span>`).join('')+'</div>';}
+
+function renderGrid(cfg){
+  // cfg: {items, cols, introText, kind:'types'|'quality'|'living'}
+  let activeIdx=0;
+  const gridId='grid_'+cfg.kind, detailId='detail_'+cfg.kind;
+  let html=`<p class="panelIntro">${cfg.introText}</p>
+    <div class="tilegrid ${cfg.cols}" id="${gridId}"></div>
+    <div class="detail" id="${detailId}"></div>`;
+  content.innerHTML=html;
+  const grid=document.getElementById(gridId);
+  const detail=document.getElementById(detailId);
+
+  cfg.items.forEach((it,i)=>{
+    const tile=document.createElement('div');
+    tile.className='tile'+(i===0?' active':'');
+    tile.style.borderTopColor=PALETTE[i%PALETTE.length];
+    tile.innerHTML=`<div class="idx">${String(i+1).padStart(2,'0')}</div><div class="t">${it.t}</div><div class="s">${it.s}</div>`;
+    tile.addEventListener('click',()=>{
+      [...grid.children].forEach(c=>c.classList.remove('active'));
+      tile.classList.add('active');
+      showDetail(i);
+    });
+    grid.appendChild(tile);
+  });
+
+  function showDetail(i){
+    const it=cfg.items[i];
+    const color=PALETTE[i%PALETTE.length];
+    let vizHtml='';
+    if(cfg.kind==='types'){
+      vizHtml=`<div class="vizlabel">Typical artifacts</div>${chipsHtml(it.chips)}`;
+    } else if(cfg.kind==='living'){
+      vizHtml=`<div class="vizlabel">In practice</div>${chipsHtml(it.chips)}`;
+    } else if(cfg.kind==='quality'){
+      vizHtml=`<div class="vizlabel">Example clause</div><div class="snippet"><span class="k">${it.t}:</span> ${it.ex.replace(/\n/g,'<br>')}</div>
+        <div class="badbox">
+          <div class="col bad"><div class="h">✗ Too vague</div><p>${it.bad}</p></div>
+          <div class="col good"><div class="h">✓ High quality</div><p>${it.good}</p></div>
+        </div>`;
+    }
+    const noteText = it.note || it.out || '';
+    detail.innerHTML=`<span class="tag" style="background:${color}22;color:${color}">${it.tag}</span>
+      <h2>${it.t}</h2><p class="lead">${it.lead}</p>
+      <div class="viz">${vizHtml}</div>
+      ${noteText?`<div class="note">${noteText}</div>`:''}`;
+  }
+  showDetail(0);
+}
+
+function renderLifecycle(){
+  const order=LIFECYCLE.map(x=>x.k);
+  content.innerHTML=`<p class="panelIntro">A spec doesn't end at approval — it moves through a loop, and the last stage feeds the first.</p>
+    <div class="control"><div class="iorow">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Lifecycle</span>
+      <button class="run" id="lcRun">▶ Play the loop</button>
+    </div></div>
+    <div class="stage">
+      <div class="pipe" id="lcPipe"></div>
+      <div class="detail" id="lcDetail"></div>
+    </div>
+    <div class="loopback">↻ Continuous Evolution feeds back into Discovery for the next version</div>`;
+  const pipe=document.getElementById('lcPipe');
+  const detail=document.getElementById('lcDetail');
+  LIFECYCLE.forEach((st,i)=>{
+    const blk=document.createElement('div');
+    blk.className='blk'+(i===0?' active':'');
+    blk.style.borderLeft=`3px solid ${PALETTE[i%PALETTE.length]}`;
+    blk.dataset.k=st.k;
+    blk.innerHTML=`<div class="t">${st.t}</div><div class="s">${st.s}</div>`;
+    blk.addEventListener('click',()=>show(st.k));
+    pipe.appendChild(blk);
+    if(i<LIFECYCLE.length-1){
+      const ar=document.createElement('div');
+      ar.className='arrow'; ar.textContent='↓';
+      pipe.appendChild(ar);
+    }
+  });
+  function show(k){
+    const i=order.indexOf(k);
+    const st=LIFECYCLE[i];
+    const color=PALETTE[i%PALETTE.length];
+    [...pipe.children].forEach(c=>c.classList && c.classList.contains('blk') && c.classList.toggle('active',c.dataset.k===k));
+    detail.innerHTML=`<span class="tag" style="background:${color}22;color:${color}">${st.tag}</span>
+      <h2>${st.t}</h2><p class="lead">${st.lead}</p>
+      <div class="viz"><div class="vizlabel">Typical activities</div>${chipsHtml(st.chips)}</div>
+      <div class="note">${st.out}</div>`;
+  }
+  show('discovery');
+
+  const runBtn=document.getElementById('lcRun');
+  runBtn.addEventListener('click',()=>{
+    runBtn.disabled=true;
+    let i=0;
+    const tick=()=>{
+      if(i>=order.length){runBtn.disabled=false;return;}
+      show(order[i]);
+      i++;
+      setTimeout(tick,900);
+    };
+    tick();
+  });
+}
+
+/* ---------- TAB SWITCHING ---------- */
+const tabs=[...document.querySelectorAll('.tab')];
+function renderTab(name){
+  tabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  if(name==='types'){
+    renderGrid({items:TYPES,cols:'cols5',kind:'types',
+      introText:'Ten lenses on the same system. No single document is "the spec" — together they cover why, what, how, and for whom.'});
+  } else if(name==='quality'){
+    renderGrid({items:QUALITY,cols:'cols4',kind:'quality',
+      introText:'Twelve ingredients that separate a spec someone can build from safely from one that just sounds thorough. Click each to see a vague version next to a high-quality one.'});
+  } else if(name==='lifecycle'){
+    renderLifecycle();
+  } else if(name==='living'){
+    renderGrid({items:LIVING,cols:'cols2',kind:'living',
+      introText:'Approval isn\'t the finish line. These four practices are what keep a spec accurate months after it was signed off.'});
+  }
+}
+tabs.forEach(t=>t.addEventListener('click',()=>renderTab(t.dataset.tab)));
+renderTab('types');
+</script>
+</body>
+</html>
