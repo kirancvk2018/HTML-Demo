@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Burn: Probabilistic vs Deterministic Prompting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
+    --muted:#8a8d99; --line:#2a2d39;
+    --weak:#ff6b5b; --strong:#7df0c0; --hedge:#ffb454; --retry:#ff4d6d; --input:#5b9dff; --output:#b06cff;
+    --accent:#7df0c0;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%,rgba(255,107,91,.07),transparent 40%),
+                     radial-gradient(circle at 88% 92%,rgba(125,240,192,.08),transparent 42%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4.6vw,44px);line-height:1.06;letter-spacing:-.02em}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header p{color:var(--muted);max-width:760px;margin-top:14px;font-size:15.5px}
+  .disclaimer{margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted);border-left:2px solid var(--line);padding-left:12px;max-width:760px}
+
+  .control{margin:28px 0;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 24px}
+  .ctrlrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .modelpick label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  select#model{background:#0a0b0f;border:1px solid var(--line);border-radius:12px;padding:12px 16px;color:var(--ink);
+    font-family:var(--mono);font-size:14px;min-width:260px;cursor:pointer}
+  select#model:focus{outline:none;border-color:var(--accent)}
+  .modelnote{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;max-width:340px}
+  button.run{background:var(--accent);color:#05140d;border:none;border-radius:12px;padding:15px 28px;
+    font-family:var(--mono);font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.03em;transition:.2s}
+  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
+  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
+
+  .panes{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:8px}
+  @media(max-width:900px){.panes{grid-template-columns:1fr}}
+  .pane{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px;display:flex;flex-direction:column}
+  .pane.weakpane{border-top:3px solid var(--weak)}
+  .pane.strongpane{border-top:3px solid var(--strong)}
+  .panehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .panehead h3{font-family:var(--disp);font-weight:600;font-size:19px}
+  .panehead .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+  .weakpane .tag{background:rgba(255,107,91,.14);color:#ff9d92}
+  .strongpane .tag{background:rgba(125,240,192,.14);color:var(--accent)}
+  textarea.promptbox{width:100%;min-height:130px;background:#0a0b0f;border:1px solid var(--line);border-radius:12px;
+    padding:14px;color:var(--ink);font-family:var(--mono);font-size:13px;resize:vertical}
+  textarea.promptbox:focus{outline:none;border-color:var(--ink)}
+
+  .gauge{margin-top:14px}
+  .gaugelabel{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  .gaugetrack{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+  .gaugefill{height:100%;border-radius:5px;transition:width .5s ease;width:0%}
+
+  .tokenstream{margin-top:16px;background:#0a0b0f;border:1px solid var(--line);border-radius:12px;padding:14px;min-height:74px}
+  .streamlabel{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px}
+  .chip{width:9px;height:16px;border-radius:2px;opacity:0;transform:scaleY(.3);transform-origin:bottom;animation:pop .25s forwards}
+  @keyframes pop{to{opacity:1;transform:scaleY(1)}}
+  .chip.input{background:var(--input)}
+  .chip.output{background:var(--output)}
+  .chip.hedge{background:var(--hedge)}
+  .chip.retry{background:var(--retry)}
+
+  .breakdown{margin-top:16px}
+  .bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-family:var(--mono);font-size:11.5px}
+  .bar .lbl{width:96px;text-align:right;color:var(--muted)}
+  .bar .track{flex:1;height:14px;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px;width:0%;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .bar .val{width:56px;color:var(--ink)}
+
+  .totalrow{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+  .totalrow .lbl{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .totalrow .num{font-family:var(--disp);font-weight:900;font-size:34px}
+  .weakpane .totalrow .num{color:var(--weak)}
+  .strongpane .totalrow .num{color:var(--strong)}
+
+  .verdict{display:none;margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:24px 26px;text-align:center}
+  .verdict.show{display:block}
+  .verdict .big{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4vw,38px);color:var(--accent)}
+  .verdict .big em{color:var(--weak);font-style:normal}
+  .verdict p{color:var(--muted);margin-top:10px;font-size:13.5px;max-width:640px;margin-left:auto;margin-right:auto}
+
+  .why{margin-top:32px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px 26px}
+  .why h3{font-family:var(--disp);font-weight:600;font-size:20px}
+  .whygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:16px}
+  .whyitem{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .whyitem .t{font-weight:600;font-size:13.5px;color:var(--accent)}
+  .whyitem p{color:var(--muted);font-size:12.5px;margin-top:6px}
+
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:24px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Same task, two prompts: watch the <em>token burn</em> diverge.</h1>
+  <p>A vague, probabilistic prompt doesn't just risk a worse answer — it costs more to run. The model has to hedge, restate assumptions, sometimes ask a follow-up, occasionally retry. A deterministic prompt with explicit scope, format, and success criteria skips most of that. Pick a model, run both prompts below, and watch the token count diverge live.</p>
+  <div class="disclaimer">This is an illustrative simulation for teaching the concept — token counts, model "verbosity" traits, and cost multipliers below are heuristic and relative, not measured benchmarks of any real model's actual output.</div>
+</header>
+
+<div class="control">
+  <div class="ctrlrow">
+    <div class="modelpick">
+      <label>Model</label>
+      <select id="model">
+        <option value="gpt55">GPT-5.5 (OpenAI)</option>
+        <option value="opus" selected>Claude Opus 4.8</option>
+        <option value="sonnet">Claude Sonnet 5</option>
+        <option value="haiku">Claude Haiku 4.5</option>
+      </select>
+      <div class="modelnote" id="modelNote"></div>
+    </div>
+    <button class="run" id="runBtn">▶ Run both prompts</button>
+  </div>
+</div>
+
+<div class="panes">
+  <div class="pane weakpane">
+    <div class="panehead"><h3>Weak / probabilistic prompt</h3><span class="tag">high ambiguity</span></div>
+    <textarea class="promptbox" id="weakPrompt" spellcheck="false">Analyze this customer's transaction history and help figure out if there's anything we should be worried about. Try to improve the summary if you can and let me know what you think.</textarea>
+    <div class="gauge">
+      <div class="gaugelabel"><span>Determinism score</span><span id="weakScoreLabel">0</span></div>
+      <div class="gaugetrack"><div class="gaugefill" id="weakGauge" style="background:var(--weak)"></div></div>
+    </div>
+    <div class="tokenstream"><div class="streamlabel">token stream</div><div class="chips" id="weakChips"></div></div>
+    <div class="breakdown" id="weakBreakdown"></div>
+    <div class="totalrow"><span class="lbl">Total tokens burned</span><span class="num" id="weakTotal">—</span></div>
+  </div>
+
+  <div class="pane strongpane">
+    <div class="panehead"><h3>Deterministic prompt</h3><span class="tag">low ambiguity</span></div>
+    <textarea class="promptbox" id="strongPrompt" spellcheck="false">Review the attached transaction log only. Flag any transaction over $10,000 with no matching KYC note. Do not flag anything else. If a required field is missing, respond "Insufficient Information". Return JSON: [{transaction_id, flag_reason}]. Do not include commentary outside the JSON.</textarea>
+    <div class="gauge">
+      <div class="gaugelabel"><span>Determinism score</span><span id="strongScoreLabel">0</span></div>
+      <div class="gaugetrack"><div class="gaugefill" id="strongGauge" style="background:var(--strong)"></div></div>
+    </div>
+    <div class="tokenstream"><div class="streamlabel">token stream</div><div class="chips" id="strongChips"></div></div>
+    <div class="breakdown" id="strongBreakdown"></div>
+    <div class="totalrow"><span class="lbl">Total tokens burned</span><span class="num" id="strongTotal">—</span></div>
+  </div>
+</div>
+
+<div class="verdict" id="verdict">
+  <div class="big">The weak prompt burned <em id="verdictMult">—</em> more tokens for the same task.</div>
+  <p id="verdictSub"></p>
+</div>
+
+<div class="why">
+  <h3>Why determinism saves tokens</h3>
+  <div class="whygrid">
+    <div class="whyitem"><div class="t">No hedging</div><p>A scoped, explicit prompt doesn't need the model to caveat, restate assumptions, or cover multiple interpretations "just in case."</p></div>
+    <div class="whyitem"><div class="t">Fewer retries</div><p>Ambiguous asks are more likely to miss what you actually wanted, forcing a follow-up prompt that re-burns most of the original context.</p></div>
+    <div class="whyitem"><div class="t">No clarifying loop</div><p>A well-scoped prompt answers its own likely follow-up questions upfront instead of triggering a back-and-forth.</p></div>
+    <div class="whyitem"><div class="t">Structured output parses cheap</div><p>A defined JSON/table shape is compact to generate and cheap to validate downstream, versus free-form prose that has to be re-read and re-interpreted.</p></div>
+  </div>
+</div>
+
+<div class="hint">Tip: edit either prompt and re-run — the determinism score updates live as you type.</div>
+</div>
+
+<script>
+const MODELS = {
+  gpt55:  {name:'GPT-5.5',            baseVerbosity:1.15, hedgeFactor:1.25, retrySensitivity:1.15, note:'Illustrative trait profile: tends toward longer, more exploratory completions under ambiguity.'},
+  opus:   {name:'Claude Opus 4.8',    baseVerbosity:1.00, hedgeFactor:0.95, retrySensitivity:0.85, note:'Illustrative trait profile: strong instruction-following; deep reasoning tasks, moderate verbosity.'},
+  sonnet: {name:'Claude Sonnet 5',    baseVerbosity:0.92, hedgeFactor:0.85, retrySensitivity:0.80, note:'Illustrative trait profile: balanced speed/quality; concise by default under clear instructions.'},
+  haiku:  {name:'Claude Haiku 4.5',   baseVerbosity:0.68, hedgeFactor:0.75, retrySensitivity:0.75, note:'Illustrative trait profile: fastest, terse by default; ambiguity has the largest relative impact.'}
+};
+
+const VAGUE = [/\banaly[sz]e\b/i,/\bimprove\b/i,/\boptimi[sz]e\b/i,/\benhance\b/i,/\bhelp\b/i,/\bfigure out\b/i,/\bwhat you think\b/i,/\btry to\b/i,/\banything\b/i,/\bmaybe\b/i,/\bsomething\b/i];
+const SPECIFIC = [/\bjson\b/i,/\bformat:\s*/i,/\bonly\b/i,/\bdo not\b/i,/\bmust\b/i,/\bif\b/i,/\bexactly\b/i,/\breturn\b/i,/\bschema\b/i,/\btable\b/i,/\binsufficient information\b/i,/\bcite\b/i,/\bconfidence\b/i];
+
+function determinism(text){
+  let score = 55;
+  VAGUE.forEach(re=>{ if(re.test(text)) score -= 9; });
+  SPECIFIC.forEach(re=>{ if(re.test(text)) score += 7; });
+  const words = text.trim()? text.trim().split(/\s+/).length : 0;
+  if(words < 15) score -= 8;
+  return Math.max(4, Math.min(96, Math.round(score)));
+}
+
+function wordCount(text){ return text.trim()? text.trim().split(/\s+/).length : 0; }
+
+function simulate(text, model){
+  const score = determinism(text);
+  const ambiguity = (100 - score) / 100;
+  const inputTokens = Math.round(wordCount(text) * 1.35);
+  const baseOutput = Math.round(90 * model.baseVerbosity);
+  const hedgeTokens = Math.round(baseOutput * ambiguity * model.hedgeFactor * 0.9);
+  const retryChance = ambiguity * model.retrySensitivity;
+  const retryTokens = retryChance > 0.42 ? Math.round((inputTokens + baseOutput) * 0.75) : Math.round(retryChance * baseOutput * 0.35);
+  const outputTokens = baseOutput;
+  const total = inputTokens + outputTokens + hedgeTokens + retryTokens;
+  return {score, inputTokens, outputTokens, hedgeTokens, retryTokens, total, retryTriggered: retryChance > 0.42};
+}
+
+function renderGauge(prefix, score, color){
+  document.getElementById(prefix+'ScoreLabel').textContent = score + ' / 100';
+  document.getElementById(prefix+'Gauge').style.width = score+'%';
+}
+
+function updateGaugesLive(){
+  const wScore = determinism(document.getElementById('weakPrompt').value);
+  const sScore = determinism(document.getElementById('strongPrompt').value);
+  renderGauge('weak', wScore);
+  renderGauge('strong', sScore);
+}
+
+function buildChips(containerId, sim){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const scale = 0.6; // visual scale-down
+  const counts = {
+    input: Math.max(1, Math.round(sim.inputTokens*scale/4)),
+    output: Math.max(1, Math.round(sim.outputTokens*scale/4)),
+    hedge: Math.round(sim.hedgeTokens*scale/4),
+    retry: Math.round(sim.retryTokens*scale/4)
+  };
+  const seq = [];
+  for(let i=0;i<counts.input;i++) seq.push('input');
+  for(let i=0;i<counts.output;i++) seq.push('output');
+  for(let i=0;i<counts.hedge;i++) seq.push('hedge');
+  for(let i=0;i<counts.retry;i++) seq.push('retry');
+  const capped = seq.slice(0, 140);
+  capped.forEach((type,i)=>{
+    const c = document.createElement('div');
+    c.className = 'chip '+type;
+    c.style.animationDelay = (i*8)+'ms';
+    el.appendChild(c);
+  });
+}
+
+function buildBreakdown(containerId, sim){
+  const el = document.getElementById(containerId);
+  const rows = [
+    ['Input', sim.inputTokens, 'var(--input)'],
+    ['Output', sim.outputTokens, 'var(--output)'],
+    ['Hedging', sim.hedgeTokens, 'var(--hedge)'],
+    ['Retry loop', sim.retryTokens, 'var(--retry)']
+  ];
+  const max = Math.max(...rows.map(r=>r[1]), 1);
+  el.innerHTML = rows.map(([lbl,val,color])=>`
+    <div class="bar"><span class="lbl">${lbl}</span><div class="track"><div class="fill" style="background:${color}"></div></div><span class="val">${val}</span></div>
+  `).join('');
+  requestAnimationFrame(()=>{
+    [...el.querySelectorAll('.fill')].forEach((f,i)=>{ f.style.width = (rows[i][1]/max*100)+'%'; });
+  });
+}
+
+function animateNumber(elId, to, duration){
+  const el = document.getElementById(elId);
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(eased*to).toLocaleString();
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+document.getElementById('model').addEventListener('change', e=>{
+  document.getElementById('modelNote').textContent = MODELS[e.target.value].note;
+});
+document.getElementById('modelNote').textContent = MODELS[document.getElementById('model').value].note;
+
+document.getElementById('weakPrompt').addEventListener('input', updateGaugesLive);
+document.getElementById('strongPrompt').addEventListener('input', updateGaugesLive);
+
+document.getElementById('runBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  const model = MODELS[document.getElementById('model').value];
+  const weakText = document.getElementById('weakPrompt').value;
+  const strongText = document.getElementById('strongPrompt').value;
+
+  const weakSim = simulate(weakText, model);
+  const strongSim = simulate(strongText, model);
+
+  renderGauge('weak', weakSim.score);
+  renderGauge('strong', strongSim.score);
+  buildChips('weakChips', weakSim);
+  buildChips('strongChips', strongSim);
+  buildBreakdown('weakBreakdown', weakSim);
+  buildBreakdown('strongBreakdown', strongSim);
+  animateNumber('weakTotal', weakSim.total, 900);
+  animateNumber('strongTotal', strongSim.total, 900);
+
+  setTimeout(()=>{
+    const mult = (weakSim.total / Math.max(1,strongSim.total));
+    document.getElementById('verdictMult').textContent = mult.toFixed(1)+'×';
+    const retryNote = weakSim.retryTriggered ? ' The weak prompt was ambiguous enough to trigger a simulated retry/clarification pass.' : '';
+    document.getElementById('verdictSub').textContent =
+      `On ${model.name}, the vague prompt spent ${weakSim.hedgeTokens} tokens hedging and ${weakSim.retryTokens} tokens on retry overhead alone — versus ${strongSim.hedgeTokens + strongSim.retryTokens} combined for the deterministic version.${retryNote}`;
+    document.getElementById('verdict').classList.add('show');
+    btn.disabled = false;
+  }, 1000);
+});
+
+updateGaugesLive();
+</script>
+</body>
+</html>
