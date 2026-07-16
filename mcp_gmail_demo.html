@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How MCP Delivers Claude's Request to Gmail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#eef4fb; --card:#ffffff; --ink:#1c2541; --muted:#5b6a86; --line:#c7d3e0;
+    --client:#1c2541; --protocol:#a6790a; --security:#c53030; --gmailc:#0f766e;
+    --stampgold:#c9a13b;
+    --disp:'Special Elite',monospace; --body:'Work Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.55;
+    background-image:radial-gradient(circle at 90% 4%,rgba(28,37,65,.05),transparent 40%),
+                      radial-gradient(circle at 4% 96%,rgba(15,118,110,.06),transparent 45%);}
+
+  .stripe{height:9px;background:repeating-linear-gradient(45deg,#c53030 0 10px,#fff 10px 14px,#1c2541 14px 24px,#fff 24px 28px)}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:44px 26px 120px}
+  header{position:relative}
+  header .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--protocol)}
+  header h1{font-family:var(--disp);font-weight:400;font-size:clamp(24px,4.4vw,42px);line-height:1.28;letter-spacing:-.01em;margin-top:10px;max-width:760px}
+  header h1 em{font-style:normal;color:var(--gmailc);text-decoration:underline;text-decoration-style:wavy;text-decoration-color:var(--stampgold)}
+  header p{color:var(--muted);max-width:640px;margin-top:16px;font-size:15.5px}
+
+  .control{margin:32px 0 6px;background:var(--card);border:1px solid var(--line);border-radius:4px;
+    padding:20px 22px 22px;position:relative;box-shadow:0 1px 0 var(--line),0 10px 24px -18px rgba(28,37,65,.4)}
+  .control::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;
+    background:repeating-linear-gradient(-45deg,#c53030 0 6px,#fff 6px 9px,#1c2541 9px 15px,#fff 15px 18px);border-radius:4px 0 0 4px}
+  .control label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;margin-left:10px}
+  .iorow{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-left:10px}
+  .prompt{flex:1;min-width:260px;background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    padding:13px 15px;color:var(--ink);font-family:var(--mono);font-size:14px}
+  .prompt:focus{outline:none;border-color:var(--gmailc)}
+  button.run{background:var(--ink);color:#fff;border:none;border-radius:3px;padding:13px 22px;
+    font-family:var(--disp);font-size:14px;cursor:pointer;letter-spacing:.03em;transition:.2s}
+  button.run:hover{background:var(--gmailc)}
+  button.run:disabled{opacity:.4;cursor:wait}
+  .answer{margin-top:15px;margin-left:10px;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+  .answer .tok{font-family:var(--disp);font-size:17px;color:var(--gmailc);opacity:0;transition:.4s}
+  .answer .tok.show{opacity:1}
+
+  /* route */
+  .routewrap{margin-top:40px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:22px 8px 16px;overflow-x:auto}
+  .route{position:relative;display:flex;align-items:flex-start;min-width:1180px;padding:0 18px}
+  .route::before{content:"";position:absolute;top:22px;left:18px;right:18px;height:0;
+    border-top:2px dashed var(--line);z-index:0}
+  .stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:88px;cursor:pointer;flex-shrink:0}
+  .mark{width:42px;height:42px;border-radius:50%;border:2px dashed var(--line);background:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--muted);
+    transition:.2s;transform:rotate(-4deg)}
+  .stop .lbl{font-family:var(--mono);font-size:9.5px;text-align:center;color:var(--muted);margin-top:8px;line-height:1.35;letter-spacing:.02em}
+  .stop.active .mark{border-style:solid;border-color:var(--stop-c,var(--ink));color:var(--stop-c,var(--ink));
+    background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--stop-c,var(--ink)) 12%,transparent);
+    animation:thunk .4s ease-out}
+  .stop.active .lbl{color:var(--ink);font-weight:600}
+  .stop.done .mark::after{content:"✓";position:absolute;transform:translate(13px,-15px) rotate(14deg);
+    font-family:var(--disp);font-size:12px;color:var(--gmailc)}
+  @keyframes thunk{0%{transform:scale(1.5) rotate(-14deg);opacity:.3}60%{transform:scale(.92) rotate(-2deg)}100%{transform:scale(1) rotate(-4deg)}}
+  #flyer{position:absolute;top:8px;font-size:20px;transition:left .5s cubic-bezier(.3,.7,.2,1);z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.2))}
+
+  /* detail postcard */
+  .detail{margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:4px;
+    padding:30px 32px 28px;position:relative;min-height:420px;
+    background-image:radial-gradient(circle,var(--paper) 3px,transparent 3.4px);
+    background-size:16px 16px;background-position:0 -8px;background-repeat:repeat-x;background-origin:border-box;}
+  .detail::before{content:"";position:absolute;top:8px;left:0;right:0;height:22px;background:var(--card)}
+  .detail-inner{position:relative;z-index:1}
+  .stamp{position:absolute;top:26px;right:32px;width:74px;height:88px;border:2px solid var(--stop-c,var(--ink));
+    border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--stop-c,var(--ink));text-align:center;
+    background-image:radial-gradient(circle,var(--card) 2.6px,transparent 3px);
+    background-size:11px 11px;transform:rotate(4deg);padding:4px}
+  .stamp b{font-family:var(--disp);font-size:15px;display:block;margin-top:4px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;margin-bottom:12px;border:1px solid currentColor}
+  .detail h2{font-family:var(--disp);font-weight:400;font-size:25px;max-width:70%}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:14.5px;max-width:78%}
+  .detail .viz{margin-top:20px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:18px 20px;overflow-x:auto}
+  .detail .note{margin-top:16px;color:var(--muted);font-size:13px;border-top:1px dashed var(--line);padding-top:13px;max-width:78%}
+  .detail .boundary{margin-top:13px;font-family:var(--mono);font-size:11.5px;color:var(--security);
+    border:1px dashed var(--security);border-radius:4px;padding:9px 12px;background:rgba(197,48,48,.05);max-width:78%}
+
+  .code{font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--ink);line-height:1.65}
+  .code .k{color:var(--protocol)} .code .s{color:var(--gmailc)} .code .n{color:var(--security)} .code .c{color:var(--muted)}
+
+  .toollist{display:flex;flex-direction:column;gap:7px}
+  .tool{border:1px solid var(--line);border-radius:3px;padding:9px 12px;background:#fff}
+  .tool .n{font-family:var(--mono);font-size:12px;color:var(--gmailc)}
+  .tool .d{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .checklist{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:12.5px}
+  .checklist .row{display:flex;gap:8px;align-items:flex-start}
+  .checklist .ok{color:var(--gmailc)}
+
+  .authrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .authchip{font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .authchip.on{border-color:var(--security);color:var(--security);background:rgba(197,48,48,.06)}
+
+  .env{font-family:var(--mono);font-size:12.5px;color:var(--ink);background:#fff;padding:10px 13px;border-radius:3px;border:1px dashed var(--line)}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;border:1px solid currentColor}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:18px;text-align:center}
+
+  .connmap{margin-top:36px;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:26px}
+  .connmap h3{font-family:var(--disp);font-weight:400;font-size:20px;margin-bottom:6px}
+  .connmap p{color:var(--muted);font-size:13.5px;max-width:640px;margin-bottom:18px}
+  .keypoints{margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .kp{border:1px solid var(--line);border-radius:3px;padding:14px 15px;background:var(--paper)}
+  .kp .num{font-family:var(--mono);font-size:10.5px;color:var(--security)}
+  .kp .tt{font-family:var(--disp);font-size:15px;margin-top:5px}
+  .kp .dd{font-size:12px;color:var(--muted);margin-top:5px}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Par Avion · Return Receipt Requested</div>
+  <h1>Follow a request through the postal system of MCP — from Claude's desk to your <em>Gmail</em> inbox and back.</h1>
+  <p>Every hop below is a real checkpoint a Gmail request passes through: a local post office (the host), a mail route (the transport), a customs counter (auth), and Gmail's own sorting facility (its REST API). Tap any stop, or send the letter and watch it travel.</p>
+</header>
+
+<div class="control">
+  <label>Write your request to Claude</label>
+  <div class="iorow">
+    <input class="prompt" id="prompt" value="Find unread mail from my manager and draft a reply" spellcheck="false">
+    <button class="run" id="run">Send it →</button>
+  </div>
+  <div class="answer">
+    <span>Delivered:</span>
+    <span class="tok" id="outTok">Draft ready in Gmail</span>
+  </div>
+</div>
+
+<div class="routewrap">
+  <div class="route" id="route">
+    <div id="flyer">✉️</div>
+    <div class="stop" data-k="compose" data-c="var(--client)"><div class="mark">1</div><div class="lbl">Write the<br>Request</div></div>
+    <div class="stop" data-k="host" data-c="var(--client)"><div class="mark">2</div><div class="lbl">Local Post<br>Office</div></div>
+    <div class="stop" data-k="transport" data-c="var(--protocol)"><div class="mark">3</div><div class="lbl">Mail Route<br>Chosen</div></div>
+    <div class="stop" data-k="handshake" data-c="var(--security)"><div class="mark">4</div><div class="lbl">Check-In at<br>the Counter</div></div>
+    <div class="stop" data-k="discovery" data-c="var(--protocol)"><div class="mark">5</div><div class="lbl">Service<br>Manifest</div></div>
+    <div class="stop" data-k="selection" data-c="var(--client)"><div class="mark">6</div><div class="lbl">Pick the<br>Right Tool</div></div>
+    <div class="stop" data-k="toolcall" data-c="var(--protocol)"><div class="mark">7</div><div class="lbl">Seal the<br>Request</div></div>
+    <div class="stop" data-k="server" data-c="var(--protocol)"><div class="mark">8</div><div class="lbl">Sorting<br>Facility</div></div>
+    <div class="stop" data-k="auth" data-c="var(--security)"><div class="mark">9</div><div class="lbl">Customs<br>Clearance</div></div>
+    <div class="stop" data-k="gmailapi" data-c="var(--gmailc)"><div class="mark">10</div><div class="lbl">Handed to<br>Gmail</div></div>
+    <div class="stop" data-k="gmailresp" data-c="var(--gmailc)"><div class="mark">11</div><div class="lbl">Gmail<br>Stamps It</div></div>
+    <div class="stop" data-k="result" data-c="var(--gmailc)"><div class="mark">12</div><div class="lbl">Return<br>Receipt</div></div>
+    <div class="stop" data-k="answer" data-c="var(--gmailc)"><div class="mark">13</div><div class="lbl">Delivered<br>to You</div></div>
+  </div>
+</div>
+
+<div class="detail" id="detail"></div>
+
+<div class="legend">
+  <span><i style="color:var(--client)"></i>Client / host side</span>
+  <span><i style="color:var(--protocol)"></i>Protocol mechanics</span>
+  <span><i style="color:var(--security)"></i>Handshake &amp; security</span>
+  <span><i style="color:var(--gmailc)"></i>Gmail &amp; final output</span>
+</div>
+<div class="hint">Tip: click "Send it →" to watch the letter travel the whole route, or tap any postmark to open it.</div>
+
+<div class="connmap">
+  <h3>Four checkpoints, one envelope</h3>
+  <p>MCP never lets Claude write to Gmail directly. The request crosses four distinct checkpoints, each with its own rules for what may pass through.</p>
+  <div class="keypoints">
+    <div class="kp"><div class="num">Checkpoint 1 · Host ⇄ Client</div><div class="tt">One mailbag per service</div><div class="dd">The host (Claude Desktop, Code, or an API app) keeps a separate MCP client — and a separate connection — for Gmail, Calendar, Drive, and anything else you've connected.</div></div>
+    <div class="kp"><div class="num">Checkpoint 2 · Client ⇄ Server</div><div class="tt">Local run or remote route</div><div class="dd">A local Gmail MCP server talks over stdio, spawned as a subprocess. A hosted one talks Streamable HTTP over a session ID — same JSON-RPC envelope either way.</div></div>
+    <div class="kp"><div class="num">Checkpoint 3 · Server ⇄ Google</div><div class="tt">The server carries the passport</div><div class="dd">Claude never sees your Google credential. The MCP server holds the OAuth token, scoped narrowly (e.g. gmail.compose), and presents it to Google on your behalf.</div></div>
+    <div class="kp"><div class="num">Checkpoint 4 · Result ⇄ Model</div><div class="tt">The receipt comes back the same way</div><div class="dd">Gmail's JSON response is reshaped into MCP tool-result content and rides back over the exact connection that carried the request out.</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const content = {
+  compose:{c:'var(--client)',cat:'CLIENT',tag:'Stop 1 · The Letter',title:'You Write the Request',
+    lead:'Plain language, nothing postal about it yet. This is the letter before it ever reaches an envelope.',
+    viz:()=>`<div class="env">"${promptEl?promptEl.value:'Find unread mail from my manager and draft a reply'}"</div>`,
+    note:'The model hasn\'t decided this needs Gmail at all yet — that comes later.'},
+
+  host:{c:'var(--client)',cat:'CLIENT',tag:'Stop 2 · The Local Office',title:'Local Post Office',
+    lead:'The app you\'re talking to — Claude Desktop, Claude Code, or an app on the API — is the MCP Host. It keeps one dedicated MCP Client per connected service, like separate mailbags for separate destinations.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">MCP Client → Gmail</span><div class="d">active for this request</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → Google Calendar</span><div class="d">idle</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → Google Drive</span><div class="d">idle</div></div>
+    </div>`,
+    note:'Each client is isolated — the Gmail connection can\'t reach into your Calendar session.'},
+
+  transport:{c:'var(--protocol)',cat:'PROTOCOL',tag:'Stop 3 · Checkpoint 1',title:'Mail Route Chosen',
+    lead:'Client and server agree on how messages actually travel between them:',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">stdio</span><div class="d">Host spawns the Gmail MCP server as a local subprocess — JSON-RPC flows over stdin/stdout, no network hop.</div></div>
+      <div class="tool"><span class="n">Streamable HTTP</span><div class="d">Host connects to a remote, hosted Gmail MCP server over HTTPS with a session ID — used when the server isn\'t local.</div></div>
+    </div>`,
+    note:'Either way, every message is a JSON-RPC 2.0 object — the transport only changes how it\'s carried.',
+    boundary:'⇄ Checkpoint 1: Client process ⇄ Server process/endpoint'},
+
+  handshake:{c:'var(--security)',cat:'SECURITY',tag:'Stop 4 · Checkpoint 2',title:'Check-In at the Counter',
+    lead:'Before any tool can be used, client and server trade a one-time <em>initialize</em> message to agree on protocol version and capabilities.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"initialize"</span>
+   <span class="k">"protocolVersion"</span>: <span class="s">"2025-06-18"</span>
+   <span class="k">"capabilities"</span>: { <span class="k">tools</span>: {} }
+<span class="c">← server replies with its own capabilities +</span>
+   <span class="k">"serverInfo"</span>: { <span class="k">name</span>: <span class="s">"gmail-mcp"</span> }
+→ <span class="k">"method"</span>: <span class="s">"notifications/initialized"</span></div>`,
+    note:'This happens once per session — every tool call afterward reuses this same connection.',
+    boundary:'⇄ Checkpoint 2: version + capability agreement over the route from Stop 3'},
+
+  discovery:{c:'var(--protocol)',cat:'PROTOCOL',tag:'Stop 5 · The Manifest',title:'Reading the Service Manifest',
+    lead:'The client asks the Gmail server what it\'s able to do. The server answers with a schema for every tool it exposes.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">gmail_search_threads</span><div class="d">query → matching threads</div></div>
+      <div class="tool"><span class="n">gmail_get_thread</span><div class="d">thread id → full message history</div></div>
+      <div class="tool"><span class="n">gmail_create_draft</span><div class="d">to, subject, body, threadId → saved draft</div></div>
+      <div class="tool"><span class="n">gmail_list_labels</span><div class="d">→ available labels</div></div>
+      <div class="tool"><span class="n">gmail_label_message</span><div class="d">message id + label → applied</div></div>
+    </div>`,
+    note:'Note there\'s no gmail_send tool here by default — sending is treated as a higher-stakes action than drafting.'},
+
+  selection:{c:'var(--client)',cat:'CLIENT',tag:'Stop 6 · The Decision',title:'Picking the Right Tool',
+    lead:'Reading your request against the manifest, the model reasons in two steps: search for the manager\'s unread mail, then draft a reply. Ordinary function-calling — MCP just standardized where the schema came from.',
+    viz:()=>`<div class="code"><span class="c">// step A — already run</span>
+<span class="k">tool</span>: <span class="s">"gmail_search_threads"</span> → 1 unread thread found
+
+<span class="c">// step B — the call we\'ll trace</span>
+<span class="k">tool</span>: <span class="s">"gmail_create_draft"</span>
+<span class="k">arguments</span>: {
+  <span class="k">threadId</span>: <span class="s">"18df2a91"</span>,
+  <span class="k">to</span>: <span class="s">"manager@company.com"</span>,
+  <span class="k">subject</span>: <span class="s">"Re: Q3 numbers"</span>,
+  <span class="k">body</span>: <span class="s">"Thanks for flagging — I\'ll have..."</span>
+}</div>`,
+    note:'Nothing has reached Google yet — this is still entirely inside the model\'s reasoning.'},
+
+  toolcall:{c:'var(--protocol)',cat:'PROTOCOL',tag:'Stop 7 · Checkpoint 2, reused',title:'Sealing the Request',
+    lead:'The client packages the chosen tool and its arguments into a JSON-RPC <em>tools/call</em> request and sends it down the same connection.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"tools/call"</span>
+   <span class="k">"params"</span>: {
+     <span class="k">"name"</span>: <span class="s">"gmail_create_draft"</span>,
+     <span class="k">"arguments"</span>: { <span class="n">to</span>: <span class="s">"manager@company.com"</span>, … }
+   }
+   <span class="k">"id"</span>: 24</div>`,
+    note:'The numeric "id" is how the client will match the eventual reply to this exact request.'},
+
+  server:{c:'var(--protocol)',cat:'PROTOCOL',tag:'Stop 8 · Sorting Facility',title:'Sorting Facility Checks It',
+    lead:'The Gmail MCP server receives the sealed request and inspects it before touching any live system.',
+    viz:()=>`<div class="checklist">
+      <div class="row"><span class="ok">✓</span> arguments match the gmail_create_draft schema</div>
+      <div class="row"><span class="ok">✓</span> required fields present (to, subject, body)</div>
+      <div class="row"><span class="ok">✓</span> stored OAuth token for this session is valid</div>
+      <div class="row"><span class="ok">✓</span> token scope covers drafting, not just reading</div>
+    </div>`,
+    note:'A failed check here returns a JSON-RPC error — Google is never contacted.'},
+
+  auth:{c:'var(--security)',cat:'SECURITY',tag:'Stop 9 · Checkpoint 3',title:'Customs Clearance',
+    lead:'The MCP server — never the model — holds the real Google credential and presents it to Google\'s API. The model only ever sees "connected" or "not connected".',
+    viz:()=>`<div class="authrow">
+      <span class="authchip on">OAuth 2.0 · gmail.compose scope</span>
+      <span class="authchip">refreshed automatically</span>
+    </div>
+    <div class="code"><span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="c">// token was granted during the one-time Gmail connector consent,</span>
+<span class="c">// scoped narrowly, never exposed to the LLM context</span></div>`,
+    note:'This is the credential checkpoint — the reason connecting Gmail is a deliberate, explicit step you take once.',
+    boundary:'⇄ Checkpoint 3: MCP Server ⇄ Google, cleared independently of the model'},
+
+  gmailapi:{c:'var(--gmailc)',cat:'GMAIL',tag:'Stop 10 · Handed Over',title:'Handed to Gmail',
+    lead:'With a cleared token, the server translates the tool arguments into a real Gmail REST API call.',
+    viz:()=>`<div class="code"><span class="n">POST</span> https://gmail.googleapis.com/gmail/v1/users/me/drafts
+<span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="k">Content-Type</span>: <span class="s">application/json</span>
+
+{ <span class="k">"message"</span>: {
+    <span class="k">"threadId"</span>: <span class="s">"18df2a91"</span>,
+    <span class="k">"raw"</span>: <span class="s">"&lt;base64url-encoded MIME message&gt;"</span>
+} }</div>`,
+    note:'To Gmail this looks like any other API client — it has no idea an LLM was involved in composing it.'},
+
+  gmailresp:{c:'var(--gmailc)',cat:'GMAIL',tag:'Stop 11 · Stamped Received',title:'Gmail Stamps It Received',
+    lead:'Gmail saves the draft in your account and answers with its identifiers.',
+    viz:()=>`<div class="code"><span class="n">200 OK</span>
+{ <span class="k">"id"</span>: <span class="s">"r-8841027"</span>,
+  <span class="k">"message"</span>: { <span class="k">"id"</span>: <span class="s">"18df2b04"</span>, <span class="k">"threadId"</span>: <span class="s">"18df2a91"</span> } }</div>`,
+    note:'A non-2xx here (expired token, invalid recipient, quota) is what the server turns into a useful error next.'},
+
+  result:{c:'var(--gmailc)',cat:'GMAIL',tag:'Stop 12 · Checkpoint 4',title:'Return Receipt',
+    lead:'The server reshapes Gmail\'s JSON into MCP\'s standard tool-result format and sends it back over the very connection that carried the request out.',
+    viz:()=>`<div class="code">← <span class="k">"id"</span>: 24
+   <span class="k">"result"</span>: {
+     <span class="k">"content"</span>: [{ <span class="k">"type"</span>: <span class="s">"text"</span>,
+       <span class="k">"text"</span>: <span class="s">"Draft saved in thread 18df2a91, ready to review"</span> }],
+     <span class="k">"isError"</span>: false
+   }</div>`,
+    note:'This text lands in the model\'s context like any other message — it never sees raw Gmail JSON.',
+    boundary:'⇄ Checkpoint 4: Server ⇄ Client, same pipe as Stop 7, reverse direction'},
+
+  answer:{c:'var(--gmailc)',cat:'GMAIL',tag:'Stop 13 · At Your Door',title:'Delivered to You',
+    lead:'With the receipt in context, the model composes an ordinary reply — every checkpoint above is invisible to you by this point.',
+    viz:()=>`<div class="env">"I found the unread thread from your manager and saved a reply as a draft — it's sitting in your Gmail drafts, ready for you to review before it sends."</div>`,
+    note:'One request quietly cleared four checkpoints — host↔client, client↔server, server↔Google, and back — and nothing was sent without your review.'}
+};
+
+const detail=document.getElementById('detail');
+const stops=[...document.querySelectorAll('.stop')];
+const route=document.getElementById('route');
+const flyer=document.getElementById('flyer');
+
+function moveFlyer(stopEl){
+  const left = stopEl.offsetLeft + stopEl.offsetWidth/2 - flyer.offsetWidth/2;
+  flyer.style.left = left+'px';
+}
+
+function show(k){
+  const d=content[k];
+  const stopEl=stops.find(s=>s.dataset.k===k);
+  stops.forEach(s=>{
+    s.classList.toggle('active', s.dataset.k===k);
+    s.style.setProperty('--stop-c', s.dataset.c);
+  });
+  if(stopEl) moveFlyer(stopEl);
+  detail.style.setProperty('--stop-c', d.c);
+  detail.innerHTML=`<div class="detail-inner">
+    <span class="tag" style="color:${d.c}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${d.viz()}</div><div class="note">${d.note}</div>
+    ${d.boundary?`<div class="boundary">${d.boundary}</div>`:''}
+  </div>
+  <div class="stamp"><span>MCP</span><b>${d.cat}</b><span>AIR MAIL</span></div>`;
+}
+
+stops.forEach(s=>s.addEventListener('click',()=>show(s.dataset.k)));
+window.addEventListener('load',()=>show('compose'));
+window.addEventListener('resize',()=>{const a=stops.find(s=>s.classList.contains('active'));if(a)moveFlyer(a);});
+
+const order=['compose','host','transport','handshake','discovery','selection','toolcall','server','auth','gmailapi','gmailresp','result','answer'];
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+runBtn.addEventListener('click',()=>{
+  stops.forEach(s=>s.classList.remove('done'));
+  outTok.classList.remove('show');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){runBtn.disabled=false;outTok.classList.add('show');return;}
+    const k=order[i];
+    show(k);
+    const s=stops.find(x=>x.dataset.k===k);
+    if(s){s.scrollIntoView({block:'nearest',inline:'center'});s.classList.add('done');}
+    i++;
+    setTimeout(tick,700);
+  };
+  tick();
+});
+
+const promptEl=document.getElementById('prompt');
+</script>
+</body>
+</html>

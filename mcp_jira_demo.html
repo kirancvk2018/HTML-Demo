@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How MCP Connects Claude to Jira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
+    --muted:#8a8d99; --line:#2a2d39;
+    --input:#5b9dff; --core:#b06cff; --norm:#ffb454; --output:#ff6b5b;
+    --accent:#7df0c0; --hot:#ff4d6d;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%,rgba(91,157,255,.08),transparent 40%),
+                     radial-gradient(circle at 88% 92%,rgba(176,108,255,.08),transparent 42%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,5vw,52px);line-height:1.02;letter-spacing:-.02em}
+  header h1 em{font-style:italic;color:var(--accent)}
+  header p{color:var(--muted);max-width:680px;margin-top:14px;font-size:16px}
+
+  .control{margin:34px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px}
+  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .iorow{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .prompt{flex:1;min-width:260px;background:#0a0b0f;border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;color:var(--ink);font-family:var(--mono);font-size:15px}
+  .prompt:focus{outline:none;border-color:var(--input)}
+  button.run{background:var(--accent);color:#05140d;border:none;border-radius:12px;padding:14px 26px;
+    font-family:var(--mono);font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:.2s}
+  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
+  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
+  .answer{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:15px;color:var(--muted)}
+  .answer .tok{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--accent);opacity:0;transition:.4s}
+  .answer .tok.show{opacity:1}
+
+  .stage{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:34px}
+  @media(max-width:820px){.stage{grid-template-columns:1fr}}
+
+  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start}
+  .blk{border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--panel);cursor:pointer;
+    transition:.18s;position:relative}
+  .blk:hover{border-color:var(--accent)}
+  .blk.active{border-color:var(--accent);background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
+  .blk.done::after{content:"✓";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:12px}
+  .blk .t{font-weight:600;font-size:13px}
+  .blk .s{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .blk[data-c=input]{border-left:3px solid var(--input)}
+  .blk[data-c=core]{border-left:3px solid var(--core)}
+  .blk[data-c=norm]{border-left:3px solid var(--norm)}
+  .blk[data-c=output]{border-left:3px solid var(--output)}
+  .arrow{height:15px;display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:13px}
+
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px 30px;min-height:460px}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 11px;border-radius:20px;margin-bottom:14px}
+  .detail h2{font-family:var(--disp);font-weight:600;font-size:28px;letter-spacing:-.01em}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:15px}
+  .detail .viz{margin-top:22px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto}
+  .detail .note{margin-top:18px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+  .detail .boundary{margin-top:14px;font-family:var(--mono);font-size:11.5px;color:var(--hot);border:1px dashed var(--hot);
+    border-radius:8px;padding:9px 12px;background:rgba(255,77,109,.06)}
+
+  .code{font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--ink);line-height:1.65}
+  .code .k{color:var(--input)} .code .s{color:var(--accent)} .code .n{color:var(--norm)} .code .c{color:var(--muted)}
+
+  .toollist{display:flex;flex-direction:column;gap:8px}
+  .tool{border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--panel2)}
+  .tool .n{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .tool .d{font-size:12px;color:var(--muted);margin-top:3px}
+
+  .checklist{display:flex;flex-direction:column;gap:7px;font-family:var(--mono);font-size:12.5px}
+  .checklist .row{display:flex;gap:8px;align-items:flex-start}
+  .checklist .ok{color:var(--accent)}
+
+  .authrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .authchip{font-family:var(--mono);font-size:11.5px;padding:7px 11px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .authchip.on{border-color:var(--norm);color:var(--norm);background:rgba(255,180,84,.08)}
+
+  .vec{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel2);padding:8px 11px;border-radius:8px;border:1px solid var(--line)}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:24px;text-align:center}
+
+  .connmap{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px}
+  .connmap h3{font-family:var(--disp);font-size:21px;font-weight:600;margin-bottom:6px}
+  .connmap p{color:var(--muted);font-size:13.5px;max-width:640px;margin-bottom:18px}
+  .chain{display:flex;align-items:center;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:12px}
+  .node{border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:var(--panel2);text-align:center}
+  .node .nn{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+  .edge{padding:0 4px;color:var(--muted);display:flex;flex-direction:column;align-items:center;font-size:9.5px;min-width:78px;text-align:center}
+  .edge .num{width:20px;height:20px;border-radius:50%;background:var(--hot);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;margin-bottom:4px;font-family:var(--mono)}
+  .edge .ln{width:100%;height:1px;background:var(--line);margin:3px 0}
+  @media(max-width:820px){.chain{flex-direction:column}.edge{flex-direction:row;min-width:0;gap:8px;padding:6px 0}.edge .ln{width:1px;height:16px}}
+
+  .keypoints{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .kp{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--panel2)}
+  .kp .num{font-family:var(--mono);font-size:11px;color:var(--hot)}
+  .kp .tt{font-weight:600;font-size:13.5px;margin-top:4px}
+  .kp .dd{font-size:12px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Inside the wire:<br>how MCP carries <em>“file a Jira bug”</em> from Claude to <em>Jira Cloud.</em></h1>
+  <p>Type a request, hit run, then click any block on the left to inspect exactly what crosses each boundary — host, transport, MCP server, and the Jira API itself. Every connecting point in the chain is labelled below.</p>
+</header>
+
+<div class="control">
+  <label>Your request to Claude</label>
+  <div class="iorow">
+    <input class="prompt" id="prompt" value="File a bug: login times out after 30s on prod" spellcheck="false">
+    <button class="run" id="run">▶ Trace the call</button>
+  </div>
+  <div class="answer">
+    <span>Final result:</span>
+    <span class="tok" id="outTok">Created PROJ-482</span>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="pipe" id="pipe">
+    <div class="blk" data-c=output data-k="answer"><div class="t">Final Answer to User</div><div class="s">synthesized reply</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=output data-k="result"><div class="t">Tool Result → Model</div><div class="s">JSON-RPC response</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=output data-k="jiraresp"><div class="t">Jira Response</div><div class="s">201 Created + issue JSON</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=output data-k="jiraapi"><div class="t">Jira REST API Call</div><div class="s">POST /rest/api/3/issue</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=norm data-k="auth"><div class="t">Auth to Jira</div><div class="s">OAuth 2.1 / API token</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=core data-k="server"><div class="t">MCP Server Validates</div><div class="s">schema + required fields</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=core data-k="toolcall"><div class="t">tools/call Request</div><div class="s">JSON-RPC 2.0 over transport</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=input data-k="selection"><div class="t">Model Selects Tool</div><div class="s">function-calling decision</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=core data-k="discovery"><div class="t">Tool Discovery</div><div class="s">tools/list → schemas</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=norm data-k="handshake"><div class="t">Initialize Handshake</div><div class="s">capability negotiation</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=core data-k="transport"><div class="t">Transport Layer</div><div class="s">stdio / Streamable HTTP</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=input data-k="host"><div class="t">MCP Host + Client</div><div class="s">Claude Desktop / Code / API</div></div>
+    <div class="arrow">↑</div>
+    <div class="blk" data-c=input data-k="prompt"><div class="t">“File a bug…”</div><div class="s">raw user request</div></div>
+  </div>
+
+  <div class="detail" id="detail"></div>
+</div>
+
+<div class="legend">
+  <span><i style="background:var(--input)"></i>Client / host side</span>
+  <span><i style="background:var(--core)"></i>Protocol mechanics</span>
+  <span><i style="background:var(--norm)"></i>Handshake &amp; security</span>
+  <span><i style="background:var(--output)"></i>Jira &amp; final output</span>
+</div>
+<div class="hint">Tip: click “▶ Trace the call” to animate the full round trip, or click any block to inspect it.</div>
+
+<div class="connmap">
+  <h3>Every connecting point, end to end</h3>
+  <p>MCP doesn't talk to Jira directly — it's a chain of four distinct boundaries. Each one has its own protocol, its own failure mode, and its own thing to configure.</p>
+  <div class="chain">
+    <div class="node">Claude<div class="nn">LLM + MCP Host</div></div>
+    <div class="edge"><div class="num">1</div>stdio / HTTP<div class="ln"></div>JSON-RPC 2.0</div>
+    <div class="node">MCP Client<div class="nn">inside the host</div></div>
+    <div class="edge"><div class="num">2</div>same transport<div class="ln"></div>initialize + tools/call</div>
+    <div class="node">Jira MCP Server<div class="nn">local process or remote</div></div>
+    <div class="edge"><div class="num">3</div>HTTPS<div class="ln"></div>OAuth 2.1 / token</div>
+    <div class="node">Jira Cloud REST API<div class="nn">api.atlassian.com</div></div>
+    <div class="edge"><div class="num">4</div>HTTPS<div class="ln"></div>JSON response</div>
+    <div class="node">Back to model<div class="nn">tool result content</div></div>
+  </div>
+  <div class="keypoints">
+    <div class="kp"><div class="num">Point 1 · Host ⇄ Client</div><div class="tt">One client per server</div><div class="dd">The host (Claude Desktop, Claude Code, or an API app) spins up a dedicated MCP client for each connected server — Jira, GitHub, Slack each get their own isolated session.</div></div>
+    <div class="kp"><div class="num">Point 2 · Client ⇄ Server</div><div class="tt">Transport choice matters</div><div class="dd">Local servers use stdio (spawned subprocess, no network). Remote servers use Streamable HTTP with a session ID — this is how the hosted Atlassian MCP server works.</div></div>
+    <div class="kp"><div class="num">Point 3 · Server ⇄ Jira</div><div class="tt">The MCP server holds the real credential</div><div class="dd">The model never sees a Jira token. The MCP server exchanges OAuth 2.1 (remote) or a stored API token (local) for access, then calls the REST API on the model's behalf.</div></div>
+    <div class="kp"><div class="num">Point 4 · Result ⇄ Model</div><div class="tt">Same pipe, reverse direction</div><div class="dd">The Jira JSON response is reshaped into MCP "tool result content" and travels back over the exact same transport connection that carried the request.</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const content = {
+  prompt:{c:'input',tag:'Step 1 · User Request',title:'Raw user request',
+    lead:'You type a request in plain language. Nothing MCP-specific has happened yet — this is just text sitting in the chat.',
+    viz:()=>`<div class="vec">"${promptEl?promptEl.value:'File a bug: login times out after 30s on prod'}"</div>`,
+    note:'The model will decide on its own whether this needs a tool at all.'},
+
+  host:{c:'input',tag:'Step 2 · MCP Host',title:'MCP Host + Client',
+    lead:'The application you\'re talking to — Claude Desktop, Claude Code, or an app built on the API — is the <em>MCP Host</em>. For every connected server it keeps a separate, isolated <em>MCP Client</em> instance.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">MCP Client → Jira</span><div class="d">active for this request</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → GitHub</span><div class="d">idle</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → Google Drive</span><div class="d">idle</div></div>
+    </div>`,
+    note:'Clients don\'t share state — a compromised Jira connection can\'t reach into the GitHub session.'},
+
+  transport:{c:'core',tag:'Step 3 · Connection Point 1',title:'Transport Layer',
+    lead:'Client and server agree on how bytes actually move between them. MCP defines two standard transports:',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">stdio</span><div class="d">Host spawns the Jira MCP server as a local subprocess; JSON-RPC messages flow over stdin/stdout. No network hop, no port to open.</div></div>
+      <div class="tool"><span class="n">Streamable HTTP</span><div class="d">Host connects to a remote server (e.g. mcp.atlassian.com) over HTTPS, keeping a session ID; used when the server isn\'t running on your machine.</div></div>
+    </div>`,
+    note:'Every message on either transport is a JSON-RPC 2.0 object — the transport only changes how it travels, not its shape.',
+    boundary:'⇄ Connecting point 1: Client process ⇄ Server process/endpoint'},
+
+  handshake:{c:'norm',tag:'Step 4 · Connection Point 2',title:'Initialize Handshake',
+    lead:'Before any tool can be used, client and server exchange a one-time <em>initialize</em> message to agree on protocol version and capabilities.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"initialize"</span>
+   <span class="k">"protocolVersion"</span>: <span class="s">"2025-06-18"</span>
+   <span class="k">"capabilities"</span>: { <span class="k">tools</span>: {} }
+<span class="c">← server replies with its own capabilities +</span>
+   <span class="k">"serverInfo"</span>: { <span class="k">name</span>: <span class="s">"jira-mcp"</span> }
+→ <span class="k">"method"</span>: <span class="s">"notifications/initialized"</span> <span class="c">(client confirms)</span></div>`,
+    note:'This handshake happens once per session — every tool call after this reuses the same negotiated connection.',
+    boundary:'⇄ Connecting point 2: version + capability agreement over the transport from Step 3'},
+
+  discovery:{c:'core',tag:'Step 5 · Capability Discovery',title:'Tool Discovery — tools/list',
+    lead:'The client asks the Jira server what it can do. The server responds with a schema for every tool it exposes — names, descriptions, and expected arguments.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">jira_search_issues</span><div class="d">JQL query → matching issues</div></div>
+      <div class="tool"><span class="n">jira_get_issue</span><div class="d">issue key → full details</div></div>
+      <div class="tool"><span class="n">jira_create_issue</span><div class="d">project, summary, type → new issue</div></div>
+      <div class="tool"><span class="n">jira_update_issue</span><div class="d">issue key + fields → apply changes</div></div>
+      <div class="tool"><span class="n">jira_add_comment</span><div class="d">issue key + body → comment added</div></div>
+      <div class="tool"><span class="n">jira_transition_issue</span><div class="d">issue key + status → move workflow</div></div>
+    </div>`,
+    note:'These schemas are what the model actually reads — good tool descriptions are what make the model pick the right one.'},
+
+  selection:{c:'input',tag:'Step 6 · Model Decision',title:'Model Selects a Tool',
+    lead:'Reading the request against the discovered schemas, the model decides <code>jira_create_issue</code> fits, and fills in arguments from what you typed. This is ordinary function-calling — MCP just standardized where the schema came from.',
+    viz:()=>`<div class="code"><span class="c">// model's chosen call</span>
+<span class="k">tool</span>: <span class="s">"jira_create_issue"</span>
+<span class="k">arguments</span>: {
+  <span class="k">project</span>: <span class="s">"PROJ"</span>,
+  <span class="k">issuetype</span>: <span class="s">"Bug"</span>,
+  <span class="k">summary</span>: <span class="s">"Login times out after 30s on prod"</span>,
+  <span class="k">description</span>: <span class="s">"Session expires mid-auth under load..."</span>
+}</div>`,
+    note:'Nothing has reached Jira yet — this is still entirely inside the model\'s reasoning.'},
+
+  toolcall:{c:'core',tag:'Step 7 · Connection Point 2 (reused)',title:'tools/call Request',
+    lead:'The client packages the chosen tool and arguments into a JSON-RPC <em>tools/call</em> request and sends it down the same transport connection.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"tools/call"</span>
+   <span class="k">"params"</span>: {
+     <span class="k">"name"</span>: <span class="s">"jira_create_issue"</span>,
+     <span class="k">"arguments"</span>: { <span class="n">project</span>: <span class="s">"PROJ"</span>, <span class="n">issuetype</span>: <span class="s">"Bug"</span>, … }
+   }
+   <span class="k">"id"</span>: 17</div>`,
+    note:'The numeric "id" lets the client match the eventual response back to this exact request.'},
+
+  server:{c:'core',tag:'Step 8 · Inside the Server',title:'MCP Server Validates',
+    lead:'The Jira MCP server receives the call and checks it before doing anything against a live system.',
+    viz:()=>`<div class="checklist">
+      <div class="row"><span class="ok">✓</span> arguments match the jira_create_issue schema</div>
+      <div class="row"><span class="ok">✓</span> required fields present (project, issuetype, summary)</div>
+      <div class="row"><span class="ok">✓</span> stored credential for this session is valid / not expired</div>
+      <div class="row"><span class="ok">✓</span> caller has permission to invoke this tool</div>
+    </div>`,
+    note:'If any check fails, the server returns a JSON-RPC error here — the request never touches Jira.'},
+
+  auth:{c:'norm',tag:'Step 9 · Connection Point 3',title:'Auth to Jira',
+    lead:'The MCP server — never the model — holds the real Jira credential and exchanges it for API access. The model only ever sees "connected" or "not connected".',
+    viz:()=>`<div class="authrow">
+      <span class="authchip on">OAuth 2.1 (remote server)</span>
+      <span class="authchip">API token (local server)</span>
+      <span class="authchip">Personal Access Token</span>
+    </div>
+    <div class="code"><span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="c">// token was obtained during the connector's one-time OAuth consent,</span>
+<span class="c">// refreshed automatically, never exposed to the LLM context</span></div>`,
+    note:'This is the credential boundary — it\'s the reason connecting a service is a deliberate, explicit step for the user.',
+    boundary:'⇄ Connecting point 3: MCP Server ⇄ Jira Cloud, secured independently of the model'},
+
+  jiraapi:{c:'output',tag:'Step 10 · External API',title:'Jira REST API Call',
+    lead:'With a valid token in hand, the server translates the tool arguments into an ordinary Jira Cloud REST API call.',
+    viz:()=>`<div class="code"><span class="n">POST</span> https://your-domain.atlassian.net/rest/api/3/issue
+<span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="k">Content-Type</span>: <span class="s">application/json</span>
+
+{ <span class="k">"fields"</span>: {
+    <span class="k">"project"</span>: { <span class="k">"key"</span>: <span class="s">"PROJ"</span> },
+    <span class="k">"issuetype"</span>: { <span class="k">"name"</span>: <span class="s">"Bug"</span> },
+    <span class="k">"summary"</span>: <span class="s">"Login times out after 30s on prod"</span>
+} }</div>`,
+    note:'From Jira\'s point of view this is indistinguishable from any other API client — it has no concept of "MCP" or "LLM".'},
+
+  jiraresp:{c:'output',tag:'Step 11 · External API',title:'Jira Response',
+    lead:'Jira creates the issue and answers with the new issue\'s identifiers.',
+    viz:()=>`<div class="code"><span class="n">201 Created</span>
+{ <span class="k">"id"</span>: <span class="s">"10482"</span>, <span class="k">"key"</span>: <span class="s">"PROJ-482"</span>,
+  <span class="k">"self"</span>: <span class="s">"https://your-domain.atlassian.net/rest/api/3/issue/10482"</span> }</div>`,
+    note:'A non-2xx status here (permissions, invalid project, rate limit) is what the server has to turn into a useful error next.'},
+
+  result:{c:'output',tag:'Step 12 · Connection Point 4',title:'Tool Result → Model',
+    lead:'The server reshapes the raw Jira JSON into MCP\'s standard tool-result format and sends it back over the same transport connection that carried the original call.',
+    viz:()=>`<div class="code">← <span class="k">"id"</span>: 17
+   <span class="k">"result"</span>: {
+     <span class="k">"content"</span>: [{ <span class="k">"type"</span>: <span class="s">"text"</span>,
+       <span class="k">"text"</span>: <span class="s">"Created PROJ-482: https://your-domain.atlassian.net/browse/PROJ-482"</span> }],
+     <span class="k">"isError"</span>: false
+   }</div>`,
+    note:'This text is inserted into the model\'s context just like any other message — the model reads it, not raw Jira JSON.',
+    boundary:'⇄ Connecting point 4: Server ⇄ Client, same pipe as Step 7, reverse direction'},
+
+  answer:{c:'output',tag:'Step 13 · Back to User',title:'Final Answer',
+    lead:'With the tool result in context, the model composes a normal reply — the JSON-RPC envelope and the API call are invisible to you by this point.',
+    viz:()=>`<div class="vec">"I've filed <b>PROJ-482</b> — Login times out after 30s on prod. Marked as a Bug in PROJ. Here's the link: your-domain.atlassian.net/browse/PROJ-482"</div>`,
+    note:'One user turn quietly crossed four separate boundaries — host↔client, client↔server, server↔Jira, and back.'}
+};
+
+const detail=document.getElementById('detail');
+const blks=[...document.querySelectorAll('.blk')];
+const cmap={input:'var(--input)',core:'var(--core)',norm:'var(--norm)',output:'var(--output)'};
+
+function show(k){
+  const d=content[k];
+  blks.forEach(b=>b.classList.toggle('active',b.dataset.k===k));
+  const viz=typeof d.viz==='function'?d.viz():d.viz;
+  detail.innerHTML=`<span class="tag" style="background:${cmap[d.c]}22;color:${cmap[d.c]}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${viz}</div><div class="note">${d.note}</div>
+    ${d.boundary?`<div class="boundary">${d.boundary}</div>`:''}`;
+}
+
+blks.forEach(b=>b.addEventListener('click',()=>show(b.dataset.k)));
+show('prompt');
+
+const order=['prompt','host','transport','handshake','discovery','selection','toolcall','server','auth','jiraapi','jiraresp','result','answer'];
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+runBtn.addEventListener('click',()=>{
+  blks.forEach(b=>b.classList.remove('done'));
+  outTok.classList.remove('show');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){runBtn.disabled=false;outTok.classList.add('show');return;}
+    const k=order[i];
+    show(k);
+    const b=blks.find(x=>x.dataset.k===k);
+    if(b){b.scrollIntoView({block:'nearest'});b.classList.add('done');}
+    i++;
+    setTimeout(tick,760);
+  };
+  tick();
+});
+
+const promptEl=document.getElementById('prompt');
+promptEl.addEventListener('input',()=>{
+  const v=promptEl.value.trim()||'your request';
+  const lbl=blks.find(b=>b.dataset.k==='prompt').querySelector('.t');
+  lbl.textContent='“'+v.slice(0,24)+(v.length>24?'…':'')+'”';
+});
+</script>
+</body>
+</html>

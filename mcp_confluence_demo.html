@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schematic: How MCP Wires Claude into Confluence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f8f8f5; --card:#ffffff; --grid:#cfe0ef; --ink:#232a30; --muted:#5f6b74; --line:#d7dee5;
+    --client:#33393f; --protocol:#2f6fb0; --security:#c0392b; --confc:#2e7d4f;
+    --disp:'Big Shoulders Display',sans-serif; --body:'Archivo',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.55;
+    background-image:linear-gradient(rgba(47,111,176,.14) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(47,111,176,.14) 1px, transparent 1px);
+    background-size:26px 26px;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 26px 120px}
+
+  header .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--protocol);
+    display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--grid);padding-bottom:10px}
+  header h1{font-family:var(--disp);font-weight:800;font-size:clamp(26px,4.6vw,48px);line-height:1.02;
+    text-transform:uppercase;letter-spacing:-.01em;margin-top:16px;max-width:820px}
+  header h1 span{color:var(--confc)}
+  header p{color:var(--muted);max-width:660px;margin-top:14px;font-size:15px}
+
+  .control{margin:30px 0 6px;background:var(--card);border:1px solid var(--line);position:relative;padding:20px 22px 22px}
+  .control .clip{position:absolute;top:-11px;left:22px;background:var(--card);border:1px dashed var(--security);
+    color:var(--security);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:2px 9px;transform:rotate(-1.5deg)}
+  .control label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 9px}
+  .iorow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .prompt{flex:1;min-width:260px;background:var(--paper);border:1px solid var(--line);border-radius:2px;
+    padding:13px 15px;color:var(--ink);font-family:var(--mono);font-size:14px}
+  .prompt:focus{outline:none;border-color:var(--protocol)}
+  button.run{background:var(--protocol);color:#fff;border:none;border-radius:2px;padding:13px 22px;
+    font-family:var(--disp);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;transition:.2s}
+  button.run:hover{background:var(--ink)}
+  button.run:disabled{opacity:.4;cursor:wait}
+  .answer{margin-top:14px;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+  .answer .tok{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--confc);opacity:0;transition:.4s}
+  .answer .tok.show{opacity:1}
+
+  /* schematic route */
+  .routewrap{margin-top:38px;background:var(--card);border:1px solid var(--line);padding:26px 10px 18px;overflow-x:auto}
+  .route{position:relative;display:flex;align-items:flex-start;min-width:1220px;padding:0 20px}
+  .route::before{content:"";position:absolute;top:24px;left:20px;right:20px;height:0;border-top:2px solid var(--grid);z-index:0}
+  .stop{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:90px;cursor:pointer;flex-shrink:0}
+  .mark{width:46px;height:34px;border:2px solid var(--line);border-radius:2px;background:var(--paper);
+    display:flex;align-items:center;justify-content:center;position:relative;transition:.2s}
+  .mark .no{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .mark::before,.mark::after{content:"";position:absolute;background:var(--line)}
+  .mark::before{width:1px;height:12px;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .mark::after{height:1px;width:12px;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .stop .lbl{font-family:var(--mono);font-size:9.5px;text-align:center;color:var(--muted);margin-top:8px;line-height:1.35;text-transform:uppercase;letter-spacing:.01em}
+  .stop.active .mark{border-color:var(--stop-c,var(--ink));background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--stop-c,var(--ink)) 10%,transparent)}
+  .stop.active .mark::before,.stop.active .mark::after{background:var(--stop-c,var(--ink))}
+  .stop.active .mark .no{color:var(--stop-c,var(--ink));font-weight:700}
+  .stop.active .lbl{color:var(--ink);font-weight:600}
+  .stop.done .mark{border-style:double}
+  #pencil{position:absolute;top:0;font-size:20px;transition:left .5s cubic-bezier(.3,.7,.2,1);z-index:2;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
+
+  /* detail sheet */
+  .detail{margin-top:24px;background:var(--card);border:1px solid var(--line);padding:32px 34px 0;position:relative}
+  .crop{position:absolute;width:16px;height:16px;border-color:var(--protocol);opacity:.55}
+  .crop.tl{top:8px;left:8px;border-top:2px solid;border-left:2px solid}
+  .crop.tr{top:8px;right:8px;border-top:2px solid;border-right:2px solid}
+  .crop.bl{bottom:8px;left:8px;border-bottom:2px solid;border-left:2px solid}
+  .crop.br{bottom:8px;right:8px;border-bottom:2px solid;border-right:2px solid}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    padding:4px 10px;margin-bottom:12px;border:1px solid currentColor}
+  .detail h2{font-family:var(--disp);font-weight:800;font-size:28px;text-transform:uppercase;max-width:75%}
+  .detail .lead{color:var(--ink);margin-top:10px;font-size:14.5px;max-width:78%}
+  .detail .viz{margin-top:20px;background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:18px 20px;overflow-x:auto}
+  .detail .note{margin-top:16px;color:var(--muted);font-size:13px;border-top:1px dashed var(--line);padding-top:13px;max-width:78%}
+  .detail .boundary{margin-top:13px;font-family:var(--mono);font-size:11.5px;color:var(--security);
+    border:1px dashed var(--security);border-radius:2px;padding:9px 12px;background:rgba(192,57,43,.05);max-width:78%}
+
+  .titleblock{margin-top:26px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);
+    font-family:var(--mono);font-size:10.5px;text-transform:uppercase;color:var(--muted)}
+  .titleblock div{border-left:1px solid var(--line);padding:10px 14px}
+  .titleblock div:first-child{border-left:none}
+  .titleblock b{display:block;color:var(--ink);font-size:12.5px;margin-top:3px;text-transform:none;letter-spacing:0}
+
+  .code{font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--ink);line-height:1.65}
+  .code .k{color:var(--protocol)} .code .s{color:var(--confc)} .code .n{color:var(--security)} .code .c{color:var(--muted)}
+
+  .toollist{display:flex;flex-direction:column;gap:7px}
+  .tool{border:1px solid var(--line);border-radius:2px;padding:9px 12px;background:#fff}
+  .tool .n{font-family:var(--mono);font-size:12px;color:var(--protocol)}
+  .tool .d{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .checklist{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:12.5px}
+  .checklist .row{display:flex;gap:8px;align-items:flex-start}
+  .checklist .ok{color:var(--confc)}
+
+  .authrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .authchip{font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:2px;border:1px solid var(--line);color:var(--muted)}
+  .authchip.on{border-color:var(--security);color:var(--security);background:rgba(192,57,43,.06)}
+
+  .note-slip{font-family:var(--mono);font-size:12.5px;color:var(--ink);background:#fff;padding:10px 13px;border:1px dashed var(--line)}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:middle;border:1px solid currentColor}
+  .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:18px;text-align:center}
+
+  .connmap{margin-top:34px;background:var(--card);border:1px solid var(--line);padding:26px}
+  .connmap h3{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;margin-bottom:6px}
+  .connmap p{color:var(--muted);font-size:13.5px;max-width:660px;margin-bottom:18px}
+  .keypoints{margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .kp{border:1px solid var(--line);border-radius:2px;padding:14px 15px;background:var(--paper)}
+  .kp .num{font-family:var(--mono);font-size:10.5px;color:var(--security)}
+  .kp .tt{font-family:var(--disp);font-weight:700;font-size:16px;margin-top:5px;text-transform:uppercase}
+  .kp .dd{font-size:12px;color:var(--muted);margin-top:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">
+    <span>DWG NO. MCP–CNF–004</span><span>SCALE NTS</span><span>REV A</span><span id="hdrDate"></span>
+  </div>
+  <h1>How MCP wires Claude into <span>Confluence</span></h1>
+  <p>Read it like a set of construction drawings: a work order moves through permits, inspections, and sign-offs before anything gets built in Confluence. Trace the schematic below, junction by junction.</p>
+</header>
+
+<div class="control">
+  <div class="clip">Change Request</div>
+  <label>Describe what you want built</label>
+  <div class="iorow">
+    <input class="prompt" id="prompt" value="Summarize this doc and publish it as a page in the Engineering space" spellcheck="false">
+    <button class="run" id="run">Issue for construction →</button>
+  </div>
+  <div class="answer">
+    <span>As-built:</span>
+    <span class="tok" id="outTok">Page published to Confluence</span>
+  </div>
+</div>
+
+<div class="routewrap">
+  <div class="route" id="route">
+    <div id="pencil">✏️</div>
+    <div class="stop" data-k="draft" data-c="var(--client)"><div class="mark"><span class="no">1</span></div><div class="lbl">Draft the<br>Request</div></div>
+    <div class="stop" data-k="host" data-c="var(--client)"><div class="mark"><span class="no">2</span></div><div class="lbl">Design<br>Office</div></div>
+    <div class="stop" data-k="transport" data-c="var(--protocol)"><div class="mark"><span class="no">3</span></div><div class="lbl">Select the<br>Conduit</div></div>
+    <div class="stop" data-k="handshake" data-c="var(--security)"><div class="mark"><span class="no">4</span></div><div class="lbl">Sign-Off &amp;<br>Version Check</div></div>
+    <div class="stop" data-k="discovery" data-c="var(--protocol)"><div class="mark"><span class="no">5</span></div><div class="lbl">Pull the<br>Spec Sheet</div></div>
+    <div class="stop" data-k="selection" data-c="var(--client)"><div class="mark"><span class="no">6</span></div><div class="lbl">Choose the<br>Fitting</div></div>
+    <div class="stop" data-k="toolcall" data-c="var(--protocol)"><div class="mark"><span class="no">7</span></div><div class="lbl">Issue the<br>Work Order</div></div>
+    <div class="stop" data-k="server" data-c="var(--protocol)"><div class="mark"><span class="no">8</span></div><div class="lbl">Site<br>Inspection</div></div>
+    <div class="stop" data-k="auth" data-c="var(--security)"><div class="mark"><span class="no">9</span></div><div class="lbl">Permit &amp;<br>Access Badge</div></div>
+    <div class="stop" data-k="confapi" data-c="var(--confc)"><div class="mark"><span class="no">10</span></div><div class="lbl">Poured<br>&amp; Set</div></div>
+    <div class="stop" data-k="confresp" data-c="var(--confc)"><div class="mark"><span class="no">11</span></div><div class="lbl">Stamped<br>Inspected</div></div>
+    <div class="stop" data-k="result" data-c="var(--confc)"><div class="mark"><span class="no">12</span></div><div class="lbl">As-Built<br>Returned</div></div>
+    <div class="stop" data-k="answer" data-c="var(--confc)"><div class="mark"><span class="no">13</span></div><div class="lbl">Handover to<br>Client</div></div>
+  </div>
+</div>
+
+<div class="detail" id="detail"></div>
+
+<div class="legend">
+  <span><i style="color:var(--client)"></i>Client / host side</span>
+  <span><i style="color:var(--protocol)"></i>Protocol mechanics</span>
+  <span><i style="color:var(--security)"></i>Handshake &amp; security</span>
+  <span><i style="color:var(--confc)"></i>Confluence &amp; final output</span>
+</div>
+<div class="hint">Tip: click "Issue for construction →" to trace the whole job, or tap any junction box to inspect it.</div>
+
+<div class="connmap">
+  <h3>Four inspection points, one build</h3>
+  <p>Nothing lands in Confluence without passing four separate checkpoints — each one owned by a different party, each with its own sign-off.</p>
+  <div class="keypoints">
+    <div class="kp"><div class="num">Checkpoint 1 · Host ⇄ Client</div><div class="tt">One work crew per site</div><div class="dd">The host (Claude Desktop, Code, or an API app) keeps a dedicated MCP client — and connection — for Confluence, separate from Jira, Gmail, or any other connected site.</div></div>
+    <div class="kp"><div class="num">Checkpoint 2 · Client ⇄ Server</div><div class="tt">Local rig or remote plant</div><div class="dd">A local Confluence MCP server runs over stdio as a spawned subprocess. A hosted one runs Streamable HTTP over a session ID — same JSON-RPC drawings either way.</div></div>
+    <div class="kp"><div class="num">Checkpoint 3 · Server ⇄ Atlassian</div><div class="tt">The server carries the permit</div><div class="dd">Claude never holds your Atlassian credential. The MCP server holds a scoped OAuth 2.0 token (e.g. write:confluence-content) and presents it at the gate.</div></div>
+    <div class="kp"><div class="num">Checkpoint 4 · Result ⇄ Model</div><div class="tt">The as-built comes back the same route</div><div class="dd">Confluence's JSON response is reshaped into MCP tool-result content and travels back over the exact connection that carried the work order out.</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+document.getElementById('hdrDate').textContent = new Date().toISOString().slice(0,10);
+
+const content = {
+  draft:{c:'var(--client)',cat:'Client',tag:'Junction 1 · The Brief',title:'Draft the Request',
+    lead:'Plain language, no schematic yet. This is the brief before it becomes a work order.',
+    viz:()=>`<div class="note-slip">"${promptEl?promptEl.value:'Summarize this doc and publish it as a page in the Engineering space'}"</div>`,
+    note:'The model hasn\'t decided this needs Confluence at all yet — that comes later.'},
+
+  host:{c:'var(--client)',cat:'Client',tag:'Junction 2 · The Office',title:'Design Office',
+    lead:'The app you\'re talking to — Claude Desktop, Claude Code, or an app on the API — is the MCP Host. It keeps one dedicated MCP client per connected system, like separate site files for separate jobs.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">MCP Client → Confluence</span><div class="d">active for this request</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → Jira</span><div class="d">idle</div></div>
+      <div class="tool" style="opacity:.5"><span class="n">MCP Client → Google Drive</span><div class="d">idle</div></div>
+    </div>`,
+    note:'Each client is isolated — the Confluence connection can\'t reach into the Jira session.'},
+
+  transport:{c:'var(--protocol)',cat:'Protocol',tag:'Junction 3 · Checkpoint 1',title:'Select the Conduit',
+    lead:'Client and server agree on how the drawings actually travel between them:',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">stdio</span><div class="d">Host spawns the Confluence MCP server as a local subprocess — JSON-RPC runs over stdin/stdout, no network hop.</div></div>
+      <div class="tool"><span class="n">Streamable HTTP</span><div class="d">Host connects to a remote, hosted Confluence MCP server over HTTPS with a session ID — used when the server isn\'t local.</div></div>
+    </div>`,
+    note:'Either way, every message is a JSON-RPC 2.0 object — the conduit only changes how it\'s carried.',
+    boundary:'⇄ Checkpoint 1: Client process ⇄ Server process/endpoint'},
+
+  handshake:{c:'var(--security)',cat:'Security',tag:'Junction 4 · Checkpoint 2',title:'Sign-Off & Version Check',
+    lead:'Before any tool can be used, client and server trade a one-time <em>initialize</em> message to agree on protocol version and capabilities.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"initialize"</span>
+   <span class="k">"protocolVersion"</span>: <span class="s">"2025-06-18"</span>
+   <span class="k">"capabilities"</span>: { <span class="k">tools</span>: {} }
+<span class="c">← server replies with its own capabilities +</span>
+   <span class="k">"serverInfo"</span>: { <span class="k">name</span>: <span class="s">"confluence-mcp"</span> }
+→ <span class="k">"method"</span>: <span class="s">"notifications/initialized"</span></div>`,
+    note:'This happens once per session — every work order after it reuses this same connection.',
+    boundary:'⇄ Checkpoint 2: version + capability agreement over the conduit from Junction 3'},
+
+  discovery:{c:'var(--protocol)',cat:'Protocol',tag:'Junction 5 · The Spec Sheet',title:'Pull the Spec Sheet',
+    lead:'The client asks the Confluence server what it\'s able to build. The server answers with a schema for every tool it exposes.',
+    viz:()=>`<div class="toollist">
+      <div class="tool"><span class="n">confluence_search_pages</span><div class="d">CQL query → matching pages</div></div>
+      <div class="tool"><span class="n">confluence_get_page</span><div class="d">page id → full content</div></div>
+      <div class="tool"><span class="n">confluence_create_page</span><div class="d">space, title, body → new page</div></div>
+      <div class="tool"><span class="n">confluence_update_page</span><div class="d">page id + body → new version</div></div>
+      <div class="tool"><span class="n">confluence_list_spaces</span><div class="d">→ available spaces</div></div>
+    </div>`,
+    note:'These schemas are what the model actually reads — clear tool descriptions are what make it pick the right fitting.'},
+
+  selection:{c:'var(--client)',cat:'Client',tag:'Junction 6 · The Decision',title:'Choose the Fitting',
+    lead:'Reading the brief against the spec sheet, the model decides <code>confluence_create_page</code> fits, and fills in arguments from the summary it just wrote.',
+    viz:()=>`<div class="code"><span class="c">// model's chosen call</span>
+<span class="k">tool</span>: <span class="s">"confluence_create_page"</span>
+<span class="k">arguments</span>: {
+  <span class="k">space</span>: <span class="s">"ENG"</span>,
+  <span class="k">title</span>: <span class="s">"Q3 Reliability Review — Summary"</span>,
+  <span class="k">body</span>: <span class="s">"&lt;p&gt;Key findings from the uploaded report...&lt;/p&gt;"</span>
+}</div>`,
+    note:'Nothing has reached Atlassian yet — this is still entirely inside the model\'s reasoning.'},
+
+  toolcall:{c:'var(--protocol)',cat:'Protocol',tag:'Junction 7 · Checkpoint 2, reused',title:'Issue the Work Order',
+    lead:'The client packages the chosen tool and its arguments into a JSON-RPC <em>tools/call</em> request and sends it down the same connection.',
+    viz:()=>`<div class="code">→ <span class="k">"method"</span>: <span class="s">"tools/call"</span>
+   <span class="k">"params"</span>: {
+     <span class="k">"name"</span>: <span class="s">"confluence_create_page"</span>,
+     <span class="k">"arguments"</span>: { <span class="n">space</span>: <span class="s">"ENG"</span>, … }
+   }
+   <span class="k">"id"</span>: 31</div>`,
+    note:'The numeric "id" is how the client will match the eventual reply to this exact order.'},
+
+  server:{c:'var(--protocol)',cat:'Protocol',tag:'Junction 8 · Inspection',title:'Site Inspection',
+    lead:'The Confluence MCP server receives the work order and inspects it before anything is built.',
+    viz:()=>`<div class="checklist">
+      <div class="row"><span class="ok">✓</span> arguments match the confluence_create_page schema</div>
+      <div class="row"><span class="ok">✓</span> required fields present (space, title, body)</div>
+      <div class="row"><span class="ok">✓</span> stored OAuth token for this session is valid</div>
+      <div class="row"><span class="ok">✓</span> token scope covers writing, not just reading</div>
+    </div>`,
+    note:'A failed inspection here returns a JSON-RPC error — Atlassian is never contacted.'},
+
+  auth:{c:'var(--security)',cat:'Security',tag:'Junction 9 · Checkpoint 3',title:'Permit & Access Badge',
+    lead:'The MCP server — never the model — holds the real Atlassian credential and presents it at the gate. The model only ever sees "connected" or "not connected".',
+    viz:()=>`<div class="authrow">
+      <span class="authchip on">OAuth 2.0 · write:confluence-content</span>
+      <span class="authchip">refreshed automatically</span>
+    </div>
+    <div class="code"><span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="c">// token was granted during the one-time Confluence connector consent,</span>
+<span class="c">// scoped narrowly, never exposed to the LLM context</span></div>`,
+    note:'This is the credential checkpoint — the reason connecting Confluence is a deliberate, explicit step you take once.',
+    boundary:'⇄ Checkpoint 3: MCP Server ⇄ Atlassian, cleared independently of the model'},
+
+  confapi:{c:'var(--confc)',cat:'Confluence',tag:'Junction 10 · Poured',title:'Poured & Set',
+    lead:'With a valid badge, the server translates the tool arguments into a real Confluence Cloud REST API call.',
+    viz:()=>`<div class="code"><span class="n">POST</span> https://your-domain.atlassian.net/wiki/api/v2/pages
+<span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
+<span class="k">Content-Type</span>: <span class="s">application/json</span>
+
+{ <span class="k">"spaceId"</span>: <span class="s">"ENG"</span>, <span class="k">"status"</span>: <span class="s">"current"</span>,
+  <span class="k">"title"</span>: <span class="s">"Q3 Reliability Review — Summary"</span>,
+  <span class="k">"body"</span>: { <span class="k">"representation"</span>: <span class="s">"storage"</span>,
+    <span class="k">"value"</span>: <span class="s">"&lt;p&gt;Key findings...&lt;/p&gt;"</span> } }</div>`,
+    note:'To Confluence this looks like any other API client — it has no idea an LLM drafted the content.'},
+
+  confresp:{c:'var(--confc)',cat:'Confluence',tag:'Junction 11 · Inspected',title:'Stamped Inspected',
+    lead:'Confluence creates the page and answers with its identifiers.',
+    viz:()=>`<div class="code"><span class="n">200 OK</span>
+{ <span class="k">"id"</span>: <span class="s">"884741"</span>, <span class="k">"status"</span>: <span class="s">"current"</span>, <span class="k">"version"</span>: { <span class="k">"number"</span>: 1 },
+  <span class="k">"_links"</span>: { <span class="k">"webui"</span>: <span class="s">"/spaces/ENG/pages/884741"</span> } }</div>`,
+    note:'A non-2xx here (permissions, duplicate title, invalid space) is what the server turns into a useful error next.'},
+
+  result:{c:'var(--confc)',cat:'Confluence',tag:'Junction 12 · Checkpoint 4',title:'As-Built Returned',
+    lead:'The server reshapes Confluence\'s JSON into MCP\'s standard tool-result format and sends it back over the very connection that carried the work order out.',
+    viz:()=>`<div class="code">← <span class="k">"id"</span>: 31
+   <span class="k">"result"</span>: {
+     <span class="k">"content"</span>: [{ <span class="k">"type"</span>: <span class="s">"text"</span>,
+       <span class="k">"text"</span>: <span class="s">"Published: /spaces/ENG/pages/884741"</span> }],
+     <span class="k">"isError"</span>: false
+   }</div>`,
+    note:'This text lands in the model\'s context like any other message — it never sees raw Confluence JSON.',
+    boundary:'⇄ Checkpoint 4: Server ⇄ Client, same conduit as Junction 7, reverse direction'},
+
+  answer:{c:'var(--confc)',cat:'Confluence',tag:'Junction 13 · Handover',title:'Handover to Client',
+    lead:'With the as-built in context, the model composes an ordinary reply — every checkpoint above is invisible to you by this point.',
+    viz:()=>`<div class="note-slip">"I've summarized the report and published it to the Engineering space — 'Q3 Reliability Review — Summary' is live, and here's the link."</div>`,
+    note:'One request quietly cleared four checkpoints — host↔client, client↔server, server↔Atlassian, and back.'}
+};
+
+const detail=document.getElementById('detail');
+const stops=[...document.querySelectorAll('.stop')];
+const pencil=document.getElementById('pencil');
+const order=['draft','host','transport','handshake','discovery','selection','toolcall','server','auth','confapi','confresp','result','answer'];
+
+function movePencil(stopEl){
+  const left = stopEl.offsetLeft + stopEl.offsetWidth/2 - pencil.offsetWidth/2;
+  pencil.style.left = left+'px';
+}
+
+function show(k){
+  const d=content[k];
+  const stopEl=stops.find(s=>s.dataset.k===k);
+  const idx=order.indexOf(k)+1;
+  stops.forEach(s=>{
+    s.classList.toggle('active', s.dataset.k===k);
+    s.style.setProperty('--stop-c', s.dataset.c);
+  });
+  if(stopEl) movePencil(stopEl);
+  const checked = stopEl && stopEl.classList.contains('done') ? '✓ Yes' : '— Pending';
+  detail.innerHTML=`
+    <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+    <span class="tag" style="color:${d.c}">${d.tag}</span>
+    <h2>${d.title}</h2><p class="lead">${d.lead}</p>
+    <div class="viz">${d.viz()}</div><div class="note">${d.note}</div>
+    ${d.boundary?`<div class="boundary">${d.boundary}</div>`:''}
+    <div class="titleblock">
+      <div>Dwg No.<b>MCP-CNF-004.${String(idx).padStart(2,'0')}</b></div>
+      <div>Discipline<b>${d.cat}</b></div>
+      <div>Rev<b>A</b></div>
+      <div>Checked<b>${checked}</b></div>
+    </div>`;
+}
+
+stops.forEach(s=>s.addEventListener('click',()=>show(s.dataset.k)));
+window.addEventListener('load',()=>show('draft'));
+window.addEventListener('resize',()=>{const a=stops.find(s=>s.classList.contains('active'));if(a)movePencil(a);});
+
+const runBtn=document.getElementById('run');
+const outTok=document.getElementById('outTok');
+runBtn.addEventListener('click',()=>{
+  stops.forEach(s=>s.classList.remove('done'));
+  outTok.classList.remove('show');
+  runBtn.disabled=true;
+  let i=0;
+  const tick=()=>{
+    if(i>=order.length){runBtn.disabled=false;outTok.classList.add('show');return;}
+    const k=order[i];
+    const s=stops.find(x=>x.dataset.k===k);
+    if(s) s.classList.add('done');
+    show(k);
+    if(s) s.scrollIntoView({block:'nearest',inline:'center'});
+    i++;
+    setTimeout(tick,700);
+  };
+  tick();
+});
+
+const promptEl=document.getElementById('prompt');
+</script>
+</body>
+</html>
