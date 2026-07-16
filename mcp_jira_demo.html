@@ -5,102 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How MCP Connects Claude to Jira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0e0f13; --panel:#16181f; --panel2:#1c1f29; --ink:#e8e6df;
-    --muted:#8a8d99; --line:#2a2d39;
-    --input:#5b9dff; --core:#b06cff; --norm:#ffb454; --output:#ff6b5b;
-    --accent:#7df0c0; --hot:#ff4d6d;
-    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+    --paper:#F2E9D3; --paper2:#EADEBE; --card:#FBF6E9; --ink:#26241E;
+    --muted:#7C7461; --rule:#C9BC96;
+    --input:#2B5C7A; --core:#8A5A2B; --norm:#946B1E; --output:#3F7A52;
+    --red:#A5311F; --stamp:#8C2F22; --rail:#2B4C6F;
+    --mono:'Courier Prime',monospace; --body:'Work Sans',sans-serif; --disp:'Oswald',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;
-    background-image:radial-gradient(circle at 12% 8%,rgba(91,157,255,.08),transparent 40%),
-                     radial-gradient(circle at 88% 92%,rgba(176,108,255,.08),transparent 42%);}
-  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 120px}
-  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,5vw,52px);line-height:1.02;letter-spacing:-.02em}
-  header h1 em{font-style:italic;color:var(--accent)}
-  header p{color:var(--muted);max-width:680px;margin-top:14px;font-size:16px}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--body); line-height:1.55;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(38,36,30,.025) 0px, rgba(38,36,30,.025) 1px, transparent 1px, transparent 3px),
+      radial-gradient(circle at 8% 4%, rgba(165,49,31,.05), transparent 40%),
+      radial-gradient(circle at 94% 90%, rgba(43,76,111,.06), transparent 42%);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:44px 26px 120px}
 
-  .control{margin:34px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px}
-  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  /* ---- header: departure-board feel ---- */
+  .ticketno{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;color:var(--red);
+    display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding-bottom:12px;margin-bottom:18px;
+    border-bottom:2px dashed var(--rule)}
+  .ticketno span.dim{color:var(--muted)}
+  header h1{font-family:var(--disp);font-weight:600;text-transform:uppercase;letter-spacing:.01em;
+    font-size:clamp(26px,4.6vw,44px);line-height:1.12;color:var(--ink)}
+  header h1 em{font-style:normal;color:var(--red)}
+  header p{color:var(--muted);max-width:680px;margin-top:14px;font-size:15.5px}
+
+  /* ---- control: ticket counter ---- */
+  .control{margin:32px 0 8px;background:var(--card);border:1px solid var(--rule);border-radius:4px;
+    padding:20px 22px 22px;position:relative;box-shadow:0 2px 0 var(--rule)}
+  .control::before{content:"TICKET COUNTER";position:absolute;top:-11px;left:20px;background:var(--paper);
+    padding:0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--muted)}
+  .control label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px}
   .iorow{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-  .prompt{flex:1;min-width:260px;background:#0a0b0f;border:1px solid var(--line);border-radius:12px;
-    padding:14px 16px;color:var(--ink);font-family:var(--mono);font-size:15px}
-  .prompt:focus{outline:none;border-color:var(--input)}
-  button.run{background:var(--accent);color:#05140d;border:none;border-radius:12px;padding:14px 26px;
-    font-family:var(--mono);font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:.2s}
-  button.run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(125,240,192,.25)}
-  button.run:disabled{opacity:.4;cursor:wait;transform:none;box-shadow:none}
-  .answer{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:15px;color:var(--muted)}
-  .answer .tok{font-family:var(--disp);font-weight:600;font-size:22px;color:var(--accent);opacity:0;transition:.4s}
+  .prompt{flex:1;min-width:260px;background:var(--paper);border:1px dashed var(--rule);border-radius:2px;
+    padding:13px 16px;color:var(--ink);font-family:var(--mono);font-size:15px}
+  .prompt:focus{outline:none;border-color:var(--red);border-style:solid}
+  button.run{background:var(--red);color:#FBF6E9;border:none;border-radius:2px;padding:14px 24px;
+    font-family:var(--disp);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.06em;
+    cursor:pointer;transition:.2s;box-shadow:0 3px 0 var(--stamp)}
+  button.run:hover{transform:translateY(1px);box-shadow:0 2px 0 var(--stamp)}
+  button.run:disabled{opacity:.45;cursor:wait;transform:none}
+  .answer{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:14.5px;color:var(--muted);flex-wrap:wrap}
+  .answer .tok{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--output);opacity:0;transition:.4s;
+    border:2px solid var(--output);padding:3px 10px;border-radius:3px;transform:rotate(-3deg)}
   .answer .tok.show{opacity:1}
 
-  .stage{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:34px}
+  .stage{display:grid;grid-template-columns:262px 1fr;gap:22px;margin-top:34px}
   @media(max-width:820px){.stage{grid-template-columns:1fr}}
 
-  .pipe{display:flex;flex-direction:column;gap:0;position:sticky;top:20px;align-self:start}
-  .blk{border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--panel);cursor:pointer;
-    transition:.18s;position:relative}
-  .blk:hover{border-color:var(--accent)}
-  .blk.active{border-color:var(--accent);background:var(--panel2);box-shadow:0 0 0 1px var(--accent) inset}
-  .blk.done::after{content:"✓";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:12px}
-  .blk .t{font-weight:600;font-size:13px}
-  .blk .s{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
-  .blk[data-c=input]{border-left:3px solid var(--input)}
-  .blk[data-c=core]{border-left:3px solid var(--core)}
-  .blk[data-c=norm]{border-left:3px solid var(--norm)}
-  .blk[data-c=output]{border-left:3px solid var(--output)}
-  .arrow{height:15px;display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:13px}
+  /* ---- pipe: torn ticket stubs ---- */
+  .pipe{display:flex;flex-direction:column;gap:8px;position:sticky;top:20px;align-self:start}
+  .blk{border:1px solid var(--rule);border-left:none;border-radius:0 3px 3px 0;padding:11px 14px 11px 18px;
+    background:var(--card);cursor:pointer;transition:.16s;position:relative;
+    clip-path:polygon(0% 0%,4% 8%,0% 16%,4% 24%,0% 32%,4% 40%,0% 48%,4% 56%,0% 64%,4% 72%,0% 80%,4% 88%,0% 96%,0% 100%,100% 100%,100% 0%);}
+  .blk:hover{background:var(--paper2)}
+  .blk.active{background:#fff;box-shadow:0 0 0 1px var(--ink) inset}
+  .blk.done::after{content:"✓ punched";position:absolute;right:11px;top:50%;transform:translateY(-50%);
+    color:var(--output);font-size:9.5px;font-family:var(--mono);letter-spacing:.04em}
+  .blk .t{font-weight:600;font-size:13px;font-family:var(--body)}
+  .blk .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+  .blk[data-c=input]{box-shadow:inset 3px 0 0 var(--input)}
+  .blk[data-c=core]{box-shadow:inset 3px 0 0 var(--core)}
+  .blk[data-c=norm]{box-shadow:inset 3px 0 0 var(--norm)}
+  .blk[data-c=output]{box-shadow:inset 3px 0 0 var(--output)}
+  .blk.active[data-c=input]{box-shadow:0 0 0 1px var(--ink) inset, inset 3px 0 0 var(--input)}
+  .blk.active[data-c=core]{box-shadow:0 0 0 1px var(--ink) inset, inset 3px 0 0 var(--core)}
+  .blk.active[data-c=norm]{box-shadow:0 0 0 1px var(--ink) inset, inset 3px 0 0 var(--norm)}
+  .blk.active[data-c=output]{box-shadow:0 0 0 1px var(--ink) inset, inset 3px 0 0 var(--output)}
+  .arrow{height:6px;display:flex;justify-content:center;align-items:center;color:var(--rule);font-size:11px}
 
-  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px 30px;min-height:460px}
-  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
-    padding:5px 11px;border-radius:20px;margin-bottom:14px}
-  .detail h2{font-family:var(--disp);font-weight:600;font-size:28px;letter-spacing:-.01em}
+  /* ---- detail: boarding-pass card ---- */
+  .detail{background:var(--card);border:1px solid var(--rule);border-radius:5px;
+    padding:26px 28px 24px;min-height:460px;position:relative;
+    background-image:repeating-linear-gradient(180deg, transparent 0 27px, rgba(38,36,30,.05) 27px 28px);
+    background-size:100% 28px;}
+  .detail .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:5px 11px;border-radius:2px;margin-bottom:14px;border:1px solid currentColor}
+  .detail h2{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:25px;letter-spacing:.01em}
   .detail .lead{color:var(--ink);margin-top:10px;font-size:15px}
-  .detail .viz{margin-top:22px;background:#0a0b0f;border:1px solid var(--line);border-radius:14px;padding:20px;overflow-x:auto}
-  .detail .note{margin-top:18px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
-  .detail .boundary{margin-top:14px;font-family:var(--mono);font-size:11.5px;color:var(--hot);border:1px dashed var(--hot);
-    border-radius:8px;padding:9px 12px;background:rgba(255,77,109,.06)}
+  .detail .viz{margin-top:20px;background:var(--paper);border:1px solid var(--rule);border-radius:4px;
+    padding:18px 20px;overflow-x:auto}
+  .detail .note{margin-top:18px;color:var(--muted);font-size:13px;border-top:1px dashed var(--rule);padding-top:14px}
+  .detail .boundary{margin-top:16px;font-family:var(--mono);font-size:11.5px;color:var(--stamp);
+    border:3px double var(--stamp);border-radius:3px;padding:10px 14px;background:rgba(165,49,31,.05);
+    text-transform:uppercase;letter-spacing:.05em;transform:rotate(-1deg);display:inline-block}
 
-  .code{font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--ink);line-height:1.65}
-  .code .k{color:var(--input)} .code .s{color:var(--accent)} .code .n{color:var(--norm)} .code .c{color:var(--muted)}
+  .code{font-family:var(--mono);font-size:12px;white-space:pre-wrap;word-break:break-word;color:var(--ink);line-height:1.7}
+  .code .k{color:var(--input)} .code .s{color:var(--output)} .code .n{color:var(--norm)} .code .c{color:var(--muted)}
 
   .toollist{display:flex;flex-direction:column;gap:8px}
-  .tool{border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--panel2)}
-  .tool .n{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .tool{border:1px solid var(--rule);border-radius:3px;padding:10px 13px;background:var(--card)}
+  .tool .n{font-family:var(--mono);font-size:12.5px;color:var(--stamp)}
   .tool .d{font-size:12px;color:var(--muted);margin-top:3px}
 
   .checklist{display:flex;flex-direction:column;gap:7px;font-family:var(--mono);font-size:12.5px}
   .checklist .row{display:flex;gap:8px;align-items:flex-start}
-  .checklist .ok{color:var(--accent)}
+  .checklist .ok{color:var(--output)}
 
   .authrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-  .authchip{font-family:var(--mono);font-size:11.5px;padding:7px 11px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
-  .authchip.on{border-color:var(--norm);color:var(--norm);background:rgba(255,180,84,.08)}
+  .authchip{font-family:var(--mono);font-size:11.5px;padding:7px 11px;border-radius:20px;border:1px solid var(--rule);color:var(--muted)}
+  .authchip.on{border-color:var(--norm);color:var(--norm);background:rgba(148,107,30,.08)}
 
-  .vec{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel2);padding:8px 11px;border-radius:8px;border:1px solid var(--line)}
+  .vec{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--card);padding:10px 12px;
+    border-radius:3px;border:1px dashed var(--rule)}
 
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px;font-family:var(--mono);font-size:11px;color:var(--muted)}
-  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:middle}
   .hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:24px;text-align:center}
 
-  .connmap{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px}
-  .connmap h3{font-family:var(--disp);font-size:21px;font-weight:600;margin-bottom:6px}
-  .connmap p{color:var(--muted);font-size:13.5px;max-width:640px;margin-bottom:18px}
+  /* ---- connmap: rail line with ticket-window stations ---- */
+  .connmap{margin-top:38px;background:var(--card);border:1px solid var(--rule);border-radius:5px;padding:26px 26px 22px}
+  .connmap h3{font-family:var(--disp);text-transform:uppercase;font-size:20px;font-weight:600;margin-bottom:6px}
+  .connmap p{color:var(--muted);font-size:13.5px;max-width:640px;margin-bottom:20px}
   .chain{display:flex;align-items:center;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:12px}
-  .node{border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:var(--panel2);text-align:center}
+  .node{border:1px solid var(--rule);border-radius:3px;padding:10px 13px;background:var(--paper);text-align:center;position:relative}
+  .node::before{content:"";position:absolute;left:50%;top:-5px;transform:translateX(-50%);width:8px;height:8px;
+    border-radius:50%;background:var(--rail)}
   .node .nn{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
   .edge{padding:0 4px;color:var(--muted);display:flex;flex-direction:column;align-items:center;font-size:9.5px;min-width:78px;text-align:center}
-  .edge .num{width:20px;height:20px;border-radius:50%;background:var(--hot);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;margin-bottom:4px;font-family:var(--mono)}
-  .edge .ln{width:100%;height:1px;background:var(--line);margin:3px 0}
-  @media(max-width:820px){.chain{flex-direction:column}.edge{flex-direction:row;min-width:0;gap:8px;padding:6px 0}.edge .ln{width:1px;height:16px}}
+  .edge .num{width:22px;height:22px;border-radius:50%;background:transparent;color:var(--stamp);
+    border:2px solid var(--stamp);display:flex;align-items:center;justify-content:center;font-size:11px;
+    margin-bottom:4px;font-family:var(--disp);font-weight:600;transform:rotate(-6deg)}
+  .edge .ln{width:100%;height:0;border-top:2px dashed var(--rail);margin:3px 0}
+  @media(max-width:820px){.chain{flex-direction:column}.edge{flex-direction:row;min-width:0;gap:8px;padding:6px 0}.edge .ln{width:0;height:16px;border-top:none;border-left:2px dashed var(--rail)}}
 
-  .keypoints{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-  .kp{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--panel2)}
-  .kp .num{font-family:var(--mono);font-size:11px;color:var(--hot)}
+  .keypoints{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .kp{border:1px solid var(--rule);border-radius:0 3px 3px 0;padding:14px 15px 14px 17px;background:var(--paper);
+    box-shadow:inset 3px 0 0 var(--stamp)}
+  .kp .num{font-family:var(--mono);font-size:11px;color:var(--stamp)}
   .kp .tt{font-weight:600;font-size:13.5px;margin-top:4px}
   .kp .dd{font-size:12px;color:var(--muted);margin-top:4px}
 </style>
@@ -108,15 +146,16 @@
 <body>
 <div class="wrap">
 <header>
-  <h1>Inside the wire:<br>how MCP carries <em>“file a Jira bug”</em> from Claude to <em>Jira Cloud.</em></h1>
-  <p>Type a request, hit run, then click any block on the left to inspect exactly what crosses each boundary — host, transport, MCP server, and the Jira API itself. Every connecting point in the chain is labelled below.</p>
+  <div class="ticketno"><span>TICKET NO. MCP-0104</span><span class="dim">·</span><span>ROUTE: CLAUDE → JIRA CLOUD</span><span class="dim">·</span><span>4 CHECKPOINTS</span></div>
+  <h1>Every stop a request makes <em>on its way</em> from Claude to a Jira ticket.</h1>
+  <p>Type a request, punch it through, then click any stub on the left to inspect exactly what crosses each checkpoint — host, transport, MCP server, and the Jira API itself. Every connecting point is logged below like a station on the line.</p>
 </header>
 
 <div class="control">
   <label>Your request to Claude</label>
   <div class="iorow">
     <input class="prompt" id="prompt" value="File a bug: login times out after 30s on prod" spellcheck="false">
-    <button class="run" id="run">▶ Trace the call</button>
+    <button class="run" id="run">Punch &amp; Trace →</button>
   </div>
   <div class="answer">
     <span>Final result:</span>
@@ -162,11 +201,11 @@
   <span><i style="background:var(--norm)"></i>Handshake &amp; security</span>
   <span><i style="background:var(--output)"></i>Jira &amp; final output</span>
 </div>
-<div class="hint">Tip: click “▶ Trace the call” to animate the full round trip, or click any block to inspect it.</div>
+<div class="hint">Tip: click “Punch &amp; Trace →” to animate the full round trip, or click any stub to inspect it.</div>
 
 <div class="connmap">
   <h3>Every connecting point, end to end</h3>
-  <p>MCP doesn't talk to Jira directly — it's a chain of four distinct boundaries. Each one has its own protocol, its own failure mode, and its own thing to configure.</p>
+  <p>MCP doesn't talk to Jira directly — it's a chain of four distinct checkpoints. Each one has its own protocol, its own failure mode, and its own thing to configure.</p>
   <div class="chain">
     <div class="node">Claude<div class="nn">LLM + MCP Host</div></div>
     <div class="edge"><div class="num">1</div>stdio / HTTP<div class="ln"></div>JSON-RPC 2.0</div>
@@ -278,7 +317,7 @@ const content = {
     <div class="code"><span class="k">Authorization</span>: <span class="s">Bearer &lt;access_token&gt;</span>
 <span class="c">// token was obtained during the connector's one-time OAuth consent,</span>
 <span class="c">// refreshed automatically, never exposed to the LLM context</span></div>`,
-    note:'This is the credential boundary — it\'s the reason connecting a service is a deliberate, explicit step for the user.',
+    note:'This is the credential checkpoint — it\'s the reason connecting a service is a deliberate, explicit step for the user.',
     boundary:'⇄ Connecting point 3: MCP Server ⇄ Jira Cloud, secured independently of the model'},
 
   jiraapi:{c:'output',tag:'Step 10 · External API',title:'Jira REST API Call',
@@ -315,7 +354,7 @@ const content = {
   answer:{c:'output',tag:'Step 13 · Back to User',title:'Final Answer',
     lead:'With the tool result in context, the model composes a normal reply — the JSON-RPC envelope and the API call are invisible to you by this point.',
     viz:()=>`<div class="vec">"I've filed <b>PROJ-482</b> — Login times out after 30s on prod. Marked as a Bug in PROJ. Here's the link: your-domain.atlassian.net/browse/PROJ-482"</div>`,
-    note:'One user turn quietly crossed four separate boundaries — host↔client, client↔server, server↔Jira, and back.'}
+    note:'One user turn quietly crossed four separate checkpoints — host↔client, client↔server, server↔Jira, and back.'}
 };
 
 const detail=document.getElementById('detail');
