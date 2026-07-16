@@ -360,6 +360,7 @@ const content = {
 const detail=document.getElementById('detail');
 const blks=[...document.querySelectorAll('.blk')];
 const cmap={input:'var(--input)',core:'var(--core)',norm:'var(--norm)',output:'var(--output)'};
+const promptEl=document.getElementById('prompt');
 
 function show(k){
   const d=content[k];
@@ -394,7 +395,6 @@ runBtn.addEventListener('click',()=>{
   tick();
 });
 
-const promptEl=document.getElementById('prompt');
 promptEl.addEventListener('input',()=>{
   const v=promptEl.value.trim()||'your request';
   const lbl=blks.find(b=>b.dataset.k==='prompt').querySelector('.t');
