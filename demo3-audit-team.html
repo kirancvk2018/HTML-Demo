@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Agent Audit Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e16; --panel:#15191f; --panel2:#1b2130; --ink:#e8e6df; --muted:#8a8d99; --line:#2d3847;
+    --a1:#6a5aff; --a2:#9f5aff; --a3:#ff5a8f; --a4:#ffa85a;
+    --accent:#a78bfa; --success:#5eff8f;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);
+    background-image:radial-gradient(circle at 12% 18%,rgba(106,90,255,.07),transparent 50%),
+                     radial-gradient(circle at 88% 82%,rgba(255,90,143,.07),transparent 50%);}
+  .container{max-width:1400px;margin:0 auto;padding:30px 20px}
+  
+  header{margin-bottom:40px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4vw,44px);line-height:1.1}
+  header h1 em{color:var(--a1);font-style:italic}
+  header p{color:var(--muted);margin-top:10px;font-size:14px;max-width:700px}
+
+  .control-bar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;align-items:center}
+  .control-bar input{flex:1;min-width:250px;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font-family:var(--mono);font-size:12px}
+  .control-bar input:focus{outline:none;border-color:var(--a1)}
+  .btn{background:var(--a1);color:#140d1a;border:none;padding:10px 20px;border-radius:8px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 16px rgba(106,90,255,.3)}
+  .btn:disabled{opacity:.4;cursor:wait}
+
+  .team-workspace{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:40px}
+  @media(max-width:800px){.team-workspace{grid-template-columns:1fr}}
+
+  .agent-station{background:linear-gradient(135deg,rgba(106,90,255,.08),rgba(159,90,255,.04));border:2px solid var(--line);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:.3s}
+  .agent-station::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:0}
+  .agent-station.active{border-color:var(--accent);background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(159,90,255,.06))}
+  .agent-station.active::before{opacity:1;animation:shimmer 1.5s infinite}
+  @keyframes shimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+  .agent-station.done{border-color:var(--success);background:rgba(94,255,143,.05)}
+
+  .agent-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .agent-avatar{width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;font-weight:700}
+  .agent-avatar.agent-1{background:linear-gradient(135deg,var(--a1),#5541cc);color:#fff}
+  .agent-avatar.agent-2{background:linear-gradient(135deg,var(--a2),#7d3ba5);color:#fff}
+  .agent-avatar.agent-3{background:linear-gradient(135deg,var(--a3),#cc3d6f);color:#fff}
+  .agent-avatar.agent-4{background:linear-gradient(135deg,var(--a4),#cc8c3d);color:#fff}
+
+  .agent-info h3{font-family:var(--disp);font-size:16px;font-weight:600}
+  .agent-info .role{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+
+  .task-detail{background:rgba(0,0,0,.2);border-radius:10px;padding:14px;margin-top:14px;min-height:100px;max-height:180px;overflow-y:auto}
+  .task-detail.empty{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+  .task-item{margin:6px 0;padding:8px;background:rgba(255,255,255,.05);border-left:2px solid var(--muted);border-radius:4px;font-size:11px;animation:slideIn .3s ease-out}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .task-item.active{border-left-color:var(--accent);background:rgba(167,139,250,.1);color:var(--ink)}
+  .task-item.done{border-left-color:var(--success);opacity:.6}
+
+  .handoff-zone{background:var(--panel);border:2px dashed var(--line);border-radius:12px;padding:24px;text-align:center;margin:24px 0;min-height:80px;display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .handoff-zone.active{border-color:var(--a1);background:rgba(106,90,255,.05)}
+  .handoff-arrow{font-size:28px;animation:bounce 1s infinite;margin-bottom:8px}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .handoff-text{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .handoff-data{font-size:12px;color:var(--accent);margin-top:8px;font-weight:600}
+
+  .findings-panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;grid-column:1/-1}
+  .findings-title{font-family:var(--disp);font-size:22px;font-weight:600;margin-bottom:20px}
+  .findings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+  .finding-card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;border-left:4px solid var(--a3)}
+  .finding-card.risk-high{border-left-color:var(--a3)}
+  .finding-card.risk-med{border-left-color:var(--a4)}
+  .finding-card h4{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)}
+  .finding-card p{font-size:11px;color:var(--muted);line-height:1.4}
+  .finding-risk{display:inline-block;font-family:var(--mono);font-size:9px;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:8px}
+  .finding-risk.high{background:rgba(255,90,143,.2);color:var(--a3)}
+  .finding-risk.med{background:rgba(255,168,90,.2);color:var(--a4)}
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Internal Audit <em>Multi-Agent Team</em></h1>
+    <p>Watch 4 specialized audit agents work in sequence. Data flows from one agent to the next, each adding expertise and insights. From raw data → findings → risk assessment → professional audit report.</p>
+  </header>
+
+  <div class="control-bar">
+    <input type="text" id="scope" value="Accounts Payable Process - Q3 2024" spellcheck="false">
+    <button class="btn" id="start">▶ Start Audit</button>
+    <button class="btn" id="reset" style="background:var(--a4)">↺ Reset</button>
+  </div>
+
+  <div class="team-workspace">
+    <!-- AGENT 1: COLLECTOR -->
+    <div class="agent-station" id="station-1">
+      <div class="agent-header">
+        <div class="agent-avatar agent-1">1</div>
+        <div class="agent-info">
+          <h3>Collector</h3>
+          <div class="role">Data Extraction</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:10px 0">Gathers all audit evidence</div>
+      <div class="task-detail empty" id="tasks-1">
+        <span>Waiting to start...</span>
+      </div>
+    </div>
+
+    <!-- AGENT 2: ANALYST -->
+    <div class="agent-station" id="station-2">
+      <div class="agent-header">
+        <div class="agent-avatar agent-2">2</div>
+        <div class="agent-info">
+          <h3>Analyst</h3>
+          <div class="role">Pattern Detection</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:10px 0">Examines for anomalies</div>
+      <div class="task-detail empty" id="tasks-2">
+        <span>Waiting for data...</span>
+      </div>
+    </div>
+
+    <!-- AGENT 3: EVALUATOR -->
+    <div class="agent-station" id="station-3">
+      <div class="agent-header">
+        <div class="agent-avatar agent-3">3</div>
+        <div class="agent-info">
+          <h3>Evaluator</h3>
+          <div class="role">Risk Assessment</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:10px 0">Prioritizes findings</div>
+      <div class="task-detail empty" id="tasks-3">
+        <span>Waiting for analysis...</span>
+      </div>
+    </div>
+
+    <!-- AGENT 4: COMMUNICATOR -->
+    <div class="agent-station" id="station-4">
+      <div class="agent-header">
+        <div class="agent-avatar agent-4">4</div>
+        <div class="agent-info">
+          <h3>Communicator</h3>
+          <div class="role">Report Generation</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin:10px 0">Delivers audit report</div>
+      <div class="task-detail empty" id="tasks-4">
+        <span>Waiting for risks...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HANDOFF INDICATORS -->
+  <div id="handoffs-container"></div>
+
+  <!-- FINDINGS PANEL -->
+  <div class="findings-panel" id="findings-panel" style="display:none">
+    <div class="findings-title">📋 Audit Findings</div>
+    <div class="findings-grid" id="findings-grid"></div>
+  </div>
+</div>
+
+<script>
+const agents = [
+  {
+    id: 1,
+    name: "Collector",
+    role: "Data Extraction",
+    color: "--a1",
+    tasks: ["Parse audit scope", "Retrieve AP system data", "Extract 3,247 invoices", "Validate completeness"],
+    duration: 2200,
+    outputs: ["3,247 invoices extracted", "2,891 POs matched", "156 unmatched items"]
+  },
+  {
+    id: 2,
+    name: "Analyst",
+    role: "Pattern Detection",
+    color: "--a2",
+    tasks: ["Analyze invoice patterns", "Detect duplicates", "Flag approval anomalies", "Identify vendor concentration"],
+    duration: 2400,
+    outputs: ["3 duplicate payments found", "156 unauthorized approvals", "Top 5 vendors = 64% spend"]
+  },
+  {
+    id: 3,
+    name: "Evaluator",
+    role: "Risk Assessment",
+    color: "--a3",
+    tasks: ["Calculate financial impact", "Assess control gaps", "Rate likelihood & impact", "Prioritize findings"],
+    duration: 2000,
+    outputs: ["4 high-risk findings identified", "$7.2M exposure quantified", "30-day remediation window"]
+  },
+  {
+    id: 4,
+    name: "Communicator",
+    role: "Report Generation",
+    color: "--a4",
+    tasks: ["Compile audit report", "Create executive summary", "Document root causes", "Propose remediation"],
+    duration: 1800,
+    outputs: ["Audit report generated", "Risk matrix completed", "Ready for management review"]
+  }
+];
+
+const findings = [
+  { title: "Duplicate Payment Risk", desc: "3 invoices with identical amounts, 2-day gaps, different POs identified.", risk: "high" },
+  { title: "Approval Policy Breach", desc: "156 invoices (4.8%) approved above threshold by unauthorized users ($7.2M exposure).", risk: "high" },
+  { title: "Vendor Concentration", desc: "Top 5 vendors represent 64% of spend. Vendor A alone = 28% ($5.1M).", risk: "med" },
+  { title: "Slow Payment Cycle", desc: "Average DPO increased from 62 to 71 days. Potential $156K discount loss annually.", risk: "med" }
+];
+
+let currentAgent = 0;
+let isRunning = false;
+
+function showHandoff(fromAgent, toAgent) {
+  if (toAgent > 4) return;
+  
+  const container = document.getElementById('handoffs-container');
+  const handoff = document.createElement('div');
+  handoff.className = 'handoff-zone active';
+  handoff.innerHTML = `
+    <div class="handoff-arrow">↓</div>
+    <div class="handoff-text">Agent ${fromAgent} → Agent ${toAgent}</div>
+    <div class="handoff-data" id="handoff-data-${fromAgent}"></div>
+  `;
+  container.appendChild(handoff);
+  
+  setTimeout(() => {
+    handoff.style.animation = 'fadeOut .5s ease-out';
+    setTimeout(() => handoff.remove(), 500);
+  }, 1500);
+}
+
+function addTask(agentId, task, isActive = true) {
+  const container = document.getElementById(`tasks-${agentId}`);
+  if (container.querySelector('.empty')) {
+    container.innerHTML = '';
+  }
+  
+  const item = document.createElement('div');
+  item.className = `task-item ${isActive ? 'active' : ''}`;
+  item.textContent = task;
+  container.appendChild(item);
+  
+  if (isActive) {
+    setTimeout(() => {
+      item.classList.remove('active');
+      item.classList.add('done');
+    }, 800);
+  }
+}
+
+function executeAgent(index) {
+  if (index >= agents.length) {
+    document.getElementById('findings-panel').style.display = 'block';
+    showFindings();
+    return;
+  }
+
+  const agent = agents[index];
+  const station = document.getElementById(`station-${agent.id}`);
+
+  station.classList.add('active');
+  
+  // Add tasks
+  agent.tasks.forEach((task, i) => {
+    setTimeout(() => addTask(agent.id, task, true), i * 400);
+  });
+
+  setTimeout(() => {
+    station.classList.remove('active');
+    station.classList.add('done');
+    
+    // Show handoff
+    if (index < agents.length - 1) {
+      showHandoff(agent.id, agent.id + 1);
+    }
+    
+    setTimeout(() => executeAgent(index + 1), 1200);
+  }, agent.duration);
+}
+
+function showFindings() {
+  const grid = document.getElementById('findings-grid');
+  grid.innerHTML = '';
+  
+  findings.forEach((finding, i) => {
+    const card = document.createElement('div');
+    card.className = `finding-card risk-${finding.risk}`;
+    card.innerHTML = `
+      <h4>${finding.title}</h4>
+      <p>${finding.desc}</p>
+      <span class="finding-risk ${finding.risk}">${finding.risk} RISK</span>
+    `;
+    card.style.animation = `slideIn .5s ease-out ${i * 0.15}s backwards`;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('start').addEventListener('click', () => {
+  if (isRunning) return;
+  
+  isRunning = true;
+  currentAgent = 0;
+  document.getElementById('start').disabled = true;
+  document.getElementById('findings-panel').style.display = 'none';
+  document.getElementById('handoffs-container').innerHTML = '';
+  
+  // Reset all stations
+  document.querySelectorAll('.agent-station').forEach((el, i) => {
+    el.classList.remove('active', 'done');
+    document.getElementById(`tasks-${i + 1}`).innerHTML = `<span style="color:var(--muted);font-size:12px">${i === 0 ? 'Waiting to start...' : 'Waiting for data...'}</span>`;
+    document.getElementById(`tasks-${i + 1}`).classList.add('empty');
+  });
+  
+  executeAgent(0);
+  
+  setTimeout(() => {
+    isRunning = false;
+    document.getElementById('start').disabled = false;
+  }, agents.reduce((sum, a) => sum + a.duration, 0) + 3000);
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  isRunning = false;
+  currentAgent = 0;
+  document.getElementById('start').disabled = false;
+  document.getElementById('findings-panel').style.display = 'none';
+  document.getElementById('handoffs-container').innerHTML = '';
+  
+  document.querySelectorAll('.agent-station').forEach((el, i) => {
+    el.classList.remove('active', 'done');
+    const label = i === 0 ? 'Waiting to start...' : 'Waiting for data...';
+    document.getElementById(`tasks-${i + 1}`).innerHTML = `<span style="color:var(--muted);font-size:12px">${label}</span>`;
+    document.getElementById(`tasks-${i + 1}`).classList.add('empty');
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Agent Control Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c14; --panel:#141a26; --panel2:#1a2236; --ink:#e8e6df; --muted:#8a8d99; --line:#2a3a52;
+    --agent:#5bcdff; --success:#5eff8f; --warning:#ffb454; --error:#ff6b6b;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);
+    background-image:radial-gradient(circle at 15% 15%,rgba(91,205,255,.07),transparent 50%),
+                     radial-gradient(circle at 85% 85%,rgba(94,255,143,.07),transparent 50%);}
+  .container{max-width:1400px;margin:0 auto;padding:30px 20px}
+  
+  header{margin-bottom:32px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(24px,4vw,44px);line-height:1.1}
+  header h1 em{color:var(--agent);font-style:italic}
+  header p{color:var(--muted);margin-top:10px;font-size:14px}
+
+  .control-bar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:28px}
+  .control-bar input{flex:1;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font-family:var(--mono);font-size:12px}
+  .control-bar input:focus{outline:none;border-color:var(--agent)}
+  .btn{background:var(--agent);color:#051428;border:none;padding:10px 20px;border-radius:8px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;transition:.2s}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 16px rgba(91,205,255,.3)}
+  .btn:disabled{opacity:.4;cursor:wait}
+  .btn.stop{background:var(--error)}
+
+  .dashboard{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+  @media(max-width:1000px){.dashboard{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;position:relative}
+  .card.accent-agent{border-color:var(--agent);border-left:4px solid var(--agent)}
+  .card.accent-success{border-color:var(--success);border-left:4px solid var(--success)}
+  .card-title{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+  .card-title.agent-label{color:var(--agent)}
+  .card-title.success-label{color:var(--success)}
+
+  .agent-display{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+  .agent-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--agent),#2b7dd9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+  .agent-info h3{font-family:var(--disp);font-size:18px;font-weight:600}
+  .agent-info .status{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px}
+  .status-indicator{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse .8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .metric{background:rgba(91,205,255,.08);padding:12px;border-radius:8px;border-left:2px solid var(--agent)}
+  .metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .metric-value{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--agent);margin-top:6px}
+
+  .work-log{max-height:320px;overflow-y:auto;margin-top:16px}
+  .log-entry{padding:10px;margin:6px 0;background:rgba(0,0,0,.2);border-left:2px solid var(--line);border-radius:4px;font-size:11px;font-family:var(--mono);animation:slideInLeft .3s ease-out}
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .log-entry.success{border-left-color:var(--success);color:var(--success)}
+  .log-entry.warning{border-left-color:var(--warning);color:var(--warning)}
+  .log-entry .time{color:var(--muted);margin-right:8px}
+
+  .work-queue{max-height:400px;overflow-y:auto}
+  .queue-item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px;transition:.2s}
+  .queue-item.active{border-color:var(--agent);background:rgba(91,205,255,.08)}
+  .queue-item.done{opacity:.5;border-color:var(--success);background:rgba(94,255,143,.05)}
+  .queue-header{display:flex;justify-content:space-between;align-items:center}
+  .queue-title{font-weight:600;font-size:13px}
+  .queue-status{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .queue-progress{margin-top:8px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+  .queue-progress-bar{height:100%;background:var(--agent);width:0%;transition:width .3s}
+
+  .output-stream{max-height:400px;overflow-y:auto;background:rgba(0,0,0,.3);border-radius:10px;padding:14px;border:1px solid var(--line)}
+  .output-item{margin:8px 0;padding:10px;background:var(--panel2);border-radius:6px;font-size:12px;animation:fadeIn .3s ease-out}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .output-item .phase{font-family:var(--mono);font-size:9px;color:var(--agent);font-weight:700}
+  .output-item .text{color:var(--ink);margin-top:4px;line-height:1.4}
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--agent)}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Automation Agent Control<br><em>Monthly Reporting Daemon</em></h1>
+    <p>Real-time dashboard monitoring Claude's autonomous report generation. Watch it extract, calculate, compose, format, and deliver—without human intervention.</p>
+  </header>
+
+  <div class="control-bar">
+    <input type="text" id="period" value="September 2024 Financial Report" spellcheck="false">
+    <button class="btn" id="start">▶ Deploy Agent</button>
+    <button class="btn stop" id="stop" style="display:none">⊘ Stop</button>
+  </div>
+
+  <div class="dashboard">
+    <!-- LEFT: AGENT STATUS & METRICS -->
+    <div>
+      <div class="card accent-agent">
+        <div class="card-title agent-label">🤖 Active Agent</div>
+        <div class="agent-display">
+          <div class="agent-icon">⚙️</div>
+          <div class="agent-info">
+            <h3>Claude Automaton</h3>
+            <div class="status">
+              <span class="status-indicator"></span>
+              <span id="agent-status">Idle</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Execution Time</div>
+            <div class="metric-value" id="exec-time">00:00</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Tasks Done</div>
+            <div class="metric-value" id="tasks-done">0/5</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Data Points</div>
+            <div class="metric-value" id="data-points">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value" id="error-count" style="color:var(--success)">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">📋 Work Queue</div>
+        <div class="work-queue" id="work-queue">
+          <div class="queue-item">
+            <div class="queue-header">
+              <span class="queue-title">1. Extract GL Data</span>
+              <span class="queue-status">Queued</span>
+            </div>
+            <div class="queue-progress"><div class="queue-progress-bar"></div></div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-header">
+              <span class="queue-title">2. Calculate Metrics</span>
+              <span class="queue-status">Queued</span>
+            </div>
+            <div class="queue-progress"><div class="queue-progress-bar"></div></div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-header">
+              <span class="queue-title">3. Compose Narrative</span>
+              <span class="queue-status">Queued</span>
+            </div>
+            <div class="queue-progress"><div class="queue-progress-bar"></div></div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-header">
+              <span class="queue-title">4. Format & Validate</span>
+              <span class="queue-status">Queued</span>
+            </div>
+            <div class="queue-progress"><div class="queue-progress-bar"></div></div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-header">
+              <span class="queue-title">5. Deliver Report</span>
+              <span class="queue-status">Queued</span>
+            </div>
+            <div class="queue-progress"><div class="queue-progress-bar"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: LIVE OUTPUT & LOG -->
+    <div>
+      <div class="card accent-success">
+        <div class="card-title success-label">📡 Live Output Stream</div>
+        <div class="output-stream" id="output-stream">
+          <div style="color:var(--muted);font-size:12px;text-align:center;padding:40px 20px">Waiting for agent deployment...</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">📍 Execution Log</div>
+        <div class="work-log" id="log-stream"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {
+    name: "Extract GL Data",
+    duration: 2000,
+    log: "Connecting to GL system...",
+    outputs: [
+      { phase: "EXTRACT", text: "Retrieving GL chart of accounts..." },
+      { phase: "EXTRACT", text: "Processing 2,847 GL entries for period" },
+      { phase: "EXTRACT", text: "Trial balance extracted: Debits = Credits ✓" }
+    ]
+  },
+  {
+    name: "Calculate Metrics",
+    duration: 2200,
+    log: "Computing financial ratios and variances...",
+    outputs: [
+      { phase: "CALC", text: "Revenue: $512.2M | Growth: +12.3% YoY" },
+      { phase: "CALC", text: "Gross Margin: 48.8% | vs Budget: 51.2% (-240bps)" },
+      { phase: "CALC", text: "OpEx Ratio: 22.1% | Variance: -190bps favorable" }
+    ]
+  },
+  {
+    name: "Compose Narrative",
+    duration: 2400,
+    log: "Writing management commentary...",
+    outputs: [
+      { phase: "COMPOSE", text: "Executive summary: Revenue strong; margin pressure noted" },
+      { phase: "COMPOSE", text: "Variance analysis: Supply costs up $14M YTD" },
+      { phase: "COMPOSE", text: "Forward guidance: Expect margin recovery Q4" }
+    ]
+  },
+  {
+    name: "Format & Validate",
+    duration: 1800,
+    log: "Validating report integrity...",
+    outputs: [
+      { phase: "VALIDATE", text: "P&L totals reconcile to GL ✓" },
+      { phase: "VALIDATE", text: "All footnotes complete ✓" },
+      { phase: "VALIDATE", text: "Report quality score: 98% ✓" }
+    ]
+  },
+  {
+    name: "Deliver Report",
+    duration: 1200,
+    log: "Packaging and distributing...",
+    outputs: [
+      { phase: "DELIVER", text: "PDF generated: Sept_2024_Financial_Report.pdf" },
+      { phase: "DELIVER", text: "Email queued to: CFO, Controller, FPA team" },
+      { phase: "DELIVER", text: "Report archived. Total time: 9.6 seconds" }
+    ]
+  }
+];
+
+let isRunning = false;
+let startTime = 0;
+let phaseIndex = 0;
+
+function log(text, type = 'normal') {
+  const logStream = document.getElementById('log-stream');
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${type}`;
+  const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  entry.innerHTML = `<span class="time">[${now}]</span> ${text}`;
+  logStream.appendChild(entry);
+  logStream.scrollTop = logStream.scrollHeight;
+}
+
+function updateMetrics() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  document.getElementById('exec-time').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+function addOutput(item) {
+  const stream = document.getElementById('output-stream');
+  if (stream.querySelector('[style*="text-align:center"]')) {
+    stream.innerHTML = '';
+  }
+  const output = document.createElement('div');
+  output.className = 'output-item';
+  output.innerHTML = `<div class="phase">${item.phase}</div><div class="text">${item.text}</div>`;
+  stream.appendChild(output);
+  stream.scrollTop = stream.scrollHeight;
+}
+
+function executePhase(index) {
+  if (index >= phases.length) {
+    document.getElementById('agent-status').textContent = 'Complete';
+    document.getElementById('start').disabled = false;
+    document.getElementById('stop').style.display = 'none';
+    document.getElementById('start').textContent = '▶ Deploy Agent';
+    isRunning = false;
+    log('All phases completed successfully ✓', 'success');
+    return;
+  }
+
+  const phase = phases[index];
+  const queueItems = document.querySelectorAll('.queue-item');
+  const currentQueueItem = queueItems[index];
+
+  document.getElementById('tasks-done').textContent = `${index + 1}/${phases.length}`;
+  log(`Starting: ${phase.name}`, 'success');
+
+  currentQueueItem.classList.add('active');
+  currentQueueItem.querySelector('.queue-status').textContent = 'Running...';
+
+  // Simulate output
+  phase.outputs.forEach((out, i) => {
+    setTimeout(() => addOutput(out), i * (phase.duration / phase.outputs.length));
+  });
+
+  setTimeout(() => {
+    currentQueueItem.classList.remove('active');
+    currentQueueItem.classList.add('done');
+    currentQueueItem.querySelector('.queue-status').textContent = 'Done ✓';
+    currentQueueItem.querySelector('.queue-progress-bar').style.width = '100%';
+    log(`Completed: ${phase.name}`, 'success');
+    
+    setTimeout(() => executePhase(index + 1), 600);
+  }, phase.duration);
+}
+
+document.getElementById('start').addEventListener('click', () => {
+  if (isRunning) return;
+  
+  isRunning = true;
+  phaseIndex = 0;
+  startTime = Date.now();
+  
+  document.getElementById('start').disabled = true;
+  document.getElementById('stop').style.display = 'block';
+  document.getElementById('agent-status').textContent = 'Running';
+  document.getElementById('log-stream').innerHTML = '';
+  document.getElementById('output-stream').innerHTML = '<div style="color:var(--muted);font-size:12px">Agent starting...</div>';
+  document.getElementById('tasks-done').textContent = '0/5';
+  document.getElementById('data-points').textContent = '0';
+  document.getElementById('error-count').textContent = '0';
+  
+  document.querySelectorAll('.queue-item').forEach(el => {
+    el.classList.remove('active', 'done');
+    el.querySelector('.queue-status').textContent = 'Queued';
+    el.querySelector('.queue-progress-bar').style.width = '0%';
+  });
+  
+  log('Agent deployed successfully');
+  log('Reading GL database...');
+  
+  const interval = setInterval(() => {
+    if (isRunning) updateMetrics();
+    else clearInterval(interval);
+  }, 500);
+  
+  setTimeout(() => executePhase(0), 800);
+});
+
+document.getElementById('stop').addEventListener('click', () => {
+  isRunning = false;
+  document.getElementById('agent-status').textContent = 'Stopped';
+  document.getElementById('start').disabled = false;
+  document.getElementById('stop').style.display = 'none';
+  document.getElementById('start').textContent = '▶ Resume';
+  log('Agent stopped by user', 'warning');
+});
+</script>
+
+</body>
+</html>

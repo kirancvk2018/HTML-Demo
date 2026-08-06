@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Close Coordination Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d15; --panel:#141a26; --panel2:#1a2234; --ink:#e8e6df; --muted:#8a8d99; --line:#2a3a52;
+    --ar:#4ecdc4; --gl:#ffd93d; --comp:#6c63ff; --hub:#ff6b9d;
+    --accent:#4ecdc4; --success:#5eff8f;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);
+    background-image:radial-gradient(circle at 20% 20%,rgba(255,107,157,.06),transparent 50%),
+                     radial-gradient(circle at 80% 80%,rgba(78,205,196,.06),transparent 50%);}
+  .container{max-width:1400px;margin:0 auto;padding:30px 20px}
+  
+  header{margin-bottom:40px;text-align:center}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4vw,44px);line-height:1.1}
+  header h1 em{color:var(--hub);font-style:italic}
+  header p{color:var(--muted);margin-top:10px;font-size:14px;max-width:800px;margin-left:auto;margin-right:auto}
+
+  .control-bar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:12px;margin-bottom:40px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .control-bar input{flex:1;min-width:250px;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font-family:var(--mono);font-size:12px}
+  .control-bar input:focus{outline:none;border-color:var(--hub)}
+  .btn{background:var(--hub);color:#1a0a1a;border:none;padding:10px 24px;border-radius:8px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 16px rgba(255,107,157,.3)}
+  .btn:disabled{opacity:.4;cursor:wait}
+
+  .coordination-layout{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;grid-auto-rows:auto;margin-bottom:40px}
+  @media(max-width:900px){.coordination-layout{grid-template-columns:1fr}}
+
+  /* CENTRAL HUB */
+  .hub-station{grid-column:1/-1;background:linear-gradient(135deg,rgba(255,107,157,.15),rgba(78,205,196,.08));border:2px solid var(--hub);border-radius:16px;padding:28px;position:relative;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .hub-station::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:conic-gradient(var(--hub),var(--ar),var(--gl),var(--comp),var(--hub));border-radius:16px;opacity:0;animation:glow 3s linear infinite}
+  @keyframes glow{0%{opacity:.3}50%{opacity:.6}100%{opacity:.3}}
+  .hub-station > *{position:relative;z-index:1}
+
+  .hub-icon{font-size:48px;margin-bottom:12px;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  .hub-title{font-family:var(--disp);font-size:24px;font-weight:600;color:var(--hub);margin-bottom:8px}
+  .hub-status{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+  .hub-indicator{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--muted);animation:none}
+  .dot.active{background:var(--success);animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* AGENT STATIONS */
+  .agent-station{background:linear-gradient(135deg,rgba(0,0,0,.2),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:12px;padding:18px;position:relative;min-height:240px;transition:.3s}
+  .agent-station.active{border-color:var(--accent);box-shadow:0 0 20px rgba(78,205,196,.2)}
+  .agent-station.complete{border-color:var(--success);background:linear-gradient(135deg,rgba(94,255,143,.05),rgba(0,0,0,.2))}
+
+  .station-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .station-avatar{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;font-weight:700;color:#fff}
+  .station-avatar.ar{background:linear-gradient(135deg,var(--ar),#2b9d93)}
+  .station-avatar.gl{background:linear-gradient(135deg,var(--gl),#cc9d1f)}
+  .station-avatar.comp{background:linear-gradient(135deg,var(--comp),#4d3fa5)}
+
+  .station-info h3{font-size:14px;font-weight:600}
+  .station-info .role{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  .station-work{background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-top:12px;font-size:11px;min-height:80px;max-height:120px;overflow-y:auto}
+  .work-item{margin:6px 0;padding:6px;background:rgba(255,255,255,.05);border-left:2px solid var(--line);border-radius:3px;animation:slideIn .3s ease-out}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .work-item.active{border-left-color:var(--accent);background:rgba(78,205,196,.1);color:var(--accent)}
+  .work-item.done{opacity:.5;border-left-color:var(--success);color:var(--success)}
+
+  .station-progress{margin-top:12px}
+  .progress-label{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:4px}
+  .progress-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .4s}
+  .station-complete.comp .progress-fill{background:var(--success)}
+
+  .sync-indicator{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .sync-indicator.synced{background:var(--success);animation:blink .8s infinite}
+
+  .close-status{grid-column:1/-1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px}
+  .status-item{background:var(--panel2);border-radius:8px;padding:14px;text-align:center;border-left:3px solid var(--line)}
+  .status-item.ar-color{border-left-color:var(--ar)}
+  .status-item.gl-color{border-left-color:var(--gl)}
+  .status-item.comp-color{border-left-color:var(--comp)}
+  .status-item.hub-color{border-left-color:var(--hub)}
+  .status-value{font-family:var(--mono);font-size:16px;font-weight:700;margin-bottom:6px}
+  .status-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase}
+
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Finance Close <em>Coordination Control</em></h1>
+    <p>4 specialized agents work in parallel on month-end close. A central coordinator monitors all, ensures data consistency, and gates sign-off. Watch synchronized multi-agent choreography.</p>
+  </header>
+
+  <div class="control-bar">
+    <input type="text" id="period" value="September 2024 Close" spellcheck="false">
+    <button class="btn" id="start">▶ Open Close</button>
+    <button class="btn" id="reset" style="background:var(--gl)">↺ Reset</button>
+  </div>
+
+  <div class="coordination-layout">
+    <!-- CENTRAL COORDINATION HUB -->
+    <div class="hub-station" id="hub">
+      <div class="hub-icon">🎛️</div>
+      <div class="hub-title">Coordination Hub</div>
+      <div class="hub-status" id="hub-status">Waiting...</div>
+      <div class="hub-indicator" id="hub-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- AR AGENT -->
+    <div class="agent-station" id="station-ar">
+      <span class="sync-indicator" id="sync-ar"></span>
+      <div class="station-header">
+        <div class="station-avatar ar">AR</div>
+        <div class="station-info">
+          <h3>AR Reconciliation</h3>
+          <div class="role">Receivables Specialist</div>
+        </div>
+      </div>
+      <div class="station-work" id="work-ar">
+        <div style="color:var(--muted)">Initializing...</div>
+      </div>
+      <div class="station-progress">
+        <div class="progress-label"><span>Progress</span><span id="pct-ar">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="bar-ar"></div></div>
+      </div>
+    </div>
+
+    <!-- GL AGENT -->
+    <div class="agent-station" id="station-gl">
+      <span class="sync-indicator" id="sync-gl"></span>
+      <div class="station-header">
+        <div class="station-avatar gl">GL</div>
+        <div class="station-info">
+          <h3>GL Closing</h3>
+          <div class="role">Ledger Specialist</div>
+        </div>
+      </div>
+      <div class="station-work" id="work-gl">
+        <div style="color:var(--muted)">Initializing...</div>
+      </div>
+      <div class="station-progress">
+        <div class="progress-label"><span>Progress</span><span id="pct-gl">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="bar-gl" style="background:var(--gl)"></div></div>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE AGENT -->
+    <div class="agent-station" id="station-comp">
+      <span class="sync-indicator" id="sync-comp"></span>
+      <div class="station-header">
+        <div class="station-avatar comp">✓</div>
+        <div class="station-info">
+          <h3>Compliance Check</h3>
+          <div class="role">Control Specialist</div>
+        </div>
+      </div>
+      <div class="station-work" id="work-comp">
+        <div style="color:var(--muted)">Initializing...</div>
+      </div>
+      <div class="station-progress">
+        <div class="progress-label"><span>Progress</span><span id="pct-comp">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="bar-comp" style="background:var(--comp)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSE STATUS DASHBOARD -->
+  <div class="close-status">
+    <div style="font-family:var(--disp);font-size:18px;font-weight:600">Month-End Close Status</div>
+    <div class="status-grid">
+      <div class="status-item ar-color">
+        <div class="status-value" id="status-ar">--</div>
+        <div class="status-label">AR Balance Match</div>
+      </div>
+      <div class="status-item gl-color">
+        <div class="status-value" id="status-gl">--</div>
+        <div class="status-label">GL Post-Close</div>
+      </div>
+      <div class="status-item comp-color">
+        <div class="status-value" id="status-comp">--</div>
+        <div class="status-label">Control Tests</div>
+      </div>
+      <div class="status-item hub-color">
+        <div class="status-value" id="status-hub">--</div>
+        <div class="status-label">Close Gate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const agents = [
+  {
+    id: 'ar',
+    name: 'AR Reconciliation',
+    tasks: ['Match subledger', 'Age receivables', 'Calculate allowance', 'Confirm GL tie'],
+    duration: 4000
+  },
+  {
+    id: 'gl',
+    name: 'GL Closing',
+    tasks: ['Post accruals', 'Close temp accounts', 'Validate debit-credit', 'Post journal entries'],
+    duration: 4200
+  },
+  {
+    id: 'comp',
+    name: 'Compliance',
+    tasks: ['Test controls', 'Review policies', 'Validate procedures', 'Certify close'],
+    duration: 3800
+  }
+];
+
+let isRunning = false;
+
+function addWork(agentId, task, isActive = false) {
+  const container = document.getElementById(`work-${agentId}`);
+  if (container.textContent.includes('Initializing')) {
+    container.innerHTML = '';
+  }
+  
+  const item = document.createElement('div');
+  item.className = `work-item ${isActive ? 'active' : ''}`;
+  item.textContent = task;
+  container.appendChild(item);
+}
+
+function updateHubStatus(text, allSync = false) {
+  document.getElementById('hub-status').textContent = text;
+  if (allSync) {
+    const dots = document.querySelectorAll('#hub-dots .dot');
+    dots.forEach(dot => dot.classList.add('active'));
+  }
+}
+
+function markSynced(agentId, synced = true) {
+  const indicator = document.getElementById(`sync-${agentId}`);
+  if (synced) {
+    indicator.classList.add('synced');
+  } else {
+    indicator.classList.remove('synced');
+  }
+}
+
+function completeAgent(agentId, status) {
+  const station = document.getElementById(`station-${agentId}`);
+  station.classList.remove('active');
+  station.classList.add('complete');
+  
+  const bar = document.getElementById(`bar-${agentId}`);
+  bar.style.width = '100%';
+  document.getElementById(`pct-${agentId}`).textContent = '100%';
+  document.getElementById(`status-${agentId}`).textContent = status;
+}
+
+function runAgent(agent, startDelay) {
+  setTimeout(() => {
+    const station = document.getElementById(`station-${agent.id}`);
+    station.classList.add('active');
+    markSynced(agent.id, false);
+    
+    let progress = 0;
+    let taskIndex = 0;
+    
+    const workInterval = setInterval(() => {
+      if (taskIndex < agent.tasks.length) {
+        addWork(agent.id, agent.tasks[taskIndex], true);
+        taskIndex++;
+      }
+    }, agent.duration / agent.tasks.length);
+    
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 25;
+      if (progress >= 100) progress = 100;
+      document.getElementById(`bar-${agent.id}`).style.width = progress + '%';
+      document.getElementById(`pct-${agent.id}`).textContent = Math.floor(progress) + '%';
+    }, 300);
+    
+    setTimeout(() => {
+      clearInterval(workInterval);
+      clearInterval(progressInterval);
+      markSynced(agent.id, true);
+      
+      if (agent.id === 'ar') completeAgent('ar', '✓ Match');
+      if (agent.id === 'gl') completeAgent('gl', '✓ Posted');
+      if (agent.id === 'comp') completeAgent('comp', '✓ Valid');
+    }, agent.duration);
+  }, startDelay);
+}
+
+function startClose() {
+  if (isRunning) return;
+  isRunning = true;
+  
+  document.getElementById('start').disabled = true;
+  document.getElementById('hub').style.opacity = '1';
+  updateHubStatus('Agents Launching...');
+  
+  // Reset all
+  agents.forEach(agent => {
+    const station = document.getElementById(`station-${agent.id}`);
+    station.classList.remove('complete');
+    station.classList.add('active');
+    document.getElementById(`work-${agent.id}`).innerHTML = '';
+    document.getElementById(`bar-${agent.id}`).style.width = '0%';
+    document.getElementById(`pct-${agent.id}`).textContent = '0%';
+    document.getElementById(`status-${agent.id}`).textContent = '--';
+  });
+  
+  // Launch all agents in parallel with small stagger
+  agents.forEach((agent, i) => {
+    runAgent(agent, i * 200);
+  });
+  
+  // Hub coordination
+  setTimeout(() => updateHubStatus('Agents Synchronizing...'), 1000);
+  setTimeout(() => updateHubStatus('All Agents Synced'), 3000);
+  
+  // Final gate
+  setTimeout(() => {
+    updateHubStatus('Close Ready for Approval', true);
+    document.getElementById('status-hub').textContent = '✓ Ready';
+    document.getElementById('start').disabled = false;
+    isRunning = false;
+  }, Math.max(...agents.map(a => a.duration)) + 1000);
+}
+
+document.getElementById('start').addEventListener('click', startClose);
+
+document.getElementById('reset').addEventListener('click', () => {
+  isRunning = false;
+  document.getElementById('start').disabled = false;
+  document.getElementById('hub').style.opacity = '1';
+  updateHubStatus('Waiting...');
+  const dots = document.querySelectorAll('#hub-dots .dot');
+  dots.forEach(dot => dot.classList.remove('active'));
+  document.getElementById('status-hub').textContent = '--';
+  
+  agents.forEach(agent => {
+    const station = document.getElementById(`station-${agent.id}`);
+    station.classList.remove('active', 'complete');
+    document.getElementById(`work-${agent.id}`).innerHTML = '<div style="color:var(--muted)">Initializing...</div>';
+    document.getElementById(`bar-${agent.id}`).style.width = '0%';
+    document.getElementById(`pct-${agent.id}`).textContent = '0%';
+    document.getElementById(`status-${agent.id}`).textContent = '--';
+    markSynced(agent.id, false);
+  });
+});
+</script>
+
+</body>
+</html>

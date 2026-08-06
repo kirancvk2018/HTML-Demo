@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Agent Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Mono:wght@400;700&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d15; --panel:#141820; --ink:#e8e6df; --muted:#8a8d99; --line:#2a3240;
+    --agent:#5b9dff; --task:#b06cff; --output:#7df0c0; --hot:#ff6b5b;
+    --mono:'Space Mono',monospace; --body:'Spline Sans',sans-serif; --disp:'Fraunces',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);
+    background-image:radial-gradient(circle at 10% 20%,rgba(91,157,255,.08),transparent 50%),
+                     radial-gradient(circle at 90% 80%,rgba(125,240,192,.08),transparent 50%);}
+  .container{max-width:1400px;margin:0 auto;padding:30px 20px}
+  
+  header{margin-bottom:40px}
+  header h1{font-family:var(--disp);font-weight:900;font-size:clamp(24px,4vw,44px);line-height:1.1}
+  header h1 em{color:var(--agent);font-style:italic}
+  header p{color:var(--muted);margin-top:10px;font-size:14px}
+
+  .workspace{display:grid;grid-template-columns:1fr 1.2fr;gap:32px;margin-top:40px}
+  @media(max-width:1000px){.workspace{grid-template-columns:1fr}}
+
+  /* AGENT CARD */
+  .agent-panel{background:linear-gradient(135deg,#1a2436 0%,#141820 100%);border:2px solid var(--agent);border-radius:20px;padding:28px;position:relative;overflow:hidden}
+  .agent-panel::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(91,157,255,.1),transparent);animation:pulse 4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+  
+  .agent-header{position:relative;z-index:1;display:flex;align-items:center;gap:16px;margin-bottom:24px}
+  .agent-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--agent),var(--task));display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+  .agent-info h3{font-family:var(--disp);font-weight:600;font-size:20px;color:var(--agent)}
+  .agent-info .role{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+
+  .agent-status{position:relative;z-index:1;background:rgba(91,157,255,.1);border:1px solid var(--agent);border-radius:12px;padding:14px;margin-bottom:20px}
+  .status-row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;font-size:13px}
+  .status-row .label{color:var(--muted)}
+  .status-row .value{font-family:var(--mono);font-weight:600;color:var(--agent)}
+  .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5eff8f;animation:blink 1.5s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .task-queue{position:relative;z-index:1;margin-top:24px}
+  .task-queue h4{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+  .task-item{background:rgba(176,108,255,.1);border-left:3px solid var(--task);padding:10px 12px;margin:8px 0;border-radius:6px;font-size:12px;animation:fadeIn .6s ease-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .task-item.active{border-left-color:var(--output);background:rgba(125,240,192,.1)}
+  .task-item.done{opacity:.5;border-left-color:var(--muted)}
+  .task-label{color:var(--ink);font-weight:500}
+  .task-progress{display:flex;gap:4px;margin-top:6px}
+  .progress-bar{height:4px;flex:1;background:rgba(125,240,192,.2);border-radius:2px;overflow:hidden}
+  .progress-bar span{display:block;height:100%;background:var(--output);width:0%;animation:grow 1.2s ease-out}
+
+  /* OUTPUT PANEL */
+  .outputs-panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px;max-height:600px;overflow-y:auto}
+  .outputs-header{font-family:var(--disp);font-size:22px;font-weight:600;margin-bottom:20px;color:var(--output)}
+
+  .output-card{background:rgba(125,240,192,.05);border:1px solid var(--output);border-radius:12px;padding:16px;margin-bottom:14px;animation:slideIn .5s ease-out}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .output-card.stage-1{border-color:var(--agent)}
+  .output-card.stage-2{border-color:var(--task)}
+  .output-card.stage-3{border-color:var(--output)}
+  .output-card .badge{display:inline-block;font-family:var(--mono);font-size:9px;background:var(--output);color:#050d1a;padding:3px 8px;border-radius:4px;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+  .output-card .content{font-size:12px;color:var(--muted);line-height:1.5}
+  .output-card .content strong{color:var(--ink)}
+
+  .input-section{margin-bottom:28px;background:rgba(91,157,255,.05);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .input-section label{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+  .input-section input{width:100%;background:#0a0d15;border:1px solid var(--line);color:var(--ink);padding:10px;border-radius:8px;font-family:var(--mono);font-size:12px}
+  .input-section input:focus{outline:none;border-color:var(--agent)}
+
+  .btn-group{display:flex;gap:10px}
+  .btn{flex:1;background:var(--agent);color:#05140d;border:none;padding:12px;border-radius:10px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;transition:.2s}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,157,255,.4)}
+  .btn:disabled{opacity:.4;cursor:wait}
+  .btn.secondary{background:transparent;border:1px solid var(--line);color:var(--agent)}
+
+  .timeline{margin-top:24px;font-family:var(--mono);font-size:11px}
+  .timeline-item{display:grid;grid-template-columns:60px 1fr;gap:12px;margin:8px 0;color:var(--muted);padding:6px 0}
+  .timeline-time{color:var(--agent);font-weight:600}
+  .timeline-text{color:var(--ink)}
+
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--agent)}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Research Agent at Work<br><em>Financial Intelligence Assistant</em></h1>
+    <p>Watch Claude Research Agent gather, analyze, and synthesize financial data. You drive the research—the agent amplifies your intelligence.</p>
+  </header>
+
+  <div class="input-section">
+    <label>What do you want to research?</label>
+    <input type="text" id="query" value="TechCorp Inc. Q3 earnings and market positioning" spellcheck="false">
+    <div class="btn-group" style="margin-top:12px">
+      <button class="btn" id="start">▶ Start Research</button>
+      <button class="btn secondary" id="clear">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <!-- AGENT CARD -->
+    <div class="agent-panel">
+      <div class="agent-header">
+        <div class="agent-avatar">🧠</div>
+        <div class="agent-info">
+          <h3>Claude Research</h3>
+          <div class="role">Financial Intelligence Agent</div>
+        </div>
+      </div>
+
+      <div class="agent-status">
+        <div class="status-row">
+          <span class="label">Status</span>
+          <span class="value"><span class="status-dot"></span> Active</span>
+        </div>
+        <div class="status-row">
+          <span class="label">Tasks Completed</span>
+          <span class="value" id="taskcount">0/5</span>
+        </div>
+        <div class="status-row">
+          <span class="label">Data Gathered</span>
+          <span class="value" id="datacount">0 sources</span>
+        </div>
+      </div>
+
+      <div class="task-queue">
+        <h4>📋 Task Pipeline</h4>
+        <div class="task-item" id="task-0">
+          <div class="task-label">1. Parse your research request</div>
+          <div class="task-progress"><div class="progress-bar"><span style="width:0"></span></div></div>
+        </div>
+        <div class="task-item" id="task-1">
+          <div class="task-label">2. Gather financial documents</div>
+          <div class="task-progress"><div class="progress-bar"><span style="width:0"></span></div></div>
+        </div>
+        <div class="task-item" id="task-2">
+          <div class="task-label">3. Extract & analyze metrics</div>
+          <div class="task-progress"><div class="progress-bar"><span style="width:0"></span></div></div>
+        </div>
+        <div class="task-item" id="task-3">
+          <div class="task-label">4. Synthesize market insights</div>
+          <div class="task-progress"><div class="progress-bar"><span style="width:0"></span></div></div>
+        </div>
+        <div class="task-item" id="task-4">
+          <div class="task-label">5. Generate research brief</div>
+          <div class="task-progress"><div class="progress-bar"><span style="width:0"></span></div></div>
+        </div>
+      </div>
+
+      <div class="timeline" style="margin-top:32px">
+        <h4 style="color:var(--muted);font-size:10px;text-transform:uppercase;margin-bottom:12px;letter-spacing:.1em">Activity Timeline</h4>
+        <div id="timeline-content"></div>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="outputs-panel">
+      <div class="outputs-header">📊 Research Outputs</div>
+      <div id="outputs-container">
+        <div style="color:var(--muted);font-size:12px;padding:20px;text-align:center">
+          Click "Start Research" to watch the agent work...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const tasks = [
+  { label: "Parse your research request", time: 800 },
+  { label: "Gather financial documents (10-Q, earnings call, news)", time: 1200 },
+  { label: "Extract & analyze key metrics (revenue, margins, growth)", time: 1400 },
+  { label: "Synthesize market insights & competitive positioning", time: 1300 },
+  { label: "Generate research brief with recommendations", time: 1000 }
+];
+
+const outputs = [
+  { stage: 1, badge: "INPUT", title: "Research Objective", content: "Understanding TechCorp's Q3 performance and market positioning in competitive landscape." },
+  { stage: 1, badge: "GATHERING", title: "Data Collection", content: "<strong>Sources found:</strong> 10-Q filing (Sept 2024) | Earnings call transcript | Industry reports (3) | News articles (8) | Analyst consensus" },
+  { stage: 2, badge: "ANALYSIS", title: "Financial Metrics", content: "<strong>Revenue:</strong> $487M (+18% YoY)<br><strong>Gross Margin:</strong> 62% (vs 58% prior yr)<br><strong>OpEx Ratio:</strong> 24% | FCF: $78M positive" },
+  { stage: 2, badge: "ANALYSIS", title: "Market Position", content: "<strong>Market Share:</strong> 12.4% in core segment (+1.2pp YoY)<br><strong>Competition:</strong> Outgaining peers on growth & margins<br><strong>Headwinds:</strong> Macro softness, talent costs rising" },
+  { stage: 3, badge: "INSIGHT", title: "Investment Thesis", content: "<strong>Bull Case:</strong> Strong margins, market share gains, healthy FCF generation<br><strong>Risks:</strong> Macro slowdown impact, competitive pressure on pricing<br><strong>Catalyst:</strong> Q4 guidance, new product launch Nov 2024" },
+  { stage: 3, badge: "REPORT", title: "Executive Brief", content: "<strong>Recommendation:</strong> BUY | <strong>Target Price:</strong> $142 (+14% upside)<br><strong>Risk Rating:</strong> MEDIUM<br><strong>Time Horizon:</strong> 12 months" }
+];
+
+let currentTask = 0;
+let currentOutput = 0;
+
+function updateTimeline(text) {
+  const timeline = document.getElementById('timeline-content');
+  const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const item = document.createElement('div');
+  item.className = 'timeline-item';
+  item.innerHTML = `<div class="timeline-time">${time}</div><div class="timeline-text">${text}</div>`;
+  timeline.appendChild(item);
+  timeline.parentElement.scrollTop = timeline.parentElement.scrollHeight;
+}
+
+function animateTaskCompletion() {
+  if (currentTask >= tasks.length) return;
+  
+  const taskEl = document.getElementById(`task-${currentTask}`);
+  const progressBar = taskEl.querySelector('.progress-bar span');
+  
+  taskEl.classList.add('active');
+  updateTimeline(`Task ${currentTask + 1}: ${tasks[currentTask].label}`);
+  
+  // Animate progress bar
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.random() * 30;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      taskEl.classList.remove('active');
+      taskEl.classList.add('done');
+      updateTimeline(`✓ Completed: ${tasks[currentTask].label}`);
+      currentTask++;
+      document.getElementById('taskcount').textContent = `${currentTask}/5`;
+      
+      if (currentTask < tasks.length) {
+        setTimeout(animateTaskCompletion, 300);
+      } else {
+        updateTimeline('✅ All tasks complete. Research ready.');
+      }
+    }
+    progressBar.style.width = progress + '%';
+  }, 100);
+}
+
+function addOutput() {
+  if (currentOutput >= outputs.length) return;
+  
+  const out = outputs[currentOutput];
+  const container = document.getElementById('outputs-container');
+  
+  if (currentOutput === 0) container.innerHTML = '';
+  
+  const card = document.createElement('div');
+  card.className = `output-card stage-${out.stage}`;
+  card.style.opacity = '0';
+  card.innerHTML = `
+    <span class="badge">${out.badge}</span>
+    <div style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${out.title}</div>
+    <div class="content">${out.content}</div>
+  `;
+  
+  container.appendChild(card);
+  setTimeout(() => { card.style.transition = 'opacity .4s'; card.style.opacity = '1'; }, 10);
+  
+  currentOutput++;
+  document.getElementById('datacount').textContent = `${Math.min(currentOutput * 2, 12)} sources`;
+  
+  if (currentOutput < outputs.length) {
+    setTimeout(addOutput, 800);
+  }
+}
+
+document.getElementById('start').addEventListener('click', () => {
+  const query = document.getElementById('query').value.trim();
+  if (!query) return;
+  
+  document.getElementById('start').disabled = true;
+  currentTask = 0;
+  currentOutput = 0;
+  document.getElementById('timeline-content').innerHTML = '';
+  document.getElementById('outputs-container').innerHTML = '<div style="color:var(--muted);font-size:12px;padding:20px;text-align:center">Agent is working...</div>';
+  document.getElementById('taskcount').textContent = '0/5';
+  document.getElementById('datacount').textContent = '0 sources';
+  
+  // Reset task items
+  document.querySelectorAll('.task-item').forEach((el, i) => {
+    el.classList.remove('done', 'active');
+    el.querySelector('.progress-bar span').style.width = '0%';
+  });
+  
+  updateTimeline(`Research initiated: "${query.substring(0,40)}..."`);
+  setTimeout(() => {
+    animateTaskCompletion();
+    setTimeout(addOutput, 500);
+  }, 500);
+});
+
+document.getElementById('clear').addEventListener('click', () => {
+  document.getElementById('start').disabled = false;
+  currentTask = 0;
+  currentOutput = 0;
+  document.getElementById('timeline-content').innerHTML = '';
+  document.getElementById('outputs-container').innerHTML = '<div style="color:var(--muted);font-size:12px;padding:20px;text-align:center">Click "Start Research" to watch the agent work...</div>';
+  document.getElementById('taskcount').textContent = '0/5';
+  document.getElementById('datacount').textContent = '0 sources';
+  document.querySelectorAll('.task-item').forEach(el => {
+    el.classList.remove('done', 'active');
+    el.querySelector('.progress-bar span').style.width = '0%';
+  });
+});
+</script>
+
+</body>
+</html>
