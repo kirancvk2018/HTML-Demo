@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFO Coordinator - Interactive Workflow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1929 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: linear-gradient(135deg, #1a1f3a 0%, #232d4d 100%);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(37, 99, 235, 0.1);
+            padding: 60px 40px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e0e7ff;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+
+        .play-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .play-btn:hover::before {
+            left: 100%;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.6);
+        }
+
+        .play-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .play-btn.running {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .play-icon {
+            font-size: 18px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            border-radius: 8px;
+            color: #93c5fd;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #93c5fd;
+            animation: pulse-status 2s infinite;
+        }
+
+        .status-dot.idle {
+            animation: none;
+            background: #64748b;
+        }
+
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .workflow-svg {
+            width: 100%;
+            height: auto;
+            min-height: 800px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.1) 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .svg-animations-disabled .light-serial,
+        .svg-animations-disabled .light-parallel,
+        .svg-animations-disabled .serial-line,
+        .svg-animations-disabled .parallel-line {
+            animation: none !important;
+            opacity: 0.2 !important;
+        }
+
+        .svg-animations-enabled .light-serial,
+        .svg-animations-enabled .light-parallel,
+        .svg-animations-enabled .serial-line,
+        .svg-animations-enabled .parallel-line {
+            animation-play-state: running !important;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 2px solid;
+        }
+
+        .serial {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #1e40af;
+        }
+
+        .parallel {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: #6d28d9;
+        }
+
+        .consolidation {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border-color: #c2410c;
+        }
+
+        .info-panel {
+            margin-top: 40px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .info-panel h3 {
+            color: #e0e7ff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-panel p {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .process-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .process-item {
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .process-item strong {
+            color: #e0e7ff;
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: float-up 0.6s ease-out;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.15) drop-shadow(0 0 12px rgba(59, 130, 246, 0.5));
+        }
+
+        .node:hover text {
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .download-btn {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .progress-bar {
+            display: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #f97316);
+            border-radius: 2px;
+            animation: progress-move 12s ease-in-out forwards;
+        }
+
+        @keyframes progress-move {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .skill-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(139, 92, 246, 0.06) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+        }
+
+        .skill-panel h3 {
+            color: #e0e7ff;
+            margin-bottom: 16px;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .skill-badge {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border: 1.5px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .skill-badge:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0.15) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .skill-badge:hover::before {
+            opacity: 1;
+        }
+
+        .skill-badge.active {
+            border-color: rgba(139, 92, 246, 0.8);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(99, 102, 241, 0.25) 100%);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        .skill-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .skill-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e0e7ff;
+            margin-bottom: 4px;
+        }
+
+        .skill-type {
+            font-size: 11px;
+            color: #cbd5e1;
+            opacity: 0.8;
+        }
+
+        .skill-type-analyzer {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .skill-type-consolidation {
+            color: #fb923c;
+            font-weight: 600;
+        }
+
+        .skill-type-writer {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .skill-type-publisher {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .skill-type-scheduler {
+            color: #06b6d4;
+            font-weight: 600;
+        }
+
+        .skill-type-tool {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .skill-usage {
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #cbd5e1;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .skill-badge.active .skill-usage {
+            max-height: 100px;
+        }
+
+        .stage-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .stage-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #60a5fa;
+        }
+
+        .stage-dot.analyzer {
+            background: #a78bfa;
+        }
+
+        .stage-dot.consolidation {
+            background: #fb923c;
+        }
+
+        .stage-dot.writer {
+            background: #60a5fa;
+        }
+
+        .stage-dot.publisher {
+            background: #34d399;
+        }
+
+        .stage-dot.scheduler {
+            background: #06b6d4;
+        }
+
+        .stage-dot.tool {
+            background: #a78bfa;
+        }
+
+        /* Highlight nodes when skill is selected */
+        .svg-node-skill {
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .svg-node-skill.highlight {
+            opacity: 1;
+            filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+        }
+
+        .info-section {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #8b5cf6;
+        }
+
+        .info-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .info-section-content {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* MCQ Modal Styles - PREMIUM REDESIGN */
+        .mcq-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(5, 5, 15, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .mcq-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .mcq-content {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #162035 100%);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 700px;
+            width: 95%;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.8),
+                0 0 60px rgba(59, 130, 246, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideInScale 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideInScale {
+            from {
+                transform: translateY(-40px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .mcq-header {
+            margin-bottom: 35px;
+            text-align: center;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+            padding-bottom: 25px;
+        }
+
+        .mcq-progress {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .progress-dot.completed {
+            background: #10b981;
+        }
+
+        .mcq-question-number {
+            font-size: 11px;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .mcq-question {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1.7;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .mcq-options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 35px 0;
+            perspective: 1000px;
+        }
+
+        .mcq-option {
+            padding: 18px 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.04) 100%);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            background-clip: padding-box;
+        }
+
+        .mcq-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mcq-option::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mcq-option:hover:not(.disabled) {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+            transform: translateX(6px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .mcq-option:hover::before {
+            opacity: 1;
+        }
+
+        .mcq-option.selected {
+            border-color: rgba(59, 130, 246, 0.8);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(99, 102, 241, 0.15) 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: translateX(6px) scale(1.02);
+        }
+
+        .mcq-option.correct {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 100%);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+            animation: correctPulse 0.6s ease-out;
+        }
+
+        .mcq-option.incorrect {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.12) 100%);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .mcq-option.disabled {
+            cursor: not-allowed;
+        }
+
+        .mcq-option-label {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mcq-option-letter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.2));
+            font-weight: 800;
+            color: #93c5fd;
+            font-size: 16px;
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .mcq-option.selected .mcq-option-letter {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.6), rgba(99, 102, 241, 0.4));
+            color: #e0e7ff;
+            border-color: rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .mcq-option.correct .mcq-option-letter {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .mcq-option.incorrect .mcq-option-letter {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+
+        .mcq-option-text {
+            color: #cbd5e1;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .mcq-option.selected .mcq-option-text,
+        .mcq-option.correct .mcq-option-text {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .mcq-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            margin-top: 35px;
+        }
+
+        .mcq-btn {
+            padding: 14px 40px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            flex: 1;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-width: 120px;
+        }
+
+        .mcq-btn-submit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .mcq-btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.5);
+        }
+
+        .mcq-btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .mcq-btn-close {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2));
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.6);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .mcq-btn-close:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.5), rgba(220, 38, 38, 0.4));
+            border-color: rgba(239, 68, 68, 0.8);
+            color: #ffffff;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .mcq-btn-try-again {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .mcq-btn-try-again:hover {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            border-color: rgba(139, 92, 246, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .mcq-feedback {
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            animation: slideDown 0.4s ease-out;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mcq-feedback.show {
+            display: block;
+        }
+
+        .mcq-feedback.correct {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
+            border-color: #10b981;
+            color: #86efac;
+        }
+
+        .mcq-feedback.incorrect {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.08) 100%);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .trophy-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            text-align: center;
+            animation: trophyPop 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .trophy-container.show {
+            display: block;
+        }
+
+        @keyframes trophyPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .trophy-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: glowPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        .trophy-icon {
+            font-size: 140px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.6)) drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+            animation: trophyBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes trophyBounce {
+            0% {
+                transform: translateY(30px) scale(0.8);
+            }
+            50% {
+                transform: translateY(-20px) scale(1.1);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .trophy-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 40px rgba(251, 191, 36, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 8px;
+            animation: textShine 2s ease-in-out infinite;
+        }
+
+        @keyframes textShine {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .trophy-subtext {
+            font-size: 16px;
+            color: #fbbf24;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+
+        .mcq-score {
+            text-align: center;
+            margin-top: 25px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border-radius: 12px;
+            border: 2px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .score-text {
+            color: #93c5fd;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        .score-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 6px;
+        }
+
+        .quiz-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .quiz-btn:hover::before {
+            left: 100%;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(236, 72, 153, 0.6);
+        }
+
+        .quiz-icon {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 CFO Coordinator Workflow</h1>
+        <p class="subtitle">Enterprise AI-Driven Financial Analysis Pipeline</p>
+
+        <div class="controls">
+            <button class="play-btn" id="playBtn" onclick="togglePlayback()">
+                <span class="play-icon">▶</span>
+                <span>Start Workflow</span>
+            </button>
+            <button class="quiz-btn" onclick="startMCQ()">
+                <span class="quiz-icon">❓</span>
+                <span>Take Quiz</span>
+            </button>
+            <div class="status-indicator">
+                <span class="status-dot idle" id="statusDot"></span>
+                <span id="statusText">Ready</span>
+            </div>
+        </div>
+
+        <svg class="workflow-svg svg-animations-disabled" id="workflowSvg" viewBox="0 0 1000 1450" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CFO Coordinator Workflow with skills and stages">
+            <defs>
+                <style>
+                    @keyframes pulse-serial {
+                        0% { opacity: 0; }
+                        50% { opacity: 1; }
+                        100% { opacity: 0; }
+                    }
+                    @keyframes pulse-parallel {
+                        0% { opacity: 0; }
+                        50% { opacity: 1; }
+                        100% { opacity: 0; }
+                    }
+                    .light-serial {
+                        animation: pulse-serial 3s infinite paused;
+                    }
+                    .light-parallel {
+                        animation: pulse-parallel 2.5s infinite paused;
+                    }
+                    .serial-line {
+                        stroke-dasharray: 10, 5;
+                        animation: dash-serial 20s linear infinite paused;
+                    }
+                    .parallel-line {
+                        stroke-dasharray: 8, 4;
+                        animation: dash-parallel 18s linear infinite paused;
+                    }
+                    @keyframes dash-serial {
+                        to { stroke-dashoffset: 200; }
+                    }
+                    @keyframes dash-parallel {
+                        to { stroke-dashoffset: 180; }
+                    }
+                    
+                    .svg-animations-enabled .light-serial,
+                    .svg-animations-enabled .light-parallel,
+                    .svg-animations-enabled .serial-line,
+                    .svg-animations-enabled .parallel-line {
+                        animation-play-state: running !important;
+                    }
+                    
+                    .svg-animations-disabled .light-serial,
+                    .svg-animations-disabled .light-parallel,
+                    .svg-animations-disabled .serial-line,
+                    .svg-animations-disabled .parallel-line {
+                        animation-play-state: paused !important;
+                        opacity: 0.15 !important;
+                    }
+
+                    @keyframes confettiFall {
+                        to {
+                            transform: translateY(100vh) translateX(var(--x-movement)) rotate(720deg);
+                            opacity: 0;
+                        }
+                    }
+                </style>
+            </defs>
+
+            <!-- CFO COORDINATOR (Top - Serial) -->
+            <g class="node svg-node-skill" data-skills="coordinator">
+                <rect x="350" y="20" width="300" height="90" rx="12" fill="url(#serial-fill-main)" stroke="#2563eb" stroke-width="2.5"/>
+                <defs>
+                    <linearGradient id="serial-fill-main" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa"/>
+                        <stop offset="100%" stop-color="#3b82f6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="400" cy="50" r="8" fill="#60a5fa" opacity="0.6"/>
+                <circle cx="600" cy="50" r="8" fill="#60a5fa" opacity="0.6"/>
+                <text x="500" y="65" text-anchor="middle" font-size="15" font-weight="600" fill="white">CFO Coordinator</text>
+            </g>
+
+            <!-- SERIAL LINE FROM COORDINATOR TO SPLIT -->
+            <line x1="500" y1="110" x2="500" y2="160" stroke="#3b82f6" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="135" r="5" fill="#60a5fa" class="light-serial" style="animation-delay: 0s;"/>
+
+            <!-- HORIZONTAL LINE (Split Point) -->
+            <line x1="150" y1="170" x2="850" y2="170" stroke="#3b82f6" stroke-width="2.5" class="serial-line" opacity="0.4"/>
+
+            <!-- PARALLEL LINES DOWN TO 3 ANALYZERS -->
+            <!-- Left branch -->
+            <line x1="250" y1="170" x2="250" y2="240" stroke="#8b5cf6" stroke-width="2.5" class="parallel-line" opacity="0.6"/>
+            <circle cx="250" cy="205" r="5" fill="#a78bfa" class="light-parallel" style="animation-delay: 0.5s;"/>
+
+            <!-- Center branch -->
+            <line x1="500" y1="170" x2="500" y2="240" stroke="#8b5cf6" stroke-width="2.5" class="parallel-line" opacity="0.6"/>
+            <circle cx="500" cy="205" r="5" fill="#a78bfa" class="light-parallel" style="animation-delay: 1s;"/>
+
+            <!-- Right branch -->
+            <line x1="750" y1="170" x2="750" y2="240" stroke="#8b5cf6" stroke-width="2.5" class="parallel-line" opacity="0.6"/>
+            <circle cx="750" cy="205" r="5" fill="#a78bfa" class="light-parallel" style="animation-delay: 1.5s;"/>
+
+            <!-- PARALLEL AGENTS (Finance KPI, Finance Email, Trend Analysis) -->
+            <!-- Left: Finance KPI -->
+            <g class="node svg-node-skill" data-skills="finance-kpi-analyzer">
+                <rect x="120" y="250" width="260" height="100" rx="12" fill="url(#parallel-fill-1)" stroke="#7c3aed" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="parallel-fill-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#a78bfa"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="160" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <circle cx="340" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <text x="250" y="295" text-anchor="middle" font-size="13" font-weight="600" fill="white">Finance KPI</text>
+                <text x="250" y="320" text-anchor="middle" font-size="11" fill="#ede9fe">Analyzer</text>
+            </g>
+
+            <!-- Center: Finance Email -->
+            <g class="node svg-node-skill" data-skills="finance-email-analyzer">
+                <rect x="370" y="250" width="260" height="100" rx="12" fill="url(#parallel-fill-2)" stroke="#7c3aed" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="parallel-fill-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#a78bfa"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="410" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <circle cx="590" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <text x="500" y="295" text-anchor="middle" font-size="13" font-weight="600" fill="white">Finance Email</text>
+                <text x="500" y="320" text-anchor="middle" font-size="11" fill="#ede9fe">Analyzer</text>
+            </g>
+
+            <!-- Right: Trend Analysis -->
+            <g class="node svg-node-skill" data-skills="trend-analysis-skill">
+                <rect x="620" y="250" width="260" height="100" rx="12" fill="url(#parallel-fill-3)" stroke="#7c3aed" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="parallel-fill-3" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#a78bfa"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="660" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <circle cx="840" cy="280" r="8" fill="#a78bfa" opacity="0.6"/>
+                <text x="750" y="295" text-anchor="middle" font-size="13" font-weight="600" fill="white">Trend Analysis</text>
+                <text x="750" y="320" text-anchor="middle" font-size="11" fill="#ede9fe">Skill</text>
+            </g>
+
+            <!-- PARALLEL INDICATOR -->
+            <g>
+                <text x="500" y="410" text-anchor="middle" font-size="12" font-weight="600" fill="#8b5cf6" opacity="0.7">⚡ PARALLEL EXECUTION (3 Concurrent)</text>
+                <path d="M 150 420 L 850 420" stroke="#d8b4fe" stroke-width="2" stroke-dasharray="5,5" opacity="0.5"/>
+            </g>
+
+            <!-- CONVERGENCE LINES (3 analyzers to Risk Detection) -->
+            <!-- Left to center -->
+            <path d="M 250 350 Q 300 430 450 480" stroke="#f97316" stroke-width="2.5" fill="none" class="parallel-line" opacity="0.6"/>
+            <circle cx="340" cy="410" r="5" fill="#fb923c" class="light-parallel" style="animation-delay: 2s;"/>
+
+            <!-- Center to center -->
+            <line x1="500" y1="350" x2="500" y2="480" stroke="#f97316" stroke-width="2.5" class="parallel-line" opacity="0.6"/>
+            <circle cx="500" cy="415" r="5" fill="#fb923c" class="light-parallel" style="animation-delay: 2.5s;"/>
+
+            <!-- Right to center -->
+            <path d="M 750 350 Q 700 430 550 480" stroke="#f97316" stroke-width="2.5" fill="none" class="parallel-line" opacity="0.6"/>
+            <circle cx="660" cy="410" r="5" fill="#fb923c" class="light-parallel" style="animation-delay: 3s;"/>
+
+            <!-- CONSOLIDATION POINT: Risk Detection Skill -->
+            <g class="node svg-node-skill" data-skills="risk-detection-skill">
+                <rect x="300" y="490" width="400" height="90" rx="12" fill="url(#consolidation-fill)" stroke="#c2410c" stroke-width="2.5"/>
+                <defs>
+                    <linearGradient id="consolidation-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#fb923c"/>
+                        <stop offset="100%" stop-color="#f97316"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="520" r="8" fill="#fb923c" opacity="0.6"/>
+                <circle cx="650" cy="520" r="8" fill="#fb923c" opacity="0.6"/>
+                <text x="500" y="535" text-anchor="middle" font-size="14" font-weight="600" fill="white">Risk Detection Skill</text>
+            </g>
+
+            <!-- SERIAL CHAIN (Risk Detection → Final Output) -->
+            <!-- Risk Detection to Executive Report Writer -->
+            <line x1="500" y1="580" x2="500" y2="650" stroke="#2563eb" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="615" r="5" fill="#60a5fa" class="light-serial" style="animation-delay: 3.5s;"/>
+
+            <g class="node svg-node-skill" data-skills="report-writer">
+                <rect x="300" y="660" width="400" height="90" rx="12" fill="url(#serial-fill-1)" stroke="#2563eb" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="serial-fill-1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa"/>
+                        <stop offset="100%" stop-color="#3b82f6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="690" r="8" fill="#60a5fa" opacity="0.6"/>
+                <circle cx="650" cy="690" r="8" fill="#60a5fa" opacity="0.6"/>
+                <text x="500" y="705" text-anchor="middle" font-size="14" font-weight="600" fill="white">Executive Report Writer</text>
+            </g>
+
+            <!-- Executive Report Writer to Recommendation Generator -->
+            <line x1="500" y1="750" x2="500" y2="820" stroke="#2563eb" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="785" r="5" fill="#60a5fa" class="light-serial" style="animation-delay: 4.5s;"/>
+
+            <g class="node svg-node-skill" data-skills="recommendation-generator">
+                <rect x="300" y="830" width="400" height="90" rx="12" fill="url(#serial-fill-2)" stroke="#2563eb" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="serial-fill-2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa"/>
+                        <stop offset="100%" stop-color="#3b82f6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="860" r="8" fill="#60a5fa" opacity="0.6"/>
+                <circle cx="650" cy="860" r="8" fill="#60a5fa" opacity="0.6"/>
+                <text x="500" y="875" text-anchor="middle" font-size="14" font-weight="600" fill="white">Recommendation Generator</text>
+            </g>
+
+            <!-- Recommendation Generator to Google Drive Publisher -->
+            <line x1="500" y1="920" x2="500" y2="990" stroke="#2563eb" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="955" r="5" fill="#60a5fa" class="light-serial" style="animation-delay: 5.5s;"/>
+
+            <g class="node svg-node-skill" data-skills="google-drive-publisher">
+                <rect x="300" y="1000" width="400" height="90" rx="12" fill="url(#serial-fill-3)" stroke="#2563eb" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="serial-fill-3" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa"/>
+                        <stop offset="100%" stop-color="#3b82f6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="1030" r="8" fill="#60a5fa" opacity="0.6"/>
+                <circle cx="650" cy="1030" r="8" fill="#60a5fa" opacity="0.6"/>
+                <text x="500" y="1045" text-anchor="middle" font-size="14" font-weight="600" fill="white">Google Drive Publisher</text>
+            </g>
+
+            <!-- Google Drive Publisher to Gmail Report Sender -->
+            <line x1="500" y1="1090" x2="500" y2="1160" stroke="#2563eb" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="1125" r="5" fill="#60a5fa" class="light-serial" style="animation-delay: 6.5s;"/>
+
+            <g class="node svg-node-skill" data-skills="gmail-report-sender">
+                <rect x="300" y="1170" width="400" height="80" rx="12" fill="url(#serial-fill-4)" stroke="#2563eb" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="serial-fill-4" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#60a5fa"/>
+                        <stop offset="100%" stop-color="#3b82f6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="1195" r="8" fill="#60a5fa" opacity="0.6"/>
+                <circle cx="650" cy="1195" r="8" fill="#60a5fa" opacity="0.6"/>
+                <text x="500" y="1215" text-anchor="middle" font-size="14" font-weight="600" fill="white">📧 Gmail Report Sender</text>
+            </g>
+
+            <!-- Gmail Report Sender to Daily Scheduler -->
+            <line x1="500" y1="1250" x2="500" y2="1310" stroke="#06b6d4" stroke-width="3" class="serial-line" opacity="0.5"/>
+            <circle cx="500" cy="1280" r="5" fill="#22d3ee" class="light-serial" style="animation-delay: 7s;"/>
+
+            <!-- Daily Scheduler (Final stage) -->
+            <g class="node svg-node-skill" data-skills="daily-scheduler">
+                <rect x="300" y="1320" width="400" height="85" rx="12" fill="url(#scheduler-fill)" stroke="#06b6d4" stroke-width="2"/>
+                <defs>
+                    <linearGradient id="scheduler-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#22d3ee"/>
+                        <stop offset="100%" stop-color="#06b6d4"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="350" cy="1350" r="8" fill="#22d3ee" opacity="0.6"/>
+                <circle cx="650" cy="1350" r="8" fill="#22d3ee" opacity="0.6"/>
+                <text x="500" y="1365" text-anchor="middle" font-size="14" font-weight="600" fill="white">⏰ Daily Scheduler</text>
+                <text x="500" y="1385" text-anchor="middle" font-size="11" fill="#cffafe" opacity="0.8">Triggers daily execution</text>
+            </g>
+
+            <!-- SERIAL INDICATORS -->
+            <g>
+                <text x="120" y="515" font-size="11" font-weight="600" fill="#2563eb" opacity="0.7">⏱️ SERIAL</text>
+                <text x="120" y="705" font-size="11" font-weight="600" fill="#2563eb" opacity="0.7">⏱️ SERIAL</text>
+                <text x="120" y="875" font-size="11" font-weight="600" fill="#2563eb" opacity="0.7">⏱️ SERIAL</text>
+            </g>
+        </svg>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box serial"></div>
+                <span>Serial Process (Sequential)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box parallel"></div>
+                <span>Parallel Analyzers (Concurrent)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box consolidation"></div>
+                <span>Consolidation Point</span>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📊 Process Overview</h3>
+            <p>
+                The CFO Coordinator orchestrates an intelligent financial analysis workflow. Three specialized analyzers (Finance KPI, Finance Email, and Trend Analysis) work in parallel to gather critical data. 
+                These insights converge at the Risk Detection Skill, which synthesizes the analysis. The workflow then proceeds through a serial pipeline of specialized writers and publishers, ultimately delivering 
+                comprehensive financial reports and recommendations via email to stakeholders.
+            </p>
+            <div class="process-list">
+                <div class="process-item">
+                    <strong>🎯 Coordinator:</strong> Initiates workflow (instant)
+                </div>
+                <div class="process-item">
+                    <strong>⚡ Parallel Phase:</strong> 3 analyzers work simultaneously (2-3 sec)
+                </div>
+                <div class="process-item">
+                    <strong>🔀 Risk Detection:</strong> Consolidates all inputs (1 sec)
+                </div>
+                <div class="process-item">
+                    <strong>✍️ Report Writing:</strong> Generates recommendations (2 sec)
+                </div>
+                <div class="process-item">
+                    <strong>💾 Storage:</strong> Publishes to Google Drive (1 sec)
+                </div>
+                <div class="process-item">
+                    <strong>📧 Distribution:</strong> Sends via email (instant)
+                </div>
+            </div>
+        </div>
+
+        <div class="skill-panel">
+            <h3>🛠️ Skills & Capabilities Used</h3>
+            <p style="color: #cbd5e1; font-size: 12px; margin-bottom: 16px;">Click on any skill to highlight where it's used in the workflow</p>
+            
+            <div class="skill-grid" id="skillGrid">
+                <!-- Skills will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="download-btn" onclick="downloadHTML()">⬇️ Download HTML</button>
+        </div>
+    </div>
+
+    <!-- MCQ Modal -->
+    <div class="mcq-modal" id="mcqModal">
+        <div class="mcq-content">
+            <div class="mcq-header">
+                <div class="mcq-progress" id="progressDots">
+                    <!-- Progress dots will be generated by JavaScript -->
+                </div>
+                <div class="mcq-question-number" id="questionNumber">Question 1 of 1 (Randomly Selected)</div>
+                <div class="mcq-question" id="questionText">Sample Question?</div>
+            </div>
+
+            <div class="mcq-options" id="optionsContainer">
+                <!-- Options will be generated by JavaScript -->
+            </div>
+
+            <div class="mcq-feedback" id="feedback">
+                <div id="feedbackText">Feedback text here</div>
+            </div>
+
+            <div class="mcq-buttons">
+                <button class="mcq-btn mcq-btn-submit" id="submitBtn" onclick="submitMCQ()">Submit Answer</button>
+                <button class="mcq-btn mcq-btn-try-again" id="tryAgainBtn" onclick="startMCQ()" style="display: none;">🔄 Try Another Question</button>
+                <button class="mcq-btn mcq-btn-close" onclick="closeMCQ()">Close Quiz</button>
+            </div>
+
+            <div class="mcq-score" id="scoreBoard">
+                <div class="score-text">Your Score</div>
+                <div class="score-value" id="scoreValue">0 / 1</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trophy Container -->
+    <div class="trophy-container" id="trophyContainer">
+        <div class="trophy-glow"></div>
+        <div class="trophy-icon">🏆</div>
+        <div class="trophy-text">Correct!</div>
+        <div class="trophy-subtext">Excellent Work!</div>
+    </div>
+
+    <script>
+        // MCQ Questions Database - 10 QUESTIONS (ONLY 1 SHOWN RANDOMLY)
+        const mcqQuestions = [
+            {
+                id: 1,
+                question: "Which stage uses 3 parallel analyzers in the CFO Coordinator workflow?",
+                options: [
+                    "Stage 1 - CFO Coordinator",
+                    "Stage 2 - Parallel Analysis Phase",
+                    "Stage 3 - Risk Detection",
+                    "Stage 4 - Executive Report"
+                ],
+                correctAnswer: 1,
+                explanation: "Stage 2 is where Finance KPI, Finance Email, and Trend Analysis work in parallel simultaneously."
+            },
+            {
+                id: 2,
+                question: "What is the primary purpose of the Risk Detection Skill?",
+                options: [
+                    "To send emails to stakeholders",
+                    "To analyze individual KPIs only",
+                    "To consolidate all analyzer inputs and detect risks",
+                    "To schedule daily reports"
+                ],
+                correctAnswer: 2,
+                explanation: "Risk Detection Skill serves as the consolidation point, synthesizing outputs from all three parallel analyzers."
+            },
+            {
+                id: 3,
+                question: "How many reusable tools are used across multiple processes?",
+                options: [
+                    "One - Only Analyzer Tool",
+                    "Two - Analyzer Tool and Skill Tool",
+                    "Three - All have separate tools",
+                    "Four - Additional Google Drive Tool"
+                ],
+                correctAnswer: 1,
+                explanation: "The Analyzer Tool is used by both Finance KPI and Finance Email processes, and the Skill Tool is used by Trend Analysis."
+            },
+            {
+                id: 4,
+                question: "Which component is responsible for distributing reports to stakeholders?",
+                options: [
+                    "Google Drive Publisher",
+                    "Executive Report Writer",
+                    "Gmail Report Sender",
+                    "Recommendation Generator"
+                ],
+                correctAnswer: 2,
+                explanation: "The Gmail Report Sender (Stage 7) handles distribution of finalized reports via email to stakeholders."
+            },
+            {
+                id: 5,
+                question: "What is the final stage of the CFO Coordinator workflow?",
+                options: [
+                    "Gmail Report Sender sends emails",
+                    "Google Drive Publisher archives reports",
+                    "Daily Scheduler triggers daily execution cycles",
+                    "Recommendation Generator creates suggestions"
+                ],
+                correctAnswer: 2,
+                explanation: "The Daily Scheduler (Stage 8) is the final stage that orchestrates and schedules the entire workflow for daily execution."
+            },
+            {
+                id: 6,
+                question: "Which analyzers work in PARALLEL in Stage 2?",
+                options: [
+                    "Finance KPI and Risk Detection",
+                    "Finance KPI, Finance Email, and Trend Analysis",
+                    "Executive Report Writer and Google Drive Publisher",
+                    "Gmail Sender and Daily Scheduler"
+                ],
+                correctAnswer: 1,
+                explanation: "The three concurrent analyzers in Stage 2 are: Finance KPI Analyzer, Finance Email Analyzer, and Trend Analysis Skill."
+            },
+            {
+                id: 7,
+                question: "What does the Executive Report Writer receive as input?",
+                options: [
+                    "Raw financial data from databases",
+                    "Consolidated risk analysis from Risk Detection Skill",
+                    "Individual analyzer outputs without consolidation",
+                    "Email communications directly from Finance Email Analyzer"
+                ],
+                correctAnswer: 1,
+                explanation: "The Executive Report Writer (Stage 4) receives the consolidated and synthesized output from the Risk Detection Skill."
+            },
+            {
+                id: 8,
+                question: "How many SERIAL stages are there in the complete workflow?",
+                options: [
+                    "3 stages (Coordinator, Consolidation, Report)",
+                    "5 stages (Coordinator, Consolidation, Writers, Publishers)",
+                    "6 stages (all stages after parallel execution)",
+                    "8 stages (all workflow stages)"
+                ],
+                correctAnswer: 2,
+                explanation: "After the parallel Phase 2, there are 6 sequential stages: Risk Detection, Report Writer, Recommendation Generator, Google Drive Publisher, Gmail Sender, and Daily Scheduler."
+            },
+            {
+                id: 9,
+                question: "What connects the parallel analyzers to the Risk Detection Skill?",
+                options: [
+                    "Direct connections without consolidation",
+                    "Convergence lines that aggregate analyzer outputs",
+                    "Email notifications between stages",
+                    "A scheduling mechanism"
+                ],
+                correctAnswer: 1,
+                explanation: "Convergence/aggregation lines collect outputs from all three parallel analyzers and feed them to the Risk Detection Skill for consolidation."
+            },
+            {
+                id: 10,
+                question: "Which stage comes immediately after the Recommendation Generator in the workflow?",
+                options: [
+                    "Email Report Sender",
+                    "Daily Scheduler",
+                    "Google Drive Publisher",
+                    "Risk Detection Skill"
+                ],
+                correctAnswer: 2,
+                explanation: "After the Recommendation Generator (Stage 5), the Google Drive Publisher (Stage 6) receives the recommendations to archive and store them."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let selectedAnswer = null;
+        let answered = false;
+        let score = 0;
+
+        let selectedQuestionIndex = null;
+
+        function startMCQ() {
+            // Randomly pick ONE question from the 10 available
+            selectedQuestionIndex = Math.floor(Math.random() * mcqQuestions.length);
+            currentQuestionIndex = 0;
+            selectedAnswer = null;
+            answered = false;
+            score = 0;
+            loadSingleQuestion();
+            document.getElementById('mcqModal').classList.add('active');
+        }
+
+        function loadSingleQuestion() {
+            const question = mcqQuestions[selectedQuestionIndex];
+            document.getElementById('questionNumber').textContent = `Question 1 of 1 (Randomly Selected)`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Hide progress dots for single question
+            document.getElementById('progressDots').style.display = 'none';
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'mcq-option';
+                optionDiv.onclick = () => selectOption(index);
+                optionDiv.innerHTML = `
+                    <div class="mcq-option-label">
+                        <div class="mcq-option-letter">${String.fromCharCode(65 + index)}</div>
+                        <div class="mcq-option-text">${option}</div>
+                    </div>
+                `;
+                container.appendChild(optionDiv);
+            });
+
+            selectedAnswer = null;
+            answered = false;
+            document.getElementById('feedback').classList.remove('show', 'correct', 'incorrect');
+            updateScoreBoard();
+            document.getElementById('submitBtn').textContent = 'Submit Answer';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').style.opacity = '1';
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+
+            document.querySelectorAll('.mcq-option').forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === index) {
+                    opt.classList.add('selected');
+                }
+            });
+            selectedAnswer = index;
+        }
+
+        function submitMCQ() {
+            if (selectedAnswer === null) {
+                alert('Please select an option!');
+                return;
+            }
+
+            answered = true;
+            const question = mcqQuestions[selectedQuestionIndex];
+            const options = document.querySelectorAll('.mcq-option');
+            const feedback = document.getElementById('feedback');
+            const feedbackText = document.getElementById('feedbackText');
+            const isCorrect = selectedAnswer === question.correctAnswer;
+
+            // Disable all options
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            // Show correct/incorrect with enhanced feedback
+            if (isCorrect) {
+                options[selectedAnswer].classList.add('correct');
+                score++;
+                feedback.classList.add('correct');
+                feedbackText.innerHTML = `<strong>✅ Correct Answer!</strong><br><br>${question.explanation}`;
+                showTrophy();
+                updateScoreBoard();
+            } else {
+                options[selectedAnswer].classList.add('incorrect');
+                options[question.correctAnswer].classList.add('correct');
+                feedback.classList.add('incorrect');
+                feedbackText.innerHTML = `<strong>❌ Incorrect</strong><br>The correct answer is <strong>${String.fromCharCode(65 + question.correctAnswer)}</strong><br><br>${question.explanation}`;
+            }
+
+            feedback.classList.add('show');
+
+            // Single question quiz - show completion and Try Again option
+            setTimeout(() => {
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('tryAgainBtn').style.display = 'inline-block';
+                // ALWAYS keep Close button visible
+                const closeBtn = document.querySelector('.mcq-btn-close');
+                if (closeBtn) {
+                    closeBtn.style.display = 'inline-block !important';
+                    closeBtn.style.visibility = 'visible !important';
+                    closeBtn.style.opacity = '1 !important';
+                }
+            }, 2500);
+        }
+
+        function updateScoreBoard() {
+            document.getElementById('scoreValue').textContent = `${score} / 1`;
+        }
+
+        function showTrophy() {
+            const trophyContainer = document.getElementById('trophyContainer');
+            trophyContainer.classList.add('show');
+            createPremiumConfetti();
+            
+            setTimeout(() => {
+                trophyContainer.classList.remove('show');
+            }, 2500);
+        }
+
+        function createPremiumConfetti() {
+            const colors = ['#fbbf24', '#60a5fa', '#34d399', '#f472b6', '#a78bfa', '#fb923c'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const size = 8 + Math.random() * 8;
+                const duration = 2 + Math.random() * 1.5;
+                const delay = Math.random() * 0.2;
+                const xPos = Math.random() * window.innerWidth;
+                const xMovement = (Math.random() - 0.5) * 400;
+                
+                confetti.style.left = xPos + 'px';
+                confetti.style.top = '-20px';
+                confetti.style.background = color;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                confetti.style.boxShadow = `0 0 ${size}px ${color}`;
+                confetti.style.animation = `confettiFall ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s forwards`;
+                confetti.style.setProperty('--x-movement', xMovement + 'px');
+                
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), (duration + delay) * 1000 + 100);
+            }
+        }
+
+        function closeMCQ() {
+            document.getElementById('mcqModal').classList.remove('active');
+            // Reset quiz
+            selectedQuestionIndex = null;
+            selectedAnswer = null;
+            answered = false;
+            score = 0;
+            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById('submitBtn').textContent = 'Submit Answer';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').style.opacity = '1';
+            document.getElementById('tryAgainBtn').style.display = 'none';
+            
+            // ALWAYS keep Close button visible
+            const closeBtn = document.querySelector('.mcq-btn-close');
+            if (closeBtn) {
+                closeBtn.style.display = 'inline-block !important';
+                closeBtn.style.visibility = 'visible !important';
+                closeBtn.style.opacity = '1 !important';
+            }
+            
+            document.getElementById('progressDots').style.display = 'flex';
+        }
+
+        let isPlaying = false;
+        let currentTimeout = null;
+
+        function togglePlayback() {
+            const btn = document.getElementById('playBtn');
+            const svg = document.getElementById('workflowSvg');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.getElementById('progressBar');
+
+            if (isPlaying) {
+                // Stop
+                isPlaying = false;
+                btn.classList.remove('running');
+                btn.innerHTML = '<span class="play-icon">▶</span><span>Start Workflow</span>';
+                
+                svg.classList.remove('svg-animations-enabled');
+                svg.classList.add('svg-animations-disabled');
+                
+                statusDot.classList.add('idle');
+                statusText.textContent = 'Stopped';
+                
+                progressBar.classList.remove('active');
+                
+                if (currentTimeout) {
+                    clearTimeout(currentTimeout);
+                    currentTimeout = null;
+                }
+            } else {
+                // Play
+                isPlaying = true;
+                btn.classList.add('running');
+                btn.innerHTML = '<span class="play-icon">⏸</span><span>Stop Workflow</span>';
+                
+                svg.classList.remove('svg-animations-disabled');
+                svg.classList.add('svg-animations-enabled');
+                
+                statusDot.classList.remove('idle');
+                statusText.textContent = 'Running...';
+                
+                progressBar.classList.add('active');
+
+                // Auto-stop after 12 seconds (matching the progress bar animation)
+                if (currentTimeout) {
+                    clearTimeout(currentTimeout);
+                }
+                currentTimeout = setTimeout(() => {
+                    if (isPlaying) {
+                        togglePlayback();
+                    }
+                }, 12000);
+            }
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'CFO_Coordinator_Workflow.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Add interactive tooltips on hover
+        document.querySelectorAll('.node').forEach(node => {
+            node.style.cursor = 'pointer';
+            node.addEventListener('click', function() {
+                const bbox = this.getBBox?.() || this.getBoundingClientRect();
+                console.log('Clicked on node at', bbox);
+            });
+        });
+
+        // Keyboard shortcut: Space to play/pause
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && e.target === document.body) {
+                e.preventDefault();
+                togglePlayback();
+            }
+        });
+
+        // Skills database with descriptions and stages
+        const skills = [
+            {
+                id: 'coordinator',
+                name: 'CFO Coordinator',
+                type: 'Orchestrator',
+                stage: 'Stage 1',
+                description: 'Main orchestrator agent that initializes and controls the entire workflow',
+                usedBy: 'Initiates workflow',
+                color: '#3b82f6',
+                icon: '🎯'
+            },
+            {
+                id: 'finance-kpi-analyzer',
+                name: 'Finance KPI Process',
+                type: 'Analyzer',
+                stage: 'Stage 2 (Parallel)',
+                description: 'Analyzes financial KPIs and metrics from various data sources',
+                usedBy: 'Uses: Analyzer tool',
+                color: '#8b5cf6',
+                icon: '📊'
+            },
+            {
+                id: 'finance-email-analyzer',
+                name: 'Finance Email Process',
+                type: 'Analyzer',
+                stage: 'Stage 2 (Parallel)',
+                description: 'Extracts and analyzes financial information from email communications',
+                usedBy: 'Uses: Analyzer tool',
+                color: '#8b5cf6',
+                icon: '📧'
+            },
+            {
+                id: 'trend-analysis-skill',
+                name: 'Trend Analysis Process',
+                type: 'Analyzer',
+                stage: 'Stage 2 (Parallel)',
+                description: 'Identifies and analyzes market and financial trends',
+                usedBy: 'Uses: Skill tool',
+                color: '#8b5cf6',
+                icon: '📈'
+            },
+            {
+                id: 'analyzer-tool',
+                name: 'Analyzer Tool',
+                type: 'Tool',
+                stage: 'Stage 2 (Parallel)',
+                description: 'Reusable analysis tool used by Finance KPI and Finance Email processes',
+                usedBy: 'Finance KPI, Finance Email',
+                color: '#a78bfa',
+                icon: '🔧'
+            },
+            {
+                id: 'skill-tool',
+                name: 'Skill Tool',
+                type: 'Tool',
+                stage: 'Stage 2 (Parallel)',
+                description: 'Specialized tool for trend analysis and pattern recognition',
+                usedBy: 'Trend Analysis Process',
+                color: '#a78bfa',
+                icon: '⚙️'
+            },
+            {
+                id: 'risk-detection-skill',
+                name: 'Risk Detection Skill',
+                type: 'Consolidation',
+                stage: 'Stage 3',
+                description: 'Synthesizes all analyzer inputs to detect financial risks and opportunities',
+                usedBy: 'Consolidates: Analyzer & Skill outputs',
+                color: '#f97316',
+                icon: '⚠️'
+            },
+            {
+                id: 'report-writer',
+                name: 'Executive Report Writer',
+                type: 'Writer',
+                stage: 'Stage 4',
+                description: 'Generates comprehensive executive reports based on risk analysis',
+                usedBy: 'Receives Risk Detection output',
+                color: '#3b82f6',
+                icon: '✍️'
+            },
+            {
+                id: 'recommendation-generator',
+                name: 'Recommendation Generator',
+                type: 'Writer',
+                stage: 'Stage 5',
+                description: 'Creates actionable financial recommendations and action items',
+                usedBy: 'Receives Report Writer output',
+                color: '#3b82f6',
+                icon: '💡'
+            },
+            {
+                id: 'google-drive-publisher',
+                name: 'Google Drive Publisher',
+                type: 'Publisher',
+                stage: 'Stage 6',
+                description: 'Publishes and archives reports to Google Drive for secure storage',
+                usedBy: 'Receives Recommendation output',
+                color: '#34d399',
+                icon: '💾'
+            },
+            {
+                id: 'gmail-report-sender',
+                name: 'Gmail Report Sender',
+                type: 'Publisher',
+                stage: 'Stage 7',
+                description: 'Distributes finalized reports to stakeholders via email',
+                usedBy: 'Receives Google Drive output',
+                color: '#34d399',
+                icon: '📬'
+            },
+            {
+                id: 'daily-scheduler',
+                name: 'Daily Scheduler',
+                type: 'Scheduler',
+                stage: 'Stage 8 (Final)',
+                description: 'Schedules and triggers the entire workflow on a daily basis',
+                usedBy: 'Orchestrates daily execution cycle',
+                color: '#06b6d4',
+                icon: '⏰'
+            }
+        ];
+
+        // Initialize skill panel
+        function initializeSkillPanel() {
+            const skillGrid = document.getElementById('skillGrid');
+            
+            skills.forEach(skill => {
+                const badge = document.createElement('div');
+                badge.className = 'skill-badge';
+                badge.id = 'skill-' + skill.id;
+                badge.onclick = () => highlightSkill(skill.id);
+                
+                const typeClass = 'skill-type-' + skill.type.toLowerCase().replace(' ', '-');
+                
+                badge.innerHTML = `
+                    <div class="skill-content">
+                        <div class="skill-name">${skill.icon} ${skill.name}</div>
+                        <div class="skill-type ${typeClass}">${skill.type}</div>
+                        <div class="stage-indicator">
+                            <span class="stage-dot ${skill.type.toLowerCase().replace(' ', '-')}"></span>
+                            <span>${skill.stage}</span>
+                        </div>
+                        <div class="skill-usage">
+                            <div style="margin-bottom: 4px; font-weight: 600;">Purpose:</div>
+                            ${skill.description}
+                            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(148, 163, 184, 0.2); font-size: 10px; color: #94a3b8;">
+                                <strong>Used By:</strong> ${skill.usedBy}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                skillGrid.appendChild(badge);
+            });
+        }
+
+        // Highlight skill function
+        function highlightSkill(skillId) {
+            const badge = document.getElementById('skill-' + skillId);
+            const allBadges = document.querySelectorAll('.skill-badge');
+            const allNodes = document.querySelectorAll('.svg-node-skill');
+            
+            // Toggle active state
+            const isActive = badge.classList.contains('active');
+            
+            if (isActive) {
+                // Deactivate
+                badge.classList.remove('active');
+                allNodes.forEach(node => {
+                    node.classList.remove('highlight');
+                });
+            } else {
+                // Remove active from all badges
+                allBadges.forEach(b => b.classList.remove('active'));
+                
+                // Add active to current badge
+                badge.classList.add('active');
+                
+                // Remove highlight from all nodes
+                allNodes.forEach(node => {
+                    node.classList.remove('highlight');
+                });
+                
+                // Add highlight to matching nodes
+                allNodes.forEach(node => {
+                    const nodeSkills = node.getAttribute('data-skills').split(' ');
+                    if (nodeSkills.includes(skillId)) {
+                        node.classList.add('highlight');
+                    }
+                });
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSkillPanel();
+        });
+
+        // Also initialize if DOM is already ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initializeSkillPanel();
+                console.log('✅ Page loaded: Workflow visible, MCQ hidden');
+                console.log('Modal display:', document.getElementById('mcqModal').style.display);
+            });
+        } else {
+            initializeSkillPanel();
+            console.log('✅ Page loaded: Workflow visible, MCQ hidden');
+            console.log('Modal display:', document.getElementById('mcqModal').style.display);
+        }
+        
+        // Ensure modal is hidden on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mcqModal').classList.remove('active');
+        });
+    </script>
+</body>
+</html>
