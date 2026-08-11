@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools for Data Analytics | Enterprise Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004499;
+            --accent: #ff6b35;
+            --success: #06a55d;
+            --warning: #ffa500;
+            --neutral-dark: #1a1a1a;
+            --neutral-light: #f5f7fa;
+            --border: #e0e8f0;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 0;
+            box-shadow: 0 4px 20px rgba(0, 102, 204, 0.15);
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            max-width: 600px;
+        }
+
+        /* NAVIGATION TABS */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs button {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .nav-tabs button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: #f0f8ff;
+        }
+
+        .nav-tabs button:hover {
+            color: var(--primary);
+            background: #f0f8ff;
+        }
+
+        /* TAB CONTENT */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CARD STYLES */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary);
+        }
+
+        .card.accent-border {
+            border-left-color: var(--accent);
+        }
+
+        .card.success-border {
+            border-left-color: var(--success);
+        }
+
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 16px;
+            font-size: 1.3em;
+        }
+
+        .card p {
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        /* WORKFLOW DIAGRAM */
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .workflow-step {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.25);
+        }
+
+        .workflow-step .step-num {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .workflow-step .step-name {
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .workflow-step::after {
+            content: "→";
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .workflow-step:last-child::after {
+            content: "";
+        }
+
+        /* COMPARISON TABLE */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table tr:hover {
+            background: var(--neutral-light);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* INTERACTIVE ELEMENT */
+        .interactive-box {
+            background: linear-gradient(135deg, #f0f8ff 0%, #e8f4ff 100%);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .interactive-box h4 {
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"], input[type="text"], select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1em;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        /* TOKEN CALCULATOR */
+        .result-box {
+            background: var(--neutral-light);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            border-left: 4px solid var(--success);
+        }
+
+        .result-box p {
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* ICONS & VISUAL */
+        .icon-box {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 107, 53, 0.1) 50%, transparent 100%);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .workflow {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-step::after {
+                content: "↓";
+                right: auto;
+                bottom: -20px;
+                top: auto;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-tabs button {
+                width: 100%;
+            }
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--neutral-dark);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .checklist li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 AI Tools for Data Analytics</h1>
+            <p>Enterprise Guide to Spec-Driven Development (SDD) with LLMs – For Experienced Data Consultants</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- NAVIGATION TABS -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="showTab('workflow')">SDD Workflow</button>
+            <button class="tab-btn" onclick="showTab('profiling')">Data Profiling</button>
+            <button class="tab-btn" onclick="showTab('optimization')">Token Optimization</button>
+            <button class="tab-btn" onclick="showTab('tools')">Tools Comparison</button>
+            <button class="tab-btn" onclick="showTab('governance')">Governance</button>
+            <button class="tab-btn" onclick="showTab('calculator')">Cost Calculator</button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="overview" class="tab-content active">
+            <div class="card">
+                <h3>🎯 Why Spec-Driven Development (SDD)?</h3>
+                <p>Imagine having a coding partner who can generate SQL, PySpark, and test code in minutes—but only if you give them <span class="highlight">clear specifications</span>. That's SDD with AI.</p>
+                <p><strong>Traditional approach:</strong> "Here's raw data, give me insights." (Slow, error-prone, hallucinations)</p>
+                <p><strong>SDD approach:</strong> "Here's what I need, here's what the data looks like, generate the code." (Fast, reliable, auditable)</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card success-border">
+                    <div class="icon-box">📊</div>
+                    <h3>Token Efficiency</h3>
+                    <p>Full analytics pipeline on multi-million row data: <strong>~40-50K tokens per cycle</strong>. That's 1-2% of your LLM's context window.</p>
+                </div>
+
+                <div class="card accent-border">
+                    <div class="icon-box">⚡</div>
+                    <h3>Speed & Scale</h3>
+                    <p>Multi-month projects compressed to days. One consultant + one AI can replace small teams for routine analytics.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🔑 Three Core Principles</h3>
+                <ol style="margin-left: 20px; margin-top: 16px;">
+                    <li style="margin-bottom: 12px;"><strong>Spec-First:</strong> Write requirements → designs → data contracts BEFORE asking AI to code.</li>
+                    <li style="margin-bottom: 12px;"><strong>Data-Driven:</strong> Profile data once, summarize compactly, feed summaries (not raw rows) to AI.</li>
+                    <li><strong>Human-in-the-Loop:</strong> Verify every AI output. Specs guide validation; tests enforce correctness.</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h3>📈 Common Consultant Challenges (Solved by SDD)</h3>
+                <ul class="checklist">
+                    <li>Ambiguous requirements → Use structured requirements.md</li>
+                    <li>Data quality issues → Explicit data_quality_rules.md</li>
+                    <li>Rework from spec changes → Traceability matrix ties specs to code</li>
+                    <li>AI hallucinations → Compact prompts + strict tokens = fewer errors</li>
+                    <li>Cost overruns → Token optimization keeps spend predictable</li>
+                    <li>Governance concerns → Clear audit trail of who prompted what</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TAB 2: WORKFLOW -->
+        <div id="workflow" class="tab-content">
+            <div class="card">
+                <h3>📋 The 10-Step SDD Pipeline</h3>
+                <p style="margin-bottom: 20px;">Each step produces an artifact that constrains the next. This is why it works at scale.</p>
+            </div>
+
+            <div class="workflow">
+                <div class="workflow-step">
+                    <div class="step-num">1</div>
+                    <div class="step-name">Specify</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">2</div>
+                    <div class="step-name">Design</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">3</div>
+                    <div class="step-name">Profile Data</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">4</div>
+                    <div class="step-name">Quality Rules</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">5</div>
+                    <div class="step-name">Decompose</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">6</div>
+                    <div class="step-name">Implement</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">7</div>
+                    <div class="step-name">Test</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">8</div>
+                    <div class="step-name">EDA</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">9</div>
+                    <div class="step-name">Dashboard</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-num">10</div>
+                    <div class="step-name">Validate</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Step 1-2: Specify & Design</h3>
+                    <p><strong>Artifact:</strong> requirements.md, design.md</p>
+                    <p><strong>Human:</strong> Product owner writes "Compute monthly on-time delivery by region."</p>
+                    <p><strong>AI:</strong> Refines into structured specs if given a template.</p>
+                    <p><strong>Tokens:</strong> ~300-400 each</p>
+                </div>
+
+                <div class="card">
+                    <h3>Step 3-4: Profile & Quality</h3>
+                    <p><strong>Artifact:</strong> data contract (JSON/MD), data_quality_rules.md</p>
+                    <p><strong>Human:</strong> Runs Jupyter to profile sources.</p>
+                    <p><strong>AI:</strong> Drafts rules (e.g. "No negative quantities") from spec.</p>
+                    <p><strong>Tokens:</strong> ~400-500 total</p>
+                </div>
+
+                <div class="card">
+                    <h3>Step 5-6: Decompose & Code</h3>
+                    <p><strong>Artifact:</strong> tasks.md, src/SQL or src/PySpark</p>
+                    <p><strong>Human:</strong> Breaks spec into tasks.</p>
+                    <p><strong>AI:</strong> Generates code for each task (~500 tokens each).</p>
+                    <p><strong>Tokens:</strong> ~500-1000 per task (run locally)</p>
+                </div>
+
+                <div class="card">
+                    <h3>Step 7-10: Validate & Deliver</h3>
+                    <p><strong>Artifact:</strong> test suite, EDA report, dashboard, traceability matrix</p>
+                    <p><strong>Human:</strong> Tests code, validates outputs against spec.</p>
+                    <p><strong>AI:</strong> Helps with test scaffolding & EDA queries.</p>
+                    <p><strong>Tokens:</strong> ~500-800 (mostly testing)</p>
+                </div>
+            </div>
+
+            <div class="card success-border">
+                <h3>💡 Key Insight: Prompt Chaining</h3>
+                <p>Instead of one giant "analyze this data" prompt (which will fail on big data), you make 10 small prompts, each ~300-800 tokens. Total: 3-8K tokens. Total cost: $0.01-0.20.</p>
+            </div>
+        </div>
+
+        <!-- TAB 3: DATA PROFILING -->
+        <div id="profiling" class="tab-content">
+            <div class="card">
+                <h3>🔍 Data Profiling: The Secret Weapon</h3>
+                <p>Profiling = examining sources and collecting metadata. This single step unlocks SDD's power.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>What to Profile</h3>
+                    <ul class="checklist">
+                        <li>Column names & data types</li>
+                        <li>Row counts & record samples</li>
+                        <li>Min/max values & distributions</li>
+                        <li>Null rates & duplicates</li>
+                        <li>Foreign key relationships</li>
+                        <li>Anomalies & quality issues</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>How to Profile (Jupyter)</h3>
+                    <div class="code-block">
+# Load and inspect
+import pandas as pd
+df = pd.read_csv('sales.csv')
+
+# Generate profile
+print(f"Rows: {len(df)}")
+print(df.dtypes)
+print(df.describe())
+print(df.isnull().sum())
+
+# Export as JSON or MD
+profile = {
+    "table": "Sales",
+    "rows": len(df),
+    "columns": df.columns.tolist(),
+    "nulls": df.isnull().sum().to_dict()
+}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📄 Example Compact Data Contract</h3>
+                <div class="code-block">
+## Sales Table
+- Rows: 2.1M
+- Columns: 8
+  - `sale_id` (int): Primary key, unique, no nulls
+  - `customer_id` (int): FK to Customer.id, ~500K unique
+  - `amount` (float): Range [0, 99999], 2.3% nulls
+  - `order_date` (date): 2020-2024, recent data
+  - Anomalies: 15 negative amounts (data quality issue #42)
+                </div>
+            </div>
+
+            <div class="card accent-border">
+                <h3>🎯 Why This Matters for AI</h3>
+                <p>Instead of pasting 2.1M rows into a prompt, you paste this 10-line contract. AI now understands your data without wasting tokens.</p>
+                <p><strong>Result:</strong> Better code generation + lower cost + faster response.</p>
+            </div>
+
+            <div class="card">
+                <h3>Consultant Workflow: Data Profiling</h3>
+                <ol style="margin-left: 20px; margin-top: 16px;">
+                    <li style="margin-bottom: 10px;"><strong>Load sources</strong> (CSV, JSON, SQL, Parquet) into Jupyter/Python.</li>
+                    <li style="margin-bottom: 10px;"><strong>Profile each</strong> using pandas/Spark profiling tools.</li>
+                    <li style="margin-bottom: 10px;"><strong>Export compacted summaries</strong> as JSON or Markdown.</li>
+                    <li style="margin-bottom: 10px;"><strong>Review for quality issues</strong> (negatives, nulls, outliers).</li>
+                    <li><strong>Paste into AI prompts</strong> (never paste raw data).</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- TAB 4: TOKEN OPTIMIZATION -->
+        <div id="optimization" class="tab-content">
+            <div class="card">
+                <h3>💰 Token Economics: The Math</h3>
+                <p>LLM APIs charge per token. A "token" ≈ 4 characters. Knowing this is crucial for cost control.</p>
+                <p><strong>Example:</strong> A 100K-token prompt on GPT-5.5 costs ~$2.50 (input) + variable output cost.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <h3>Cost per 1M Tokens</h3>
+                    <p><strong>GPT-5 mini:</strong> $0.25 in / $2 out</p>
+                    <p><strong>Claude Haiku 4.5:</strong> $1 in / $5 out</p>
+                    <p><strong>GPT-5.5 (Pro):</strong> $5 in / $30 out</p>
+                    <p><em>Costs vary by model; check official docs.</em></p>
+                </div>
+
+                <div class="card">
+                    <h3>Context Windows</h3>
+                    <p><strong>GPT-5 mini:</strong> 400K tokens</p>
+                    <p><strong>Claude Sonnet 5:</strong> 1M tokens</p>
+                    <p><strong>GPT-5.5:</strong> 1M tokens</p>
+                    <p><em>Larger windows = bigger prompts, but higher per-token cost.</em></p>
+                </div>
+
+                <div class="card success-border">
+                    <h3>SDD Savings</h3>
+                    <p>Full pipeline (specs to tests): ~40-50K tokens.</p>
+                    <p>Cost: ~$0.15-0.50 (using GPT-5 mini)</p>
+                    <p>vs. ~$2-5 if you use GPT-5.5</p>
+                    <p><strong>10x cheaper by optimizing.</strong></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🎯 5 Optimization Strategies</h3>
+                <ul class="checklist">
+                    <li><strong>Compact Context:</strong> Profile data, don't paste raw tables.</li>
+                    <li><strong>Prompt Chaining:</strong> 10 small prompts (3-8K total) beat 1 giant prompt.</li>
+                    <li><strong>Few-shot Examples:</strong> Show 1 example, not 10.</li>
+                    <li><strong>Reuse Artifacts:</strong> Reference earlier specs instead of repeating.</li>
+                    <li><strong>Model Selection:</strong> Use mini/Haiku for simple tasks, GPT-5.5 only when needed.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>💡 Budget Your Tokens</h3>
+                <div class="code-block">
+# Example SDD Budget (50K tokens)
+- requirements.md prompt: 300 tokens
+- design.md prompt: 400 tokens
+- integration spec: 600 tokens
+- quality rules: 400 tokens
+- Task 1 SQL: 500 tokens (5 tasks × 500 = 2.5K)
+- Task 2-5 SQL: 2K more
+- Testing scaffolds: 1K
+- EDA queries: 1.5K
+- Review & fixes: 2K
+Total: ~40-50K tokens (stays under budget!)
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: TOOLS COMPARISON -->
+        <div id="tools" class="tab-content">
+            <div class="card">
+                <h3>🛠️ Tool Landscape: Which AI for Which Task?</h3>
+                <p>Different tools excel at different things. Your choice depends on your workflow.</p>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Tool / Model</th>
+                            <th>Best For</th>
+                            <th>Context Window</th>
+                            <th>Cost (per 1M)</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GitHub Copilot</strong></td>
+                            <td>IDE-based coding</td>
+                            <td>~400K</td>
+                            <td>$10/user/mo (subscription)</td>
+                            <td><span class="badge info">In-Editor</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Codex (GPT-5-Codex)</strong></td>
+                            <td>SQL/PySpark generation</td>
+                            <td>400K</td>
+                            <td>$1.25 in / $10 out</td>
+                            <td><span class="badge success">Code Generation</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GPT-5 mini</strong></td>
+                            <td>Fast, cheap parsing</td>
+                            <td>400K</td>
+                            <td>$0.25 in / $2 out</td>
+                            <td><span class="badge warning">Budget Option</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>GPT-5.5 Pro</strong></td>
+                            <td>Complex reasoning</td>
+                            <td>1M</td>
+                            <td>$5 in / $30 out</td>
+                            <td><span class="badge success">Complex Tasks</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Claude Haiku 4.5</strong></td>
+                            <td>Fast & cheap</td>
+                            <td>400K</td>
+                            <td>$1 in / $5 out</td>
+                            <td><span class="badge warning">Budget-Friendly</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Claude Sonnet 5</strong></td>
+                            <td>Balanced quality</td>
+                            <td>1M</td>
+                            <td>$2 in / $10 out</td>
+                            <td><span class="badge success">Production</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Copilot Path</h3>
+                    <p><strong>Workflow:</strong> Write specs in VS Code → Copilot autocompletes code in-editor.</p>
+                    <p><strong>Pros:</strong> Fast iteration, integrated, subscription pricing is predictable.</p>
+                    <p><strong>Cons:</strong> Limited to IDE context, less control over prompts.</p>
+                    <p><strong>Best for:</strong> Rapid prototyping, developers who live in code.</p>
+                </div>
+
+                <div class="card">
+                    <h3>API Path (Codex/GPT-5)</h3>
+                    <p><strong>Workflow:</strong> Jupyter + ChatGPT or direct API → tight prompt control.</p>
+                    <p><strong>Pros:</strong> Full control, build custom workflows, token-optimized.</p>
+                    <p><strong>Cons:</strong> More setup, need to manage API keys.</p>
+                    <p><strong>Best for:</strong> Analytics workflows, batch processing, cost-conscious teams.</p>
+                </div>
+            </div>
+
+            <div class="card accent-border">
+                <h3>🏆 Our Recommendation for Consultants</h3>
+                <p><strong>Foundation:</strong> Claude Sonnet 5 or GPT-5.5 (powerful enough for complex specs)</p>
+                <p><strong>For iteration:</strong> GPT-5 mini or Haiku (cheap, fast for refinements)</p>
+                <p><strong>Delivery:</strong> Automate via API in CI/CD (no repeated manual prompting)</p>
+                <p><strong>Tooling:</strong> Jupyter (data profiling) + VS Code (prompt files) + ChatGPT/API (generation)</p>
+            </div>
+        </div>
+
+        <!-- TAB 6: GOVERNANCE -->
+        <div id="governance" class="tab-content">
+            <div class="card">
+                <h3>🔒 Enterprise Governance: What Consultants Must Know</h3>
+                <p>Using LLMs in enterprise = compliance risk. Here's how to mitigate.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card success-border">
+                    <h3>Data Minimization</h3>
+                    <p>✓ Profile data locally, send only summaries to AI</p>
+                    <p>✓ Remove PII/sensitive fields before profiling</p>
+                    <p>✓ Use synthetic examples in prompts</p>
+                    <p>✗ Never paste customer names, IDs, emails</p>
+                </div>
+
+                <div class="card success-border">
+                    <h3>Encryption & Access</h3>
+                    <p>✓ TLS for API calls</p>
+                    <p>✓ Restrict API keys (IAM roles, secrets manager)</p>
+                    <p>✓ Consider private LLMs for ultra-sensitive data (Azure OpenAI, Bedrock)</p>
+                    <p>✓ Log all prompts for audit trails</p>
+                </div>
+
+                <div class="card">
+                    <h3>Compliance Frameworks</h3>
+                    <ul class="checklist">
+                        <li><strong>GDPR:</strong> Don't train models on customer data; use data minimization</li>
+                        <li><strong>HIPAA:</strong> Anonymize health data before AI analysis</li>
+                        <li><strong>SOC-2:</strong> Use certified AI providers (OpenAI Enterprise, Azure OpenAI)</li>
+                        <li><strong>PCI-DSS:</strong> Never include payment card data in prompts</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Audit Trail</h3>
+                    <p>Maintain a log of:</p>
+                    <ul class="checklist">
+                        <li>Who ran the prompt</li>
+                        <li>When (timestamp)</li>
+                        <li>What spec was used (store prompts in Git)</li>
+                        <li>Which model/version</li>
+                        <li>Output validation result</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🛡️ Safe Workflow for Consultants</h3>
+                <div class="code-block">
+1. Load sensitive data in Jupyter (local/private network)
+2. Profile & anonymize
+3. Save compact contract (NO PII)
+4. Export prompts folder (Markdown files)
+5. Share prompts with team for review
+6. Execute via API from secure container (log everything)
+7. Store outputs in Git (code/specs only, not data)
+8. Annual audit: scan repos for accidental PII leaks
+                </div>
+            </div>
+
+            <div class="card warning">
+                <h3>⚠️ Red Flags: Don't Do This</h3>
+                <ul style="margin-left: 20px; margin-top: 16px;">
+                    <li>❌ Paste raw customer data into ChatGPT</li>
+                    <li>❌ Share API keys in Slack or email</li>
+                    <li>❌ Use free tier ChatGPT for any company data</li>
+                    <li>❌ Train models on proprietary datasets (unless self-hosted)</li>
+                    <li>❌ Forget to log who accessed AI for compliance</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TAB 7: CALCULATOR -->
+        <div id="calculator" class="tab-content">
+            <div class="card">
+                <h3>💸 Token Cost & Time Calculator</h3>
+                <p>Estimate your SDD pipeline cost in seconds.</p>
+            </div>
+
+            <div class="interactive-box">
+                <h4>Project Parameters</h4>
+                
+                <label style="display: block; margin: 10px 0; font-weight: 600;">1. Estimated Total Tokens (across entire pipeline)</label>
+                <input type="number" id="tokenCount" placeholder="e.g. 50000" value="50000">
+
+                <label style="display: block; margin: 10px 0; font-weight: 600;">2. Choose Primary Model</label>
+                <select id="modelSelect" onchange="updateCalculation()">
+                    <option value="gpt5-mini">GPT-5 mini ($0.25 in / $2 out)</option>
+                    <option value="haiku">Claude Haiku 4.5 ($1 in / $5 out)</option>
+                    <option value="codex">Codex ($1.25 in / $10 out)</option>
+                    <option value="sonnet5">Claude Sonnet 5 ($2 in / $10 out)</option>
+                    <option value="gpt55">GPT-5.5 Pro ($5 in / $30 out)</option>
+                </select>
+
+                <label style="display: block; margin: 10px 0; font-weight: 600;">3. Input/Output Token Ratio (%)</label>
+                <input type="number" id="ioRatio" placeholder="e.g. 60" value="60" min="20" max="80"> (higher = more complex prompts)
+
+                <button onclick="calculateCost()" style="margin-top: 16px;">Calculate Cost</button>
+
+                <div id="costResult"></div>
+            </div>
+
+            <div class="interactive-box">
+                <h4>Typical SDD Budget Examples</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+                    <div style="border: 1px solid var(--border); padding: 12px; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 8px;">Small Project (1 dataset)</h5>
+                        <p style="margin: 4px 0;"><strong>Tokens:</strong> 15-20K</p>
+                        <p style="margin: 4px 0;"><strong>Cost (GPT-5 mini):</strong> ~$0.05-0.10</p>
+                        <p style="margin: 4px 0;"><strong>Time:</strong> 2-3 days</p>
+                    </div>
+
+                    <div style="border: 1px solid var(--border); padding: 12px; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 8px;">Medium Project (3-5 datasets)</h5>
+                        <p style="margin: 4px 0;"><strong>Tokens:</strong> 40-50K</p>
+                        <p style="margin: 4px 0;"><strong>Cost (GPT-5 mini):</strong> ~$0.15-0.25</p>
+                        <p style="margin: 4px 0;"><strong>Time:</strong> 1-2 weeks</p>
+                    </div>
+
+                    <div style="border: 1px solid var(--border); padding: 12px; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 8px;">Large Project (10+ datasets, complex logic)</h5>
+                        <p style="margin: 4px 0;"><strong>Tokens:</strong> 100-150K</p>
+                        <p style="margin: 4px 0;"><strong>Cost (GPT-5 mini):</strong> ~$0.40-0.60</p>
+                        <p style="margin: 4px 0;"><strong>Time:</strong> 3-4 weeks</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💡 ROI Calculation for Consultants</h3>
+                <div class="interactive-box">
+                    <label style="display: block; margin: 10px 0; font-weight: 600;">Your Daily Rate (USD)</label>
+                    <input type="number" id="dailyRate" placeholder="e.g. 1500" value="1500">
+
+                    <label style="display: block; margin: 10px 0; font-weight: 600;">Project Duration Without AI (days)</label>
+                    <input type="number" id="daysWithout" placeholder="e.g. 15" value="15">
+
+                    <label style="display: block; margin: 10px 0; font-weight: 600;">Estimated Duration With SDD (days)</label>
+                    <input type="number" id="daysWith" placeholder="e.g. 5" value="5">
+
+                    <button onclick="calculateROI()">Calculate ROI</button>
+                    <div id="roiResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>🚀 AI Tools for Data Analytics | Enterprise Edition | Spec-Driven Development Framework</p>
+        <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Built for data consultants who want to scale with AI—not be replaced by it.</p>
+    </footer>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function calculateCost() {
+            const tokens = parseInt(document.getElementById('tokenCount').value) || 0;
+            const ratio = parseInt(document.getElementById('ioRatio').value) || 60;
+            const model = document.getElementById('modelSelect').value;
+
+            const inputTokens = Math.round(tokens * ratio / 100);
+            const outputTokens = tokens - inputTokens;
+
+            let costPerMInput, costPerMOutput;
+
+            switch(model) {
+                case 'gpt5-mini':
+                    costPerMInput = 0.25;
+                    costPerMOutput = 2;
+                    break;
+                case 'haiku':
+                    costPerMInput = 1;
+                    costPerMOutput = 5;
+                    break;
+                case 'codex':
+                    costPerMInput = 1.25;
+                    costPerMOutput = 10;
+                    break;
+                case 'sonnet5':
+                    costPerMInput = 2;
+                    costPerMOutput = 10;
+                    break;
+                case 'gpt55':
+                    costPerMInput = 5;
+                    costPerMOutput = 30;
+                    break;
+            }
+
+            const inputCost = (inputTokens / 1000000) * costPerMInput;
+            const outputCost = (outputTokens / 1000000) * costPerMOutput;
+            const totalCost = inputCost + outputCost;
+
+            const resultHTML = `
+                <div class="result-box">
+                    <p>Input tokens: <span class="result-value">${inputTokens.toLocaleString()}</span></p>
+                    <p>Output tokens: <span class="result-value">${outputTokens.toLocaleString()}</span></p>
+                    <p>Input cost: <strong>$${inputCost.toFixed(2)}</strong></p>
+                    <p>Output cost: <strong>$${outputCost.toFixed(2)}</strong></p>
+                    <p style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <strong style="font-size: 1.2em;">Total Cost: $${totalCost.toFixed(2)}</strong>
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('costResult').innerHTML = resultHTML;
+        }
+
+        function calculateROI() {
+            const dailyRate = parseInt(document.getElementById('dailyRate').value) || 0;
+            const daysWithout = parseInt(document.getElementById('daysWithout').value) || 0;
+            const daysWith = parseInt(document.getElementById('daysWith').value) || 0;
+
+            const costWithout = dailyRate * daysWithout;
+            const costWith = dailyRate * daysWith;
+            const savings = costWithout - costWith;
+            const percentSavings = ((savings / costWithout) * 100).toFixed(1);
+
+            const roiHTML = `
+                <div class="result-box">
+                    <p>Traditional approach cost: <strong>$${costWithout.toLocaleString()}</strong> (${daysWithout} days)</p>
+                    <p>SDD approach cost: <strong>$${costWith.toLocaleString()}</strong> (${daysWith} days)</p>
+                    <p style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <strong style="font-size: 1.3em; color: var(--success);">Savings: $${savings.toLocaleString()} (${percentSavings}%)</strong>
+                    </p>
+                    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                        That's ${daysWithout - daysWith} days saved + $(${(savings - 50).toLocaleString()}) in bill-to-client value.
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('roiResult').innerHTML = roiHTML;
+        }
+
+        // Calculate on model change
+        document.getElementById('modelSelect')?.addEventListener('change', calculateCost);
+        document.getElementById('tokenCount')?.addEventListener('input', calculateCost);
+        document.getElementById('ioRatio')?.addEventListener('input', calculateCost);
+
+        // Initial calculations
+        calculateCost();
+    </script>
+</body>
+</html>
