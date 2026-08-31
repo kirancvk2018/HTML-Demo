@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 5 — BMad Method Deep Dive</title>
+<style>
+  :root{
+    --navy-950:#0F1C2E;
+    --navy-900:#152840;
+    --navy-800:#1D3557;
+    --navy-700:#2B4A73;
+    --slate-600:#4A5C72;
+    --slate-500:#6B7D93;
+    --slate-300:#AEB9C7;
+    --slate-200:#D7DDE5;
+    --slate-100:#EDF0F4;
+    --paper:#F6F7F9;
+    --card:#FFFFFF;
+    --steel:#3E6B8A;
+    --teal:#2E7D74;
+    --amber:#B4823A;
+    --line:#DCE2E9;
+    --text-900:#182533;
+    --text-600:#48576A;
+    --text-400:#7C8AA0;
+    --serif: "Source Serif 4","Iowan Old Style","Palatino Linotype",Georgia,serif;
+    --sans: "IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    --mono: "IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--text-900);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ---------- Layout shell ---------- */
+  .shell{display:grid;grid-template-columns:272px 1fr;min-height:100vh;}
+  @media (max-width: 900px){ .shell{grid-template-columns:1fr;} .rail{position:sticky;top:0;z-index:30;} }
+
+  /* ---------- Rail / Nav ---------- */
+  .rail{
+    background:var(--navy-950);
+    color:var(--slate-200);
+    padding:28px 22px 24px;
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+  }
+  @media (max-width: 900px){ .rail{height:auto;} }
+  .brand{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding-bottom:20px;
+    margin-bottom:18px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+  }
+  .brand .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--slate-300);
+  }
+  .brand h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:21px;
+    margin:2px 0 0;
+    color:#fff;
+    line-height:1.25;
+  }
+  .brand .sub{font-size:12.5px;color:var(--slate-300);margin-top:2px;}
+
+  nav.toc{display:flex;flex-direction:column;gap:2px;}
+  nav.toc button{
+    all:unset;
+    cursor:pointer;
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+    padding:8px 10px;
+    border-radius:6px;
+    font-size:13.5px;
+    color:var(--slate-300);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.toc button .num{font-family:var(--mono);font-size:11px;color:var(--slate-500);min-width:16px;}
+  nav.toc button:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  nav.toc button.active{background:var(--navy-700);color:#fff;}
+  nav.toc button.active .num{color:var(--slate-200);}
+
+  .rail-foot{
+    margin-top:22px;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,0.12);
+    font-size:11.5px;
+    color:var(--slate-500);
+  }
+
+  /* ---------- Main ---------- */
+  main{padding:44px 56px 120px;max-width:920px;}
+  @media (max-width: 900px){ main{padding:32px 22px 90px;} }
+
+  .section{display:none;}
+  .section.active{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .eyebrow-block{margin-bottom:8px;}
+  .eyebrow-block .kicker{font-family:var(--mono);font-size:12px;color:var(--steel);}
+  h2.section-title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:34px;
+    margin:4px 0 6px;
+    color:var(--navy-900);
+    letter-spacing:-0.01em;
+  }
+  .section-dek{color:var(--text-600);font-size:15.5px;max-width:62ch;margin-bottom:32px;}
+
+  h3{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--navy-800);margin:34px 0 10px;}
+  p{color:var(--text-600);font-size:15px;max-width:70ch;}
+  ul{padding-left:20px;color:var(--text-600);font-size:15px;max-width:68ch;}
+  li{margin-bottom:6px;}
+  strong{color:var(--text-900);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:20px 22px;
+  }
+
+  /* ---------- Phase flow (Overview) ---------- */
+  .phase-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:18px 0 8px;}
+  @media (max-width:760px){ .phase-flow{grid-template-columns:1fr;} }
+  .phase{
+    position:relative;
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:18px 16px 16px;
+    cursor:pointer;
+    transition:box-shadow .15s ease, border-color .15s ease;
+  }
+  .phase:not(:first-child){border-left:none;}
+  @media (max-width:760px){ .phase:not(:first-child){border-left:1px solid var(--line); border-top:none;} }
+  .phase:hover{box-shadow:inset 0 0 0 1px var(--steel);}
+  .phase.open{background:var(--navy-900);}
+  .phase.open .phase-label,.phase.open .phase-name,.phase.open .phase-desc{color:#fff;}
+  .phase-label{font-family:var(--mono);font-size:11px;color:var(--text-400);}
+  .phase-name{font-family:var(--serif);font-weight:600;font-size:17px;margin:4px 0 6px;color:var(--navy-800);}
+  .phase-desc{font-size:13px;color:var(--text-400);}
+  .phase-optional{
+    display:inline-block;margin-top:8px;font-family:var(--mono);font-size:10px;
+    color:var(--amber);border:1px solid var(--amber);padding:1px 6px;border-radius:3px;
+  }
+  .phase-detail{
+    grid-column:1/-1;
+    border:1px solid var(--navy-700);
+    border-top:none;
+    background:var(--slate-100);
+    padding:20px 24px;
+    font-size:14.5px;
+    color:var(--text-600);
+    display:none;
+  }
+  .phase-detail.show{display:block;}
+
+  /* ---------- Requirements grid (business capture / domain) ---------- */
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  @media (max-width:700px){ .field-grid{grid-template-columns:1fr;} }
+  .field{
+    border:1px solid var(--line);
+    background:var(--card);
+    border-radius:6px;
+    padding:14px 16px;
+  }
+  .field .k{font-family:var(--mono);font-size:11px;color:var(--steel);letter-spacing:.02em;}
+  .field .v{font-size:13.5px;color:var(--text-600);margin-top:5px;}
+
+  /* ---------- Elicitation pattern chips ---------- */
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .chip{
+    border:1px solid var(--slate-300);
+    background:var(--card);
+    padding:7px 12px;
+    border-radius:20px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--text-600);
+    transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--steel);color:var(--navy-800);}
+  .chip.active{background:var(--navy-800);border-color:var(--navy-800);color:#fff;}
+  .chip-detail{
+    margin-top:14px;
+    border-left:3px solid var(--steel);
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:3px solid var(--steel);
+    padding:14px 18px;
+    font-size:14px;
+    color:var(--text-600);
+    display:none;
+  }
+  .chip-detail.show{display:block;}
+  .chip-detail .flow{font-family:var(--mono);font-size:12px;color:var(--steel);margin-top:8px;display:block;}
+
+  /* ---------- Vision > Epic > Story decomposition ---------- */
+  .decomp{display:grid;grid-template-columns:auto 1fr;gap:0 18px;margin-top:18px;}
+  .decomp-row{display:contents;}
+  .decomp-tier{
+    font-family:var(--mono);
+    font-size:11px;
+    color:#fff;
+    background:var(--navy-800);
+    padding:5px 10px;
+    border-radius:4px;
+    align-self:start;
+    white-space:nowrap;
+    margin-top:14px;
+  }
+  .decomp-row:nth-child(2) .decomp-tier{background:var(--steel);}
+  .decomp-row:nth-child(3) .decomp-tier{background:var(--teal);}
+  .decomp-body{border-bottom:1px dashed var(--line);padding:12px 0;}
+  .decomp-row:last-child .decomp-body{border-bottom:none;}
+  .decomp-body .t{font-family:var(--serif);font-size:15.5px;color:var(--navy-900);font-weight:600;}
+  .decomp-body .d{font-size:13.5px;color:var(--text-600);margin-top:3px;}
+  .example-box{
+    margin-top:10px;
+    background:var(--slate-100);
+    border:1px solid var(--line);
+    padding:8px 12px;
+    font-size:13px;
+    font-family:var(--mono);
+    color:var(--navy-800);
+    border-radius:4px;
+  }
+
+  /* ---------- Spec contract (five fields) ---------- */
+  .spec-contract{border:1px solid var(--navy-800);border-radius:8px;overflow:hidden;margin-top:18px;}
+  .spec-field{border-bottom:1px solid var(--line);}
+  .spec-field:last-child{border-bottom:none;}
+  .spec-head{
+    all:unset;box-sizing:border-box;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;padding:14px 20px;
+    background:var(--card);
+    font-family:var(--serif);font-weight:600;font-size:16px;color:var(--navy-900);
+  }
+  .spec-head:hover{background:var(--slate-100);}
+  .spec-head .plus{font-family:var(--mono);color:var(--steel);font-size:16px;}
+  .spec-body{max-height:0;overflow:hidden;transition:max-height .25s ease;background:var(--slate-100);}
+  .spec-body inner{display:block;}
+  .spec-body .inner{padding:0 20px 16px;font-size:14px;color:var(--text-600);}
+  .spec-field.open .spec-body{max-height:200px;}
+
+  /* ---------- Flow (end to end) ---------- */
+  .flowlist{border-left:2px solid var(--slate-200);margin-left:8px;margin-top:20px;padding-left:0;}
+  .flowstep{position:relative;padding:0 0 22px 26px;list-style:none;}
+  .flowstep::before{
+    content:attr(data-n);
+    position:absolute;left:-11px;top:0;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--navy-900);color:#fff;
+    font-family:var(--mono);font-size:11px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .flowstep .t{font-family:var(--serif);font-weight:600;font-size:15.5px;color:var(--navy-900);}
+  .flowstep .d{font-size:13.5px;color:var(--text-600);margin-top:2px;}
+
+  /* ---------- Mistakes table ---------- */
+  .mistake-list{display:grid;gap:10px;margin-top:16px;}
+  .mistake{
+    display:grid;grid-template-columns:170px 1fr;
+    border:1px solid var(--line);background:var(--card);border-radius:6px;overflow:hidden;
+  }
+  @media (max-width:640px){ .mistake{grid-template-columns:1fr;} }
+  .mistake .name{
+    background:#FBF3EA;color:#8A5A22;border-right:1px solid var(--line);
+    font-size:13px;font-weight:600;padding:12px 14px;display:flex;align-items:center;
+  }
+  @media (max-width:640px){ .mistake .name{border-right:none;border-bottom:1px solid var(--line);} }
+  .mistake .desc{padding:12px 14px;font-size:13.5px;color:var(--text-600);}
+
+  /* ---------- Case study ---------- */
+  .case-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:700px){ .case-grid{grid-template-columns:1fr;} }
+  .case-card{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:16px 18px;}
+  .case-card h4{margin:0 0 8px;font-family:var(--mono);font-size:12px;color:var(--steel);text-transform:none;}
+  .case-card p, .case-card ul{font-size:13.5px;margin:0;}
+  .note-callout{
+    margin-top:18px;border:1px dashed var(--slate-300);border-radius:6px;
+    padding:14px 18px;font-size:13.5px;color:var(--text-600);background:var(--slate-100);
+  }
+
+  /* ---------- Trainer flow timetable ---------- */
+  table.timetable{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px;}
+  table.timetable th{
+    text-align:left;font-family:var(--mono);font-weight:500;font-size:11.5px;color:var(--text-400);
+    border-bottom:1px solid var(--line);padding:8px 10px;
+  }
+  table.timetable td{padding:10px 10px;border-bottom:1px solid var(--slate-100);color:var(--text-600);vertical-align:top;}
+  table.timetable tr:hover td{background:var(--slate-100);}
+  .time-pill{font-family:var(--mono);font-size:12px;color:var(--navy-800);background:var(--slate-200);padding:2px 8px;border-radius:12px;white-space:nowrap;}
+
+  /* ---------- Takeaways ---------- */
+  .takeaway-list{display:grid;gap:10px;margin-top:16px;}
+  .takeaway{
+    display:flex;gap:12px;align-items:flex-start;
+    border-left:3px solid var(--teal);
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--teal);
+    padding:12px 16px;font-size:14px;color:var(--text-600);
+  }
+
+  /* progress footer nav */
+  .pager{display:flex;justify-content:space-between;margin-top:52px;padding-top:20px;border-top:1px solid var(--line);}
+  .pager button{
+    all:unset;cursor:pointer;font-family:var(--sans);font-size:13.5px;color:var(--navy-800);
+    display:flex;flex-direction:column;padding:8px 4px;
+  }
+  .pager button .lbl{font-family:var(--mono);font-size:10.5px;color:var(--text-400);}
+  .pager button:hover .lbl{color:var(--steel);}
+  .pager button.hidden{visibility:hidden;}
+  .pager .to{text-align:right;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <span class="tag">MODULE 05 · 120 MIN</span>
+      <h1>BMad Method<br>Deep Dive</h1>
+      <span class="sub">Planning &amp; specification track</span>
+    </div>
+    <nav class="toc" id="toc"></nav>
+    <div class="rail-foot">
+      Aligned to current official BMad documentation. Skill names and workflows evolve between releases — use the version installed in the participant environment as the operational reference.
+    </div>
+  </aside>
+
+  <main>
+    <!-- 1 -->
+    <section class="section" data-id="0">
+      <div class="eyebrow-block"><span class="kicker">01 · PURPOSE</span></div>
+      <h2 class="section-title">Why this module exists</h2>
+      <p class="section-dek">BMad structures collaboration between people and AI tools across planning and implementation. This module is about the planning half — turning business intent into implementation context that a development team can act on without guessing.</p>
+
+      <div class="card">
+        <p style="max-width:64ch;">The current official BMad documentation describes a workflow organized around <strong>analysis (optional)</strong>, <strong>planning</strong>, <strong>solutioning</strong>, and <strong>implementation</strong> — with the amount of process adjusted to the size and uncertainty of the change.</p>
+        <p style="max-width:64ch;margin-bottom:0;">The objective of this module is <strong>not</strong> to treat AI output as authoritative. It is to use structured workflows and human decisions to produce clearer implementation context.</p>
+      </div>
+
+      <h3>What "planning" means in BMad</h3>
+      <ul>
+        <li>Progressively clarifying business intent into requirements</li>
+        <li>Turning requirements into a concise specification</li>
+        <li>Breaking specifications into epics, stories, and tasks</li>
+        <li>Keeping every artifact traceable back to the original problem</li>
+      </ul>
+    </section>
+
+    <!-- 2 -->
+    <section class="section" data-id="1">
+      <div class="eyebrow-block"><span class="kicker">02 · OVERVIEW</span></div>
+      <h2 class="section-title">The four phases</h2>
+      <p class="section-dek">BMad — Breakthrough Method for Agile AI-Driven Development — is a set of named skills usable with AI coding tools. Thinking/planning and implementation are distinguished, and either can be used independently. Select a phase to see what it covers.</p>
+
+      <div class="phase-flow" id="phaseFlow"></div>
+      <div class="phase-detail" id="phaseDetail"></div>
+
+      <h3>Proportional by design</h3>
+      <p>The amount of planning is not fixed. A small, well-understood change can go straight to implementation. A larger product or feature can move through deeper planning and solutioning. Matching process to change size is a core practical principle, covered further in Section 3.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="section" data-id="2">
+      <div class="eyebrow-block"><span class="kicker">03 · CORE PRINCIPLES</span></div>
+      <h2 class="section-title">Three ideas that govern everything else</h2>
+      <p class="section-dek">Every later section — elicitation, specs, decomposition, review — is an application of these three principles.</p>
+
+      <h3>Progressive elaboration</h3>
+      <p>The workflow moves from intent toward increasingly precise implementation context. The goal is to add the information needed for the <em>next</em> decision, not to produce documentation for its own sake.</p>
+      <div class="card" style="margin-top:12px;">
+        <p style="margin:0;font-size:13.5px;">Intent → ambiguity resolved → requirements captured → specification drafted → stories broken out → implementation context handed off → results reviewed and fed back.</p>
+      </div>
+
+      <h3>Match process to change size</h3>
+      <p>A small, clear change does not require a large planning exercise. A large feature, new product, or ambiguous business problem benefits from more analysis and planning before implementation begins. Over- and under-planning are both treated as failure modes — see Section 14.</p>
+
+      <h3>Human–AI collaboration</h3>
+      <p>BMad amplifies human decision-making rather than replacing it. People supply business intent, constraints, decisions, and approvals. AI assists with questioning, structuring, drafting, analysis, review, and implementation activities — it does not make the business call.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="section" data-id="3">
+      <div class="eyebrow-block"><span class="kicker">04 · BUSINESS REQUIREMENTS</span></div>
+      <h2 class="section-title">Capturing business requirements</h2>
+      <p class="section-dek">Before AI is asked to produce detailed stories or code, the team establishes the problem, users, outcome, and constraints. AI can surface missing information — but the business owner confirms actual intent.</p>
+
+      <div class="field-grid">
+        <div class="field"><div class="k">PROBLEM</div><div class="v">What business or user problem is being addressed?</div></div>
+        <div class="field"><div class="k">USERS / STAKEHOLDERS</div><div class="v">Who experiences the problem or depends on the capability?</div></div>
+        <div class="field"><div class="k">OUTCOME</div><div class="v">What result should the organization or user achieve?</div></div>
+        <div class="field"><div class="k">SCOPE</div><div class="v">What is included, and what is explicitly outside the current change?</div></div>
+        <div class="field"><div class="k">CONSTRAINTS</div><div class="v">Business, technical, regulatory, operational, or organizational limits that matter.</div></div>
+        <div class="field"><div class="k">SUCCESS</div><div class="v">How will the team know the intended outcome has been achieved?</div></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="section" data-id="4">
+      <div class="eyebrow-block"><span class="kicker">05 · DOMAIN MODELING</span></div>
+      <h2 class="section-title">Modeling business domains and capabilities</h2>
+      <p class="section-dek">Domain modeling gives the team a shared vocabulary and identifies the capabilities the system must support. AI can propose candidate concepts and relationships — domain experts validate terminology and rules.</p>
+
+      <div class="field-grid">
+        <div class="field"><div class="k">DOMAIN</div><div class="v">The business area or problem space being addressed.</div></div>
+        <div class="field"><div class="k">ACTORS</div><div class="v">Users, roles, organizations, or external systems that interact with the domain.</div></div>
+        <div class="field"><div class="k">BUSINESS CONCEPTS</div><div class="v">Important entities, terms, states, and relationships.</div></div>
+        <div class="field"><div class="k">CAPABILITIES</div><div class="v">What the organization or system must be able to do.</div></div>
+        <div class="field"><div class="k">RULES</div><div class="v">Business policies or constraints that affect behavior.</div></div>
+        <div class="field"><div class="k">DEPENDENCIES</div><div class="v">Other capabilities, systems, data, or processes required for the outcome.</div></div>
+      </div>
+      <p style="margin-top:16px;">A useful domain model is understandable to both business and technical stakeholders — it is a shared reference, not a technical artifact handed down to the business side.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="section" data-id="5">
+      <div class="eyebrow-block"><span class="kicker">06 · ELICITATION</span></div>
+      <h2 class="section-title">AI-assisted requirement elicitation</h2>
+      <p class="section-dek">AI acts as a structured questioning and analysis assistant. Select a pattern to see how it's used.</p>
+
+      <div class="chip-row" id="chipRow"></div>
+      <div class="chip-detail" id="chipDetail"></div>
+
+      <h3>The safe elicitation loop</h3>
+      <div class="card">
+        <p style="margin:0;font-family:var(--mono);font-size:13px;color:var(--navy-800);">source information → AI questions → stakeholder answers → revised requirement → human review</p>
+      </div>
+      <p>AI should not silently fill business gaps with invented assumptions. Every gap it identifies is routed back to a human for an answer.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="section" data-id="6">
+      <div class="eyebrow-block"><span class="kicker">07 · DECOMPOSITION</span></div>
+      <h2 class="section-title">Vision, epics, and user stories</h2>
+      <p class="section-dek">Product vision, epics, and stories progressively translate intent into implementable work, each tier narrower and more concrete than the last.</p>
+
+      <div class="decomp">
+        <div class="decomp-row">
+          <div class="decomp-tier">VISION</div>
+          <div class="decomp-body">
+            <div class="t">Product vision</div>
+            <div class="d">Connects the problem, target users, and desired outcome — a higher-level reference for everything planned afterward.</div>
+          </div>
+        </div>
+        <div class="decomp-row">
+          <div class="decomp-tier">EPIC</div>
+          <div class="decomp-body">
+            <div class="t">Epic</div>
+            <div class="d">A substantial capability or body of work that can be decomposed into smaller deliverables. Connects product intent to implementable work.</div>
+            <div class="example-box">Example epic: Self-service IT request management</div>
+          </div>
+        </div>
+        <div class="decomp-row">
+          <div class="decomp-tier">STORY</div>
+          <div class="decomp-body">
+            <div class="t">User story</div>
+            <div class="d">A small, user- or stakeholder-centered outcome. Common structure: As a [user/role], I want [capability], so that [benefit].</div>
+            <div class="example-box">As an employee, I want to submit an IT service request so that the service desk can process my need.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>What makes a decomposition good</h3>
+      <ul>
+        <li>Each story represents a coherent outcome</li>
+        <li>The story is small enough for the team's implementation workflow</li>
+        <li>Acceptance criteria make expected behavior testable</li>
+        <li>Dependencies and non-functional requirements survive decomposition</li>
+        <li>Stories retain a link back to the requirement or capability they came from</li>
+      </ul>
+    </section>
+
+    <!-- 8 -->
+    <section class="section" data-id="7">
+      <div class="eyebrow-block"><span class="kicker">08 · SPECIFICATION</span></div>
+      <h2 class="section-title">The implementation-ready specification</h2>
+      <p class="section-dek">bmad-spec produces a concise specification contract that locks the "what" before implementation, across five core fields. Implementation-ready does not mean every line of code is specified — it means intent and constraints are sufficient. Expand each field.</p>
+
+      <div class="spec-contract" id="specContract"></div>
+    </section>
+
+    <!-- 9 -->
+    <section class="section" data-id="8">
+      <div class="eyebrow-block"><span class="kicker">09 · BACKLOG</span></div>
+      <h2 class="section-title">Task decomposition and backlog creation</h2>
+      <p class="section-dek">Once requirements and specifications are clear, work is decomposed further to reduce ambiguity and make each piece independently understandable.</p>
+
+      <div class="field-grid">
+        <div class="field"><div class="k">CAPABILITY</div><div class="v">The business or product capability being delivered.</div></div>
+        <div class="field"><div class="k">EPIC</div><div class="v">A larger coherent body of work.</div></div>
+        <div class="field"><div class="k">STORY</div><div class="v">A user/stakeholder-centered increment of behavior.</div></div>
+        <div class="field"><div class="k">TASK</div><div class="v">A concrete implementation or supporting activity required to complete a story.</div></div>
+        <div class="field"><div class="k">TEST / VALIDATION</div><div class="v">Activities required to demonstrate acceptance conditions and quality expectations are met.</div></div>
+      </div>
+
+      <div class="note-callout" style="margin-top:20px;">
+        BMad's current workflow map describes <strong>Story Breakdown</strong> as the workflow used to break work into stories and track it. bmad-spec can optionally produce an ordered <code>stories.yaml</code> for implementing an epic across several sessions.
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="section" data-id="9">
+      <div class="eyebrow-block"><span class="kicker">10 · VALIDATION</span></div>
+      <h2 class="section-title">Validation and refinement using AI</h2>
+      <p class="section-dek">AI is used for review as well as generation: checking whether a proposed artifact is consistent with its source requirement, and whether gaps remain.</p>
+
+      <div class="field-grid">
+        <div class="field"><div class="k">CONSISTENCY</div><div class="v">Does the story/specification agree with the approved business requirement?</div></div>
+        <div class="field"><div class="k">COMPLETENESS</div><div class="v">Are important behaviors, constraints, dependencies, or failure cases missing?</div></div>
+        <div class="field"><div class="k">TESTABILITY</div><div class="v">Can acceptance criteria be objectively validated?</div></div>
+        <div class="field"><div class="k">CONTRADICTIONS</div><div class="v">Does the artifact conflict with another requirement or constraint?</div></div>
+        <div class="field"><div class="k">SCOPE</div><div class="v">Has the proposed work introduced unnecessary functionality?</div></div>
+        <div class="field"><div class="k">IMPLEMENTATION READINESS</div><div class="v">Does the team have enough context to begin without guessing about important intent?</div></div>
+      </div>
+      <p style="margin-top:16px;">A useful review prompt requires the AI to separate facts supplied in the source material from assumptions and proposed improvements. Human review remains necessary for business decisions, architecture, security, and other consequential judgments.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="section" data-id="10">
+      <div class="eyebrow-block"><span class="kicker">11 · LIVING SPECIFICATIONS</span></div>
+      <h2 class="section-title">Maintaining living specifications</h2>
+      <p class="section-dek">A living specification is maintained as the product evolves — it does not go stale after the first development cycle.</p>
+
+      <div class="field-grid">
+        <div class="field"><div class="k">CHANGE RECONCILIATION</div><div class="v">When an approved requirement changes, identify and update affected specification elements.</div></div>
+        <div class="field"><div class="k">CONFLICT DETECTION</div><div class="v">Surface contradictions between the changed requirement and existing artifacts before implementation.</div></div>
+        <div class="field"><div class="k">TRACEABILITY</div><div class="v">Keep relationships between requirements, stories, implementation, and tests understandable.</div></div>
+        <div class="field"><div class="k">VERSION CONTROL</div><div class="v">Maintain specifications using the organization's normal document/version-control practices.</div></div>
+        <div class="field"><div class="k">CONTEXT MANAGEMENT</div><div class="v">Keep only relevant, current project information in the implementation context.</div></div>
+      </div>
+      <p style="margin-top:16px;">The objective is alignment: the specification should describe the current intended behavior, not historical intent.</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="section" data-id="11">
+      <div class="eyebrow-block"><span class="kicker">12 · END-TO-END FLOW</span></div>
+      <h2 class="section-title">The full planning flow, step by step</h2>
+      <p class="section-dek">Every prior section is a stage in this sequence. This is the operating checklist.</p>
+
+      <ol class="flowlist" id="flowList" style="list-style:none;padding-left:0;"></ol>
+    </section>
+
+    <!-- 13 -->
+    <section class="section" data-id="12">
+      <div class="eyebrow-block"><span class="kicker">13 · TRAINING EXAMPLE</span></div>
+      <h2 class="section-title">Enterprise IT Service Request Portal</h2>
+      <p class="section-dek">An illustrative case study for training purposes only — not a claim about any real organization's system.</p>
+
+      <div class="card">
+        <p style="margin:0;"><strong>Business problem:</strong> Employees need a consistent way to submit IT service requests and track their status.</p>
+      </div>
+
+      <div class="case-grid">
+        <div class="case-card"><h4>CAPABILITY</h4><p>Submit and track an IT service request.</p></div>
+        <div class="case-card"><h4>ACTORS</h4><p>Employee/requester, service desk, and supporting resolver teams.</p></div>
+        <div class="case-card"><h4>EPIC</h4><p>Self-service IT request management.</p></div>
+        <div class="case-card"><h4>ILLUSTRATIVE STORY</h4><p>As an employee, I want to submit an IT service request so that the service desk can process my need.</p></div>
+        <div class="case-card"><h4>SPECIFICATION FOCUS</h4><p>Capture required request information, establish status behavior, define constraints, identify the success signal.</p></div>
+        <div class="case-card">
+          <h4>AI ROLE vs HUMAN ROLE</h4>
+          <p><strong>AI:</strong> clarification questions, candidate stories, edge cases, consistency review.<br><strong>Human:</strong> service-management rules, ownership, security, priorities, acceptance decisions.</p>
+        </div>
+      </div>
+
+      <div class="note-callout">The example deliberately avoids inventing service-level targets, security policies, integrations, or workflows. Those values must come from the actual organization's requirements.</div>
+    </section>
+
+    <!-- 14 -->
+    <section class="section" data-id="13">
+      <div class="eyebrow-block"><span class="kicker">14 · COMMON MISTAKES</span></div>
+      <h2 class="section-title">Common BMad / AI planning mistakes</h2>
+      <p class="section-dek">Each of these undermines one of the three core principles from Section 3.</p>
+
+      <div class="mistake-list">
+        <div class="mistake"><div class="name">Starting too early</div><div class="desc">The team asks AI to code before business intent and important constraints are clear.</div></div>
+        <div class="mistake"><div class="name">Generated ≠ approved</div><div class="desc">AI's proposed assumption is treated as an approved business decision.</div></div>
+        <div class="mistake"><div class="name">Over-planning</div><div class="desc">The team creates unnecessary artifacts for a small, well-understood change.</div></div>
+        <div class="mistake"><div class="name">Under-planning</div><div class="desc">A large or ambiguous initiative goes straight to implementation without enough context.</div></div>
+        <div class="mistake"><div class="name">Lost traceability</div><div class="desc">Stories or tasks can no longer be connected back to the capability or requirement.</div></div>
+        <div class="mistake"><div class="name">Stale specifications</div><div class="desc">Implementation changes but the specification remains unchanged.</div></div>
+        <div class="mistake"><div class="name">Over-prescriptive specs</div><div class="desc">The specification dictates implementation details that don't need to be fixed at the requirements level.</div></div>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="section" data-id="14">
+      <div class="eyebrow-block"><span class="kicker">15 · TRAINER FLOW</span></div>
+      <h2 class="section-title">Suggested 120-minute trainer flow</h2>
+      <p class="section-dek">A session structure mapping directly to the sections above.</p>
+
+      <table class="timetable">
+        <thead><tr><th style="width:90px;">Time</th><th>Segment</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><span class="time-pill">15 min</span></td><td>BMad overview and workflow</td><td>Phases, proportionality, human–AI collaboration</td></tr>
+          <tr><td><span class="time-pill">20 min</span></td><td>Requirements and domain modeling</td><td>Business problem, actors, capabilities, rules, constraints</td></tr>
+          <tr><td><span class="time-pill">15 min</span></td><td>AI-assisted elicitation</td><td>Questioning, ambiguity, assumptions, edge cases</td></tr>
+          <tr><td><span class="time-pill">20 min</span></td><td>Vision → epics → stories</td><td>Progressive decomposition and acceptance conditions</td></tr>
+          <tr><td><span class="time-pill">20 min</span></td><td>Implementation-ready specification</td><td>Why, Capabilities, Constraints, Non-goals, Success signal</td></tr>
+          <tr><td><span class="time-pill">10 min</span></td><td>Task decomposition and backlog</td><td>Stories, tasks, ordering, traceability</td></tr>
+          <tr><td><span class="time-pill">10 min</span></td><td>Validation and living specifications</td><td>AI review, reconciliation, change management</td></tr>
+          <tr><td><span class="time-pill">10 min</span></td><td>Case exercise / Q&amp;A</td><td>Enterprise IT Service Request Portal</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 16 -->
+    <section class="section" data-id="15">
+      <div class="eyebrow-block"><span class="kicker">16 · TAKEAWAYS</span></div>
+      <h2 class="section-title">Key learning takeaways</h2>
+      <p class="section-dek">The essentials to carry out of this module.</p>
+
+      <div class="takeaway-list">
+        <div class="takeaway">BMad provides structured AI-assisted workflows for thinking, planning, solutioning, and implementation.</div>
+        <div class="takeaway">The amount of process should match the size, complexity, and uncertainty of the change.</div>
+        <div class="takeaway">Business requirements should be clarified before AI is asked to generate downstream artifacts.</div>
+        <div class="takeaway">Domain and capability modeling creates shared vocabulary and reduces ambiguity.</div>
+        <div class="takeaway">Product vision, epics, stories, and tasks progressively translate intent into implementable work.</div>
+        <div class="takeaway">The current BMad specification contract centers on Why, Capabilities, Constraints, Non-goals, and Success signal.</div>
+        <div class="takeaway">AI can generate and critique artifacts, but approved business intent and consequential decisions remain human responsibilities.</div>
+        <div class="takeaway">Living specifications keep requirements and implementation context aligned as the product changes.</div>
+      </div>
+
+      <div class="note-callout" style="margin-top:24px;">
+        <strong>Source note:</strong> This write-up is aligned to the current official BMad documentation reviewed for this material. BMad is actively evolving, so exact skill names, workflows, and generated artifacts can change between releases. For training delivery, use the version of BMad installed in the participant environment as the operational reference.
+      </div>
+    </section>
+
+    <div class="pager">
+      <button id="prevBtn"><span class="lbl">← PREVIOUS</span><span id="prevLabel"></span></button>
+      <button id="nextBtn" class="to"><span class="lbl">NEXT →</span><span id="nextLabel"></span></button>
+    </div>
+  </main>
+</div>
+
+<script>
+const sections = [
+  "Purpose of the Module",
+  "Overview of the BMad Method",
+  "Core Principles and Workflow",
+  "Business Requirements Capture",
+  "Modeling Domains and Capabilities",
+  "AI-Assisted Elicitation",
+  "Vision, Epics and Stories",
+  "Implementation-Ready Specifications",
+  "Task Decomposition and Backlog",
+  "Validation and Refinement",
+  "Living Specifications",
+  "End-to-End Planning Flow",
+  "IT Service Portal Example",
+  "Common Planning Mistakes",
+  "Suggested Trainer Flow",
+  "Key Learning Takeaways"
+];
+
+const toc = document.getElementById('toc');
+sections.forEach((s,i)=>{
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span><span>${s}</span>`;
+  b.dataset.id = i;
+  b.addEventListener('click', ()=>goTo(i));
+  toc.appendChild(b);
+});
+
+function goTo(i){
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active', +s.dataset.id === i));
+  document.querySelectorAll('nav.toc button').forEach(b=>b.classList.toggle('active', +b.dataset.id === i));
+  document.getElementById('prevBtn').classList.toggle('hidden', i===0);
+  document.getElementById('nextBtn').classList.toggle('hidden', i===sections.length-1);
+  document.getElementById('prevLabel').textContent = i>0 ? sections[i-1] : '';
+  document.getElementById('nextLabel').textContent = i<sections.length-1 ? sections[i+1] : '';
+  window.scrollTo({top:0,behavior:'smooth'});
+  currentIndex = i;
+}
+let currentIndex = 0;
+document.getElementById('prevBtn').addEventListener('click', ()=>{ if(currentIndex>0) goTo(currentIndex-1); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ if(currentIndex<sections.length-1) goTo(currentIndex+1); });
+goTo(0);
+
+/* ---- Phase flow (section 2) ---- */
+const phases = [
+  {label:"PHASE 1", name:"Analysis", optional:true, desc:"Explore the problem space.",
+   detail:"Explore the problem, validate ideas, and establish product or requirement context when needed. This phase is optional — small, well-understood changes can skip it entirely."},
+  {label:"PHASE 2", name:"Planning", optional:false, desc:"Define intent and create a spec.",
+   detail:"Define the intended change and create a specification that can serve as an implementation contract. This is the core focus of this module — see Sections 4–9."},
+  {label:"PHASE 3", name:"Solutioning", optional:false, desc:"Build solution context.",
+   detail:"Develop the solution context needed for implementation, including architecture and work breakdown where appropriate. Depth here scales with the size and risk of the change."},
+  {label:"PHASE 4", name:"Implementation", optional:false, desc:"Build and review the change.",
+   detail:"Implement the change using the accumulated context and review the result. Approved outcomes are fed back into the living project artifacts — see Section 11."}
+];
+const phaseFlow = document.getElementById('phaseFlow');
+const phaseDetail = document.getElementById('phaseDetail');
+phases.forEach((p,i)=>{
+  const el = document.createElement('div');
+  el.className = 'phase';
+  el.innerHTML = `<div class="phase-label">${p.label}</div><div class="phase-name">${p.name}</div><div class="phase-desc">${p.desc}</div>${p.optional?'<div class="phase-optional">OPTIONAL</div>':''}`;
+  el.addEventListener('click', ()=>{
+    const already = el.classList.contains('open');
+    document.querySelectorAll('.phase').forEach(x=>x.classList.remove('open'));
+    if(!already){
+      el.classList.add('open');
+      phaseDetail.textContent = p.detail;
+      phaseDetail.classList.add('show');
+    } else {
+      phaseDetail.classList.remove('show');
+    }
+  });
+  phaseFlow.appendChild(el);
+});
+
+/* ---- Elicitation chips (section 6) ---- */
+const patterns = [
+  {name:"Clarification questions", detail:"Ask the AI to identify ambiguities, missing decisions, and assumptions in a requirement."},
+  {name:"Stakeholder simulation", detail:"Ask the AI to generate questions from different stakeholder perspectives — treat the results as prompts for human discussion, not answers."},
+  {name:"Edge-case discovery", detail:"Ask for unusual, failure, and boundary scenarios the team should consider."},
+  {name:"Conflict detection", detail:"Ask the AI to compare requirements and identify contradictions or overlapping rules."},
+  {name:"Requirement quality review", detail:"Ask the AI to assess clarity, completeness, consistency, and testability."}
+];
+const chipRow = document.getElementById('chipRow');
+const chipDetail = document.getElementById('chipDetail');
+patterns.forEach((p,i)=>{
+  const c = document.createElement('div');
+  c.className = 'chip';
+  c.textContent = p.name;
+  c.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    chipDetail.innerHTML = p.detail;
+    chipDetail.classList.add('show');
+  });
+  chipRow.appendChild(c);
+});
+
+/* ---- Spec contract accordion (section 8) ---- */
+const specFields = [
+  {k:"Why", v:"The purpose or problem that motivates the change."},
+  {k:"Capabilities", v:"What the solution must be capable of doing, including intended outcomes and success conditions."},
+  {k:"Constraints", v:"Important boundaries, rules, or conditions that implementation must respect."},
+  {k:"Non-goals", v:"What the current change explicitly does not attempt to solve."},
+  {k:"Success signal", v:"The evidence or outcome that indicates the intended result has been achieved."}
+];
+const specContract = document.getElementById('specContract');
+specFields.forEach(f=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'spec-field';
+  wrap.innerHTML = `<button class="spec-head"><span>${f.k}</span><span class="plus">+</span></button><div class="spec-body"><div class="inner">${f.v}</div></div>`;
+  wrap.querySelector('.spec-head').addEventListener('click', ()=>{
+    const isOpen = wrap.classList.contains('open');
+    document.querySelectorAll('.spec-field').forEach(x=>{x.classList.remove('open'); x.querySelector('.plus').textContent='+';});
+    if(!isOpen){ wrap.classList.add('open'); wrap.querySelector('.plus').textContent='–'; }
+  });
+  specContract.appendChild(wrap);
+});
+specContract.children[0].classList.add('open');
+specContract.children[0].querySelector('.plus').textContent = '–';
+
+/* ---- End-to-end flow list (section 12) ---- */
+const flowSteps = [
+  {t:"Explore", d:"If the problem is unclear, investigate the idea, evidence, and alternatives."},
+  {t:"Define intent", d:"Capture the problem, users, desired outcome, and important constraints."},
+  {t:"Elicit and clarify", d:"Use structured questions to expose ambiguity and missing decisions."},
+  {t:"Model", d:"Establish domain concepts, actors, capabilities, and relevant rules."},
+  {t:"Specify", d:"Create the concise implementation contract: Why, Capabilities, Constraints, Non-goals, Success signal."},
+  {t:"Decompose", d:"Break larger capabilities into ordered stories and implementation work."},
+  {t:"Solution", d:"Add architecture, UX, and other implementation context when size or risk requires it."},
+  {t:"Implement", d:"Use the accumulated context to implement and review the change."},
+  {t:"Reconcile", d:"Feed approved changes and discoveries back into the living project context/specification."}
+];
+const flowList = document.getElementById('flowList');
+flowSteps.forEach((s,i)=>{
+  const li = document.createElement('li');
+  li.className = 'flowstep';
+  li.dataset.n = i+1;
+  li.innerHTML = `<div class="t">${s.t}</div><div class="d">${s.d}</div>`;
+  flowList.appendChild(li);
+});
+</script>
+</body>
+</html>
