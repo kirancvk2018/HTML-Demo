@@ -21,7 +21,32 @@ pre{background:#111827;color:#e5e7eb;padding:16px;border-radius:8px;overflow:aut
 .results{display:none}.score{font-size:42px;font-weight:800}.pass{color:var(--good)}.fail{color:var(--bad)}
 .review{border-top:1px solid var(--border);padding:16px 0}.review h3{margin:0 0 8px}.wrong{border-left:4px solid var(--bad);padding-left:12px}.correct{color:var(--good);font-weight:700}.explain{color:#475467}
 button.secondary{background:white;border:1px solid var(--border);padding:10px 15px;border-radius:8px;cursor:pointer}
+
+.profile{margin-top:22px;border:1px solid var(--border);border-radius:10px;padding:20px;background:#fbfcfe}
+.profile-head{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:16px}
+.eyebrow2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.profile h2{font-size:36px;margin:3px 0}.profile h2 small{font-size:14px;color:var(--muted);font-weight:500}
+.profile-status{font-size:12px;font-weight:800;padding:8px 10px;border:1px solid var(--border);border-radius:7px}
+.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.profile-card,.behavior-grid>div{border:1px solid var(--border);border-radius:8px;padding:13px;background:#fff}
+.profile-card span,.behavior-grid span{display:block;color:var(--muted);font-size:12px}.profile-card b{font-size:24px}
+.profile h3{margin:22px 0 10px;font-size:16px}
+.metric-row{display:grid;grid-template-columns:190px 55px 1fr;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.bar{height:8px;background:#e9edf3;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.behavior-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.behavior-grid b{display:block;margin:4px 0}.behavior-grid small{display:block;color:var(--muted);font-size:11px;line-height:1.4}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap}.profile-pill{padding:7px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px}
+.recommendations{padding-left:20px}.recommendations li{margin:7px 0;font-size:13px}
+.profile-disclaimer{font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:20px}
+
 @media(max-width:650px){header{padding:14px}.qhead{flex-direction:column}.timer{font-size:17px}main{margin:14px auto}}
+
+.profile-six{grid-template-columns:repeat(3,1fr)}
+.profile-card small{color:var(--muted);font-size:11px;margin-left:2px}
+@media(max-width:800px){.profile-six{grid-template-columns:repeat(2,1fr)}.behavior-grid{grid-template-columns:repeat(2,1fr)}}
+
+.profile{display:block!important;margin:24px 0 28px!important;border:2px solid var(--accent)!important;background:#f8fbff!important}
+.profile-head{background:#eef4ff;border-radius:8px;padding:14px 16px}
+.profile-status{background:#fff}
 </style>
 </head>
 <body>
@@ -95,7 +120,15 @@ except ValueError:
 {type:"Multiple-select",q:"Which are good basic PEP 8 practices?",opts:["Use readable indentation.","Use meaningful variable names.","Use spaces around binary operators.","Ignore indentation because Python can infer blocks."],a:[0,1,2],e:"Readable indentation, meaningful names and conventional spacing improve Python code quality; indentation defines blocks."}
 ];
 
+
+const questionMeta = [{"domain": "Fundamentals", "topic": "Operators & expressions", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Fundamentals", "topic": "Data types", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Fundamentals", "topic": "Operators & precedence", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Fundamentals", "topic": "Type conversion", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Fundamentals", "topic": "Operators", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Fundamentals", "topic": "String operations", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow", "topic": "Conditional statements", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Control Flow", "topic": "range() / for", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow", "topic": "break", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow", "topic": "while loops", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow", "topic": "continue", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Control Flow", "topic": "Boolean logic", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Lists / indexing", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Lists / methods", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections", "topic": "Lists / sort", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Tuples", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Data Collections", "topic": "Tuples / indexing", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Strings / split", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections", "topic": "Strings / slicing", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Strings", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Data Collections", "topic": "Dictionaries", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections", "topic": "Dictionaries / get", "difficulty": "Medium", "kind": "Concept"}, {"domain": "Data Collections", "topic": "Dictionaries / errors", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Functions", "topic": "Function definition", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Functions", "topic": "return / function call", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Functions", "topic": "Built-in functions", "difficulty": "Easy", "kind": "Multiple-select"}, {"domain": "Functions", "topic": "Conditional function logic", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Functions & Exceptions", "topic": "Exceptions", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Functions & Exceptions", "topic": "Exception handling", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Fundamentals", "topic": "PEP 8 / code quality", "difficulty": "Medium", "kind": "Multiple-select"}];
+
 let submitted=false, remaining=40*60, interval;
+const telemetry = questions.map((_,i)=>({
+  firstAnswer:null, firstAnswerAt:null, lastAnswer:null, lastAnswerAt:null,
+  answerChanges:0, visits:0, lastSeenAt:null
+}));
+const assessmentStartedAt = Date.now();
 function render(){
  const root=document.getElementById("test");
  root.innerHTML=questions.map((x,i)=>`
@@ -106,6 +139,37 @@ function render(){
  </section>`).join("");
 }
 function escapeHtml(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+
+function recordInteraction(i){
+  if(submitted) return;
+  const now=Date.now();
+  const sel=selected(i);
+  const value=JSON.stringify(sel);
+  const t=telemetry[i];
+  t.visits++;
+  t.lastSeenAt=now;
+  if(t.firstAnswer===null && sel.length){
+    t.firstAnswer=[...sel];
+    t.firstAnswerAt=now;
+  }
+  if(sel.length){
+    if(t.lastAnswer!==null && JSON.stringify(t.lastAnswer)!==value) t.answerChanges++;
+    t.lastAnswer=[...sel];
+    t.lastAnswerAt=now;
+  }
+}
+function installTelemetry(){
+  document.querySelectorAll('input').forEach(el=>{
+    el.addEventListener('change',()=>{
+      const i=+el.name.replace('q','');
+      recordInteraction(i);
+    });
+  });
+  document.querySelectorAll('.question').forEach((el,i)=>{
+    el.addEventListener('mouseenter',()=>{ if(!telemetry[i].lastSeenAt) telemetry[i].lastSeenAt=Date.now(); });
+  });
+}
+
 function startTimer(){
  interval=setInterval(()=>{if(submitted)return;remaining--;updateTimer();if(remaining<=0)submitTest(true)},1000);
 }
@@ -116,6 +180,148 @@ function updateTimer(){
 }
 function selected(i){return [...document.querySelectorAll(`input[name="q${i}"]:checked`)].map(x=>+x.value).sort((a,b)=>a-b)}
 function same(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i])}
+function pct(n,d){return d?Math.round((n/d)*100):0;}
+function average(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+function classifyFluency(avgSec, accuracy){
+  if(avgSec<=25 && accuracy>=70) return ["HIGH","Fast responses with solid accuracy."];
+  if(avgSec>=90 && accuracy<70) return ["LOW","Long response times combined with lower accuracy suggest difficulty or overthinking."];
+  if(avgSec>=60) return ["MODERATE","Several responses required extended reasoning time."];
+  return ["MODERATE","Response speed is reasonable; accuracy is the stronger signal."];
+}
+function buildProfile(score){
+  const now=Date.now();
+  const totalSec=Math.max(1,Math.round((now-assessmentStartedAt)/1000));
+  const answered=telemetry.filter(t=>t.lastAnswer!==null).length;
+  const skipped=questions.length-answered;
+  const changes=telemetry.reduce((s,t)=>s+t.answerChanges,0);
+  const accuracy=pct(score,questions.length);
+
+  // Per-question time: time from first interaction to the next question's
+  // first interaction, with the final question measured to submission.
+  const responseTimes=[];
+  for(let i=0;i<questions.length;i++){
+    const t=telemetry[i];
+    if(t.firstAnswerAt){
+      const next=telemetry[i+1]?.firstAnswerAt || now;
+      responseTimes.push(Math.max(1,(next-t.firstAnswerAt)/1000));
+    }
+  }
+  const avgResponse=average(responseTimes);
+
+  const codeQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Code tracing");
+  const syntaxQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Syntax");
+  const conceptQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Concept");
+  const multiQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Multiple-select");
+
+  const accFor = ids => ids.length ? pct(ids.filter(i=>same(selected(i),questions[i].a)).length,ids.length) : accuracy;
+
+  const codeReasoning=accFor(codeQs);
+  const conceptual=accFor(conceptQs);
+  const syntax=accFor(syntaxQs);
+
+  // Fluency rewards accurate answers delivered without excessive hesitation.
+  const speedScore = avgResponse<=20 ? 100 : avgResponse<=40 ? 85 : avgResponse<=70 ? 70 : avgResponse<=100 ? 55 : 40;
+  const fluency=Math.round((accuracy*.65)+(speedScore*.35));
+
+  // Consistency measures whether the learner performs steadily across domains.
+  const domainScores=[];
+  const domains={};
+  questions.forEach((q,i)=>{
+    const d=questionMeta[i].domain;
+    if(!domains[d]) domains[d]={c:0,t:0};
+    domains[d].t++;
+    if(same(selected(i),q.a)) domains[d].c++;
+  });
+  Object.values(domains).forEach(v=>domainScores.push(pct(v.c,v.t)));
+  const consistency=Math.max(0,Math.round(100-(Math.max(...domainScores)-Math.min(...domainScores))*.7));
+
+  // Time management: combines completion and unanswered-item behavior.
+  const completionRatio=Math.min(1,totalSec/(40*60));
+  const timeManagement=Math.round(
+    Math.max(0,100 - (skipped*12) - (changes>10?(changes-10)*2:0) - (completionRatio>0.98 && skipped>0?10:0))
+  );
+
+  // Knowledge Index is a weighted learning-readiness signal, not a psychological score.
+  const knowledgeIndex=Math.round(
+    accuracy*.30 +
+    codeReasoning*.20 +
+    conceptual*.15 +
+    syntax*.10 +
+    fluency*.10 +
+    consistency*.10 +
+    timeManagement*.05
+  );
+
+  const guessing=questions.reduce((s,_,i)=>{
+    const t=telemetry[i];
+    return s+(t.firstAnswerAt && ((t.firstAnswerAt-assessmentStartedAt)/1000<8) &&
+      !same(t.firstAnswer||[],questions[i].a)?1:0);
+  },0);
+  const guessingRisk=guessing>=5?"HIGH":guessing>=2?"MODERATE":"LOW";
+
+  const confidence=changes>=8?"LOW":changes>=4?"MODERATE":"HIGH";
+  const readiness=accuracy>=85?"STRONG":accuracy>=70?"DEVELOPING":"FOUNDATIONAL";
+
+  const domainRows=Object.entries(domains).map(([k,v])=>`
+    <div class="metric-row"><span>${escapeHtml(k)}</span><strong>${pct(v.c,v.t)}%</strong>
+      <div class="bar"><i style="width:${pct(v.c,v.t)}%"></i></div>
+    </div>`).join("");
+
+  const wrongTopics={};
+  questions.forEach((q,i)=>{
+    if(!same(selected(i),q.a)){
+      const t=questionMeta[i].topic;
+      wrongTopics[t]=(wrongTopics[t]||0)+1;
+    }
+  });
+  const weakTopics=Object.entries(wrongTopics).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const recommendations=weakTopics.length
+    ? weakTopics.map(([t,n])=>`<li><strong>${escapeHtml(t)}</strong> — review with focused exercises (${n} missed).</li>`).join("")
+    : "<li>Maintain current coverage with mixed code-tracing practice.</li>";
+
+  return `
+  <div class="profile">
+    <div class="profile-head">
+      <div>
+        <div class="eyebrow2">Python Knowledge Profile</div>
+        <h2>${knowledgeIndex} / 100 <small>Python Knowledge Index</small></h2>
+      </div>
+      <div class="profile-status">${readiness} READINESS</div>
+    </div>
+
+    <div class="profile-grid profile-six">
+      <div class="profile-card"><span>Knowledge</span><b>${accuracy}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Code Reasoning</span><b>${codeReasoning}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Conceptual Understanding</span><b>${conceptual}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Fluency</span><b>${fluency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Consistency</span><b>${consistency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Time Management</span><b>${timeManagement}</b><small>/ 100</small></div>
+    </div>
+
+    <h3>Topic Mastery</h3>${domainRows}
+
+    <h3>Observed Assessment Behavior</h3>
+    <div class="behavior-grid">
+      <div><span>Response fluency</span><b>${fluency>=80?"HIGH":fluency>=60?"MODERATE":"LOW"}</b><small>Average response interval: ${Math.round(avgResponse)} sec</small></div>
+      <div><span>Answer-change confidence proxy</span><b>${confidence}</b><small>${changes} answer change${changes===1?"":"s"} recorded</small></div>
+      <div><span>Rapid-guessing risk</span><b>${guessingRisk}</b><small>${guessing} very-fast incorrect response${guessing===1?"":"s"}</small></div>
+      <div><span>Completion</span><b>${answered}/${questions.length}</b><small>${skipped} unanswered</small></div>
+    </div>
+
+    <h3>Performance by Difficulty</h3>
+    <div class="pill-row">
+      ${["Easy","Medium","Hard"].map(d=>{
+        const ids=questions.map((q,i)=>i).filter(i=>questionMeta[i].difficulty===d);
+        return `<span class="profile-pill">${d}: <b>${ids.length?accFor(ids):"—"}%</b></span>`;
+      }).join("")}
+    </div>
+
+    <h3>Recommended Remediation</h3>
+    <ol class="recommendations">${recommendations}</ol>
+
+    <p class="profile-disclaimer"><strong>Interpretation:</strong> These are observable assessment and learning signals. They are not psychological, personality, IQ, or high-stakes behavioral measurements.</p>
+  </div>`;
+}
 function submitTest(auto){
  if(submitted)return;
  submitted=true;clearInterval(interval);
@@ -131,6 +337,7 @@ function submitTest(auto){
  r.innerHTML=`<h2>Assessment Result</h2><div class="score ${pass?"pass":"fail"}">${score} / ${questions.length} (${pct}%)</div>
  <p><strong>${pass?"Practice target reached":"Practice target not reached"}</strong> — target: 70%.</p>
  ${auto?"<p><strong>Time expired:</strong> the assessment was submitted automatically.</p>":""}
+ ${buildProfile(score)}
  <h2>Review of Incorrect Answers</h2>${rows.length?rows.join(""):"<p class='correct'>All answers are correct. Excellent work.</p>"}
  <button class="secondary" onclick="location.reload()">Restart Assessment</button>`;
  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
