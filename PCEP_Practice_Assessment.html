@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCEP-30-02 Practice Assessment</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--border:#dfe5ef;--good:#16794a;--bad:#c93636;--warn:#9a6700}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+header{background:#101828;color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.brand{font-weight:700}.exam-code{font-size:13px;color:#cbd5e1}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:20px;background:#25324a;padding:8px 14px;border-radius:8px}
+.timer.warn{color:#ffd166}.timer.danger{color:#ff8a8a}
+main{max-width:1000px;margin:28px auto;padding:0 18px}.intro,.question,.results{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}
+.intro h1{margin-top:0}.meta{display:flex;gap:12px;flex-wrap:wrap}.pill{background:#eef3ff;color:#23449c;border-radius:20px;padding:6px 10px;font-size:13px}
+.qhead{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.qnum{font-weight:700}.type{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:6px}
+pre{background:#111827;color:#e5e7eb;padding:16px;border-radius:8px;overflow:auto;line-height:1.5}
+.option{display:block;border:1px solid var(--border);border-radius:9px;padding:12px;margin:9px 0;cursor:pointer}
+.option:hover{border-color:#9bb3f4;background:#f8faff}.option input{margin-right:10px}
+.actions{display:flex;justify-content:center;margin:26px 0}.submit{background:var(--accent);color:white;border:0;border-radius:9px;padding:13px 26px;font-size:16px;font-weight:700;cursor:pointer}.submit:hover{filter:brightness(.95)}
+.results{display:none}.score{font-size:42px;font-weight:800}.pass{color:var(--good)}.fail{color:var(--bad)}
+.review{border-top:1px solid var(--border);padding:16px 0}.review h3{margin:0 0 8px}.wrong{border-left:4px solid var(--bad);padding-left:12px}.correct{color:var(--good);font-weight:700}.explain{color:#475467}
+button.secondary{background:white;border:1px solid var(--border);padding:10px 15px;border-radius:8px;cursor:pointer}
+@media(max-width:650px){header{padding:14px}.qhead{flex-direction:column}.timer{font-size:17px}main{margin:14px auto}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">PCEP Practice Assessment</div><div class="exam-code">Aligned to PCEP-30-02 objectives • Practice only</div></div><div id="timer" class="timer">40:00</div></header>
+<main>
+<section class="intro">
+<h1>Python Certified Entry-Level Programmer — Practice Test</h1>
+<p>This assessment contains original practice questions modeled on the <strong>scope and style</strong> of PCEP-30-02. It is not an official Python Institute exam or a reproduction of official questions.</p>
+<div class="meta"><span class="pill">30 questions</span><span class="pill">40 minutes</span><span class="pill">70% target</span><span class="pill">Single & multiple select</span></div>
+<p><strong>Instructions:</strong> Select the best answer. For multiple-select items, select all answers that apply. The test auto-submits when the timer reaches zero.</p>
+</section>
+<div id="test"></div>
+<div class="actions"><button class="submit" id="submitBtn" onclick="submitTest(false)">Submit Assessment</button></div>
+<section id="results" class="results"></section>
+</main>
+<script>
+const questions = [
+{type:"Single-select",q:"What is printed by the following code?",code:`x = 7
+y = 2
+print(x // y, x % y)`,opts:["3 1","3.5 1","4 1","3 0"],a:[0],e:"// performs floor division and % returns the remainder."},
+{type:"Single-select",q:"Which value is a Boolean literal in Python?",opts:["'True'","TRUE","True","true"],a:[2],e:"True and False are Python Boolean literals."},
+{type:"Single-select",q:"What is the value of result?",code:`result = 2 + 3 * 4`,opts:["20","14","24","9"],a:[1],e:"Multiplication has higher precedence than addition."},
+{type:"Single-select",q:"Which statement correctly converts the string '25' to an integer?",opts:["int('25')","integer('25')","str(25)","float('25')"],a:[0],e:"int() converts a suitable string to an integer."},
+{type:"Multiple-select",q:"Which are valid Python comparison operators?",opts:["==","=>","!=","<="],a:[0,2,3],e:"==, != and <= are valid comparison operators; => is not."},
+{type:"Single-select",q:"What does this print?",code:`print("Py" * 3)`,opts:["Py3","PyPyPy","Py Py Py","Error"],a:[1],e:"String multiplication repeats the string."},
+{type:"Single-select",q:"Which statement is syntactically valid?",opts:["if x > 5 print(x)","if x > 5: print(x)","if (x > 5) then: print(x)","if x > 5; print(x)"],a:[1],e:"Python uses a colon after the condition."},
+{type:"Single-select",q:"What is printed?",code:`for i in range(2, 6):
+    print(i, end=" ")`,opts:["2 3 4 5","2 3 4 5 6","1 2 3 4 5","2 4 6"],a:[0],e:"range(2, 6) stops before 6."},
+{type:"Single-select",q:"Which keyword immediately terminates the current loop?",opts:["stop","exit","break","continue"],a:[2],e:"break exits the nearest enclosing loop."},
+{type:"Single-select",q:"What is printed?",code:`x = 0
+while x < 3:
+    x += 1
+print(x)`,opts:["0","2","3","4"],a:[2],e:"The loop increments x to 3, then stops."},
+{type:"Multiple-select",q:"Which statements about continue are correct?",opts:["It skips to the next loop iteration.","It terminates the entire program.","It can be used in a loop.","It is identical to break."],a:[0,2],e:"continue skips the remainder of the current iteration; break terminates the loop."},
+{type:"Single-select",q:"What is the result of this expression?",code:`10 > 3 and 2 < 1`,opts:["True","False","10","1"],a:[1],e:"The first comparison is True, the second is False, so True and False is False."},
+{type:"Single-select",q:"What is printed?",code:`numbers = [10, 20, 30]
+print(numbers[1])`,opts:["10","20","30","IndexError"],a:[1],e:"Python list indexing starts at zero."},
+{type:"Single-select",q:"Which method adds one item to the end of a list?",opts:["add()","append()","insert_end()","push()"],a:[1],e:"list.append(item) adds one item to the end."},
+{type:"Single-select",q:"What is printed?",code:`items = [3, 1, 2]
+items.sort()
+print(items)`,opts:["[3, 1, 2]","[1, 2, 3]","[2, 1, 3]","None"],a:[1],e:"sort() sorts the list in place."},
+{type:"Multiple-select",q:"Which are valid tuple definitions?",opts:["(1, 2, 3)","1, 2, 3","[1, 2, 3]","(1,)"],a:[0,1,3],e:"Tuples use commas; parentheses are optional in many contexts. A one-item tuple requires a trailing comma."},
+{type:"Single-select",q:"What is printed?",code:`data = ("A", "B", "C")
+print(data[-1])`,opts:["A","B","C","Error"],a:[2],e:"-1 refers to the last item."},
+{type:"Single-select",q:"What does split(',') return for 'A,B,C'?",opts:["('A','B','C')","['A', 'B', 'C']","'A' 'B' 'C'","['A,B,C']"],a:[1],e:"str.split() returns a list of substrings."},
+{type:"Single-select",q:"What is printed?",code:`text = "Python"
+print(text[0:2])`,opts:["Py","Pyt","Python","yt"],a:[0],e:"The slice includes index 0 and excludes index 2."},
+{type:"Multiple-select",q:"Which operations are valid for strings?",opts:["'a' + 'b'","'ha' * 3","'Python'.upper()","'abc'.append('d')"],a:[0,1,2],e:"Strings support concatenation, repetition and methods such as upper(); they do not have append()."},
+{type:"Single-select",q:"What is the output?",code:`d = {"a": 10, "b": 20}
+print(d["b"])`,opts:["a","10","20","KeyError"],a:[2],e:"The key 'b' maps to 20."},
+{type:"Single-select",q:"Which method returns the value associated with a dictionary key and can provide a default?",opts:["find()","get()","value()","lookup()"],a:[1],e:"dict.get(key, default) can return a default when the key is absent."},
+{type:"Single-select",q:"What happens here?",code:`d = {"a": 1}
+print(d["b"])`,opts:["None","0","KeyError","False"],a:[2],e:"Indexing a missing dictionary key raises KeyError."},
+{type:"Single-select",q:"Which statement defines a function named greet?",opts:["function greet():","def greet():","func greet():","define greet():"],a:[1],e:"Python function definitions begin with def."},
+{type:"Single-select",q:"What is returned?",code:`def add(a, b):
+    return a + b
+
+print(add(2, 3))`,opts:["23","5","None","Error"],a:[1],e:"The function returns the sum, 5."},
+{type:"Multiple-select",q:"Which are built-in Python functions?",opts:["len()","print()","range()","display()"],a:[0,1,2],e:"len, print and range are built-ins; display is not a core Python built-in."},
+{type:"Single-select",q:"What is printed?",code:`def f(x):
+    if x > 0:
+        return "P"
+    return "N"
+
+print(f(-2))`,opts:["P","N","-2","None"],a:[1],e:"-2 is not greater than zero, so the second return executes."},
+{type:"Single-select",q:"Which block is used to catch an exception?",opts:["catch","except","handle","error"],a:[1],e:"Python uses try/except for exception handling."},
+{type:"Single-select",q:"What is printed?",code:`try:
+    x = int("abc")
+except ValueError:
+    print("Invalid")`,opts:["abc","0","Invalid","ValueError"],a:[2],e:"int('abc') raises ValueError, which is caught."},
+{type:"Multiple-select",q:"Which are good basic PEP 8 practices?",opts:["Use readable indentation.","Use meaningful variable names.","Use spaces around binary operators.","Ignore indentation because Python can infer blocks."],a:[0,1,2],e:"Readable indentation, meaningful names and conventional spacing improve Python code quality; indentation defines blocks."}
+];
+
+let submitted=false, remaining=40*60, interval;
+function render(){
+ const root=document.getElementById("test");
+ root.innerHTML=questions.map((x,i)=>`
+ <section class="question">
+  <div class="qhead"><div class="qnum">Question ${i+1} of ${questions.length}</div><div class="type">${x.type}</div></div>
+  <div>${x.q}</div>${x.code?`<pre>${escapeHtml(x.code)}</pre>`:""}
+  <div>${x.opts.map((o,j)=>`<label class="option"><input type="${x.type==="Multiple-select"?"checkbox":"radio"}" name="q${i}" value="${j}"> ${escapeHtml(o)}</label>`).join("")}</div>
+ </section>`).join("");
+}
+function escapeHtml(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+function startTimer(){
+ interval=setInterval(()=>{if(submitted)return;remaining--;updateTimer();if(remaining<=0)submitTest(true)},1000);
+}
+function updateTimer(){
+ const m=Math.floor(remaining/60),s=remaining%60, el=document.getElementById("timer");
+ el.textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+ el.className="timer"+(remaining<=300?" danger":remaining<=600?" warn":"");
+}
+function selected(i){return [...document.querySelectorAll(`input[name="q${i}"]:checked`)].map(x=>+x.value).sort((a,b)=>a-b)}
+function same(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i])}
+function submitTest(auto){
+ if(submitted)return;
+ submitted=true;clearInterval(interval);
+ let score=0, rows=[];
+ questions.forEach((x,i)=>{
+  const sel=selected(i), ok=same(sel,x.a); if(ok)score++;
+  if(!ok) rows.push(`<div class="review wrong"><h3>Question ${i+1}</h3><div><strong>Your answer:</strong> ${sel.length?sel.map(n=>escapeHtml(x.opts[n])).join(", "):"Not answered"}</div><div class="correct">Correct answer: ${x.a.map(n=>escapeHtml(x.opts[n])).join(", ")}</div><div class="explain">${escapeHtml(x.e)}</div></div>`);
+ });
+ document.querySelectorAll("input").forEach(x=>x.disabled=true);
+ document.getElementById("submitBtn").disabled=true;
+ const pct=Math.round(score/questions.length*100), pass=pct>=70;
+ const r=document.getElementById("results");r.style.display="block";
+ r.innerHTML=`<h2>Assessment Result</h2><div class="score ${pass?"pass":"fail"}">${score} / ${questions.length} (${pct}%)</div>
+ <p><strong>${pass?"Practice target reached":"Practice target not reached"}</strong> — target: 70%.</p>
+ ${auto?"<p><strong>Time expired:</strong> the assessment was submitted automatically.</p>":""}
+ <h2>Review of Incorrect Answers</h2>${rows.length?rows.join(""):"<p class='correct'>All answers are correct. Excellent work.</p>"}
+ <button class="secondary" onclick="location.reload()">Restart Assessment</button>`;
+ window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+render();updateTimer();startTimer();
+</script>
+</body>
+</html>
