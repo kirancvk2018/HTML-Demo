@@ -64,8 +64,8 @@
 <div class="wrap">
   <div class="eyebrow"><span>AbilEq · AI Training Library</span><span id="dateStamp"></span></div>
   <header>
-    <h1>A library of <em>interactive explainers</em> for AI-assisted engineering & agentic workflows.</h1>
-    <p>Pick a topic below to open its walkthrough. Each one is a standalone, click-through or run-through demo — built for training sessions, self-study, or handouts.</p>
+    <h1>A library of <em>interactive explainers</em> and PCEP practice assessments.</h1>
+    <p>Pick a topic below to open its walkthrough or assessment. Each item is a standalone HTML experience — built for training sessions, self-study, or handouts.</p>
   </header>
 
   <div class="searchrow">
@@ -90,7 +90,12 @@
    ============================================================ */
 const ENTRIES = [
   /* ===== PCEP: Python Certified Entry-Level Programmer ===== */
-  { file:"PCEP_Practice_Assessment.html", title:"PCEP-30-02 Practice Assessment", desc:"Timed 30-question Python certification practice test with single- and multiple-select questions, automatic submission, scoring, and detailed review of incorrect answers.", tag:"PCEP", color:"c1", featured:true },
+  /* ===== PCEP: Python Certified Entry-Level Programmer ===== */
+  { file:"01_Python_Fundamentals.html", title:"PCEP 01 — Python Fundamentals", desc:"30-question timed assessment covering Python fundamentals, syntax, identifiers, keywords, literals, indentation, comments, and core concepts. PCEP weight: 18%.", tag:"PCEP", color:"c1", featured:true },
+  { file:"02_Data_Types_Variables_Operators_IO.html", title:"PCEP 02 — Data Types, Variables, Operators & I/O", desc:"30-question timed assessment covering data types, variables, conversions, expressions, operators, input, output, strings, and Boolean logic. PCEP weight: 25%.", tag:"PCEP", color:"c2", featured:true },
+  { file:"03_Control_Flow.html", title:"PCEP 03 — Control Flow", desc:"30-question timed assessment covering if/elif/else, Boolean logic, for and while loops, range(), break, and continue. PCEP weight: 25%.", tag:"PCEP", color:"c3", featured:true },
+  { file:"04_Data_Collections.html", title:"PCEP 04 — Data Collections", desc:"30-question timed assessment covering lists, tuples, dictionaries, sets, indexing, slicing, methods, and collection operations. PCEP weight: 20%.", tag:"PCEP", color:"c4", featured:true },
+  { file:"05_Functions_Exceptions.html", title:"PCEP 05 — Functions & Exceptions", desc:"30-question timed assessment covering functions, parameters, arguments, return values, scope, built-ins, try/except, and common exceptions. PCEP weight: 12%.", tag:"PCEP", color:"c5", featured:true },
 
   /* ===== AGENTIC AI: Finance & Enterprise (NEW) ===== */
   { file:"CFO_Coordinator_Workflow.html", title:"CFO Coordinator Workflow", desc:"8-stage enterprise workflow orchestrating parallel financial analysis, risk detection, and automated reporting. Interactive SVG with skills panel, animations, and random MCQ quiz.", tag:"Agentic AI: Multi", color:"c4", featured:true },
@@ -154,7 +159,7 @@ function render(){
       <span class="tag">${e.tag}</span>
       <h3 style="color:var(--ink)">${e.title}</h3>
       <p>${e.desc}</p>
-      <span class="go">Open walkthrough →</span>
+      <span class="go">${e.tag==="PCEP" ? "Open assessment →" : "Open walkthrough →"}</span>
     </a>`;
   }).join('') || `<div class="card empty">No demos match "${q}"</div>`;
 

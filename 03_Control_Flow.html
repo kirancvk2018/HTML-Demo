@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCEP — Control Flow — Conditions &amp; Loops Practice Assessment</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--border:#dfe5ef;--good:#16794a;--bad:#c93636;--warn:#9a6700}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+header{background:#101828;color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.brand{font-weight:700}.exam-code{font-size:13px;color:#cbd5e1}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:20px;background:#25324a;padding:8px 14px;border-radius:8px}
+.timer.warn{color:#ffd166}.timer.danger{color:#ff8a8a}
+main{max-width:1000px;margin:28px auto;padding:0 18px}.intro,.question,.results{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}
+.intro h1{margin-top:0}.meta{display:flex;gap:12px;flex-wrap:wrap}.pill{background:#eef3ff;color:#23449c;border-radius:20px;padding:6px 10px;font-size:13px}
+.qhead{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.qnum{font-weight:700}.type{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:6px}
+pre{background:#111827;color:#e5e7eb;padding:16px;border-radius:8px;overflow:auto;line-height:1.5}
+.option{display:block;border:1px solid var(--border);border-radius:9px;padding:12px;margin:9px 0;cursor:pointer}
+.option:hover{border-color:#9bb3f4;background:#f8faff}.option input{margin-right:10px}
+.actions{display:flex;justify-content:center;margin:26px 0}.submit{background:var(--accent);color:white;border:0;border-radius:9px;padding:13px 26px;font-size:16px;font-weight:700;cursor:pointer}.submit:hover{filter:brightness(.95)}
+.results{display:none}.score{font-size:42px;font-weight:800}.pass{color:var(--good)}.fail{color:var(--bad)}
+.review{border-top:1px solid var(--border);padding:16px 0}.review h3{margin:0 0 8px}.wrong{border-left:4px solid var(--bad);padding-left:12px}.correct{color:var(--good);font-weight:700}.explain{color:#475467}
+button.secondary{background:white;border:1px solid var(--border);padding:10px 15px;border-radius:8px;cursor:pointer}
+
+.profile{margin-top:22px;border:1px solid var(--border);border-radius:10px;padding:20px;background:#fbfcfe}
+.profile-head{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:16px}
+.eyebrow2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.profile h2{font-size:36px;margin:3px 0}.profile h2 small{font-size:14px;color:var(--muted);font-weight:500}
+.profile-status{font-size:12px;font-weight:800;padding:8px 10px;border:1px solid var(--border);border-radius:7px}
+.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.profile-card,.behavior-grid>div{border:1px solid var(--border);border-radius:8px;padding:13px;background:#fff}
+.profile-card span,.behavior-grid span{display:block;color:var(--muted);font-size:12px}.profile-card b{font-size:24px}
+.profile h3{margin:22px 0 10px;font-size:16px}
+.metric-row{display:grid;grid-template-columns:190px 55px 1fr;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.bar{height:8px;background:#e9edf3;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.behavior-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.behavior-grid b{display:block;margin:4px 0}.behavior-grid small{display:block;color:var(--muted);font-size:11px;line-height:1.4}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap}.profile-pill{padding:7px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px}
+.recommendations{padding-left:20px}.recommendations li{margin:7px 0;font-size:13px}
+.profile-disclaimer{font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:20px}
+
+@media(max-width:650px){header{padding:14px}.qhead{flex-direction:column}.timer{font-size:17px}main{margin:14px auto}}
+
+.profile-six{grid-template-columns:repeat(3,1fr)}
+.profile-card small{color:var(--muted);font-size:11px;margin-left:2px}
+@media(max-width:800px){.profile-six{grid-template-columns:repeat(2,1fr)}.behavior-grid{grid-template-columns:repeat(2,1fr)}}
+
+.profile{display:block!important;margin:24px 0 28px!important;border:2px solid var(--accent)!important;background:#f8fbff!important}
+.profile-head{background:#eef4ff;border-radius:8px;padding:14px 16px}
+.profile-status{background:#fff}
+</style>
+</head>
+<body>
+<header><div><div class="brand">PCEP Practice Assessment — Control Flow — Conditions &amp; Loops</div>
+<div class="exam-code">PCEP-30-02 practice • Section weightage: 25%</div></div><div id="timer" class="timer">40:00</div></header>
+<main>
+<section class="intro">
+<h1>Control Flow — Conditions &amp; Loops</h1>
+<p>Conditional statements, Boolean logic, for/while loops, range(), break and continue.</p>
+<div class="meta"><span class="pill">30 questions</span><span class="pill">40 minutes</span><span class="pill">70% target</span><span class="pill">Single & multiple select</span><span class="pill">PCEP weight: 25%</span></div>
+<p><strong>Instructions:</strong> Select the best answer. For multiple-select items, select all answers that apply. The test auto-submits when the timer reaches zero.</p>
+</section>
+<div id="test"></div>
+<div class="actions"><button class="submit" id="submitBtn" onclick="submitTest(false)">Submit Assessment</button></div>
+<section id="results" class="results"></section>
+</main>
+<script>
+
+const questions = [
+  {
+    "type": "Single-select",
+    "q": "Which keyword starts a conditional?",
+    "opts": [
+      "when",
+      "if",
+      "condition",
+      "check"
+    ],
+    "a": [
+      1
+    ],
+    "e": "Python uses if."
+  },
+  {
+    "type": "Single-select",
+    "q": "Which keyword provides an alternative branch?",
+    "opts": [
+      "otherwise",
+      "else",
+      "elifthen",
+      "alt"
+    ],
+    "a": [
+      1
+    ],
+    "e": "else provides the fallback branch."
+  },
+  {
+    "type": "Single-select",
+    "q": "Which keyword tests another condition?",
+    "opts": [
+      "elseif",
+      "elif",
+      "elsif",
+      "else if"
+    ],
+    "a": [
+      1
+    ],
+    "e": "Python uses elif."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "A",
+      "B",
+      "5",
+      "Nothing"
+    ],
+    "a": [
+      0
+    ],
+    "e": "5 is greater than 3.",
+    "code": "x = 5
+if x > 3:
+    print('A')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "A",
+      "B",
+      "2",
+      "Nothing"
+    ],
+    "a": [
+      1
+    ],
+    "e": "The else branch executes.",
+    "code": "x = 2
+if x > 3:
+    print('A')
+else:
+    print('B')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What does `range(5)` generate conceptually?",
+    "opts": [
+      "1 through 5",
+      "0 through 4",
+      "0 through 5",
+      "5 only"
+    ],
+    "a": [
+      1
+    ],
+    "e": "range(5) starts at 0 and stops before 5."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "2 3 4",
+      "2 3 4 5",
+      "1 2 3 4",
+      "2 4"
+    ],
+    "a": [
+      0
+    ],
+    "e": "The stop value 5 is excluded.",
+    "code": "for i in range(2, 5):
+    print(i, end=' ')"
+  },
+  {
+    "type": "Single-select",
+    "q": "Which keyword exits the current loop?",
+    "opts": [
+      "stop",
+      "break",
+      "exitloop",
+      "end"
+    ],
+    "a": [
+      1
+    ],
+    "e": "break exits the nearest loop."
+  },
+  {
+    "type": "Single-select",
+    "q": "Which keyword skips to the next iteration?",
+    "opts": [
+      "skip",
+      "continue",
+      "next",
+      "passloop"
+    ],
+    "a": [
+      1
+    ],
+    "e": "continue skips the rest of the current iteration."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "0",
+      "2",
+      "3",
+      "4"
+    ],
+    "a": [
+      2
+    ],
+    "e": "x reaches 3 before the condition becomes false.",
+    "code": "x = 0
+while x < 3:
+    x += 1
+print(x)"
+  },
+  {
+    "type": "Multiple-select",
+    "q": "Which can control loop execution?",
+    "opts": [
+      "break",
+      "continue",
+      "range()",
+      "return"
+    ],
+    "a": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "e": "All can affect iteration or exit from a loop/function context."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "1 2 3",
+      "0 1 2",
+      "0 1 2 3",
+      "3"
+    ],
+    "a": [
+      1
+    ],
+    "e": "range(3) yields 0, 1 and 2.",
+    "code": "for i in range(3):
+    print(i)"
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "1 2 3 4 5",
+      "1 3 5",
+      "2 4 6",
+      "1 3"
+    ],
+    "a": [
+      1
+    ],
+    "e": "The step is 2 and 6 is excluded.",
+    "code": "for i in range(1, 6, 2):
+    print(i, end=' ')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What does `range(5, 0, -1)` start with?",
+    "opts": [
+      "0",
+      "1",
+      "5",
+      "4"
+    ],
+    "a": [
+      2
+    ],
+    "e": "The start value is 5."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "odd",
+      "even",
+      "4",
+      "False"
+    ],
+    "a": [
+      1
+    ],
+    "e": "4 has remainder 0 when divided by 2.",
+    "code": "x = 4
+if x % 2 == 0:
+    print('even')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "0 1",
+      "0 1 2",
+      "2 3 4",
+      "1 2"
+    ],
+    "a": [
+      0
+    ],
+    "e": "break occurs when i reaches 2, before printing it.",
+    "code": "for i in range(5):
+    if i == 2:
+        break
+    print(i, end=' ')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "0 1 2 3",
+      "0 1 3",
+      "1 2 3",
+      "0 2 3"
+    ],
+    "a": [
+      1
+    ],
+    "e": "continue skips printing for i=2.",
+    "code": "for i in range(4):
+    if i == 2:
+        continue
+    print(i, end=' ')"
+  },
+  {
+    "type": "Multiple-select",
+    "q": "Which are valid Boolean comparisons?",
+    "opts": [
+      "x == 5",
+      "x != 5",
+      "x <= 5",
+      "x => 5"
+    ],
+    "a": [
+      0,
+      1,
+      2
+    ],
+    "e": "The first three are valid comparisons."
+  },
+  {
+    "type": "Single-select",
+    "q": "Which operator checks equality?",
+    "opts": [
+      "=",
+      "==",
+      "===",
+      "equals"
+    ],
+    "a": [
+      1
+    ],
+    "e": "== checks equality."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "yes",
+      "no",
+      "3",
+      "Error"
+    ],
+    "a": [
+      0
+    ],
+    "e": "Both comparisons are true.",
+    "code": "x = 3
+if x > 1 and x < 5:
+    print('yes')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "yes",
+      "no",
+      "8",
+      "Error"
+    ],
+    "a": [
+      0
+    ],
+    "e": "The second condition is true.",
+    "code": "x = 8
+if x < 5 or x == 8:
+    print('yes')"
+  },
+  {
+    "type": "Single-select",
+    "q": "What does `while True:` create?",
+    "opts": [
+      "A loop whose condition is always true",
+      "A syntax error",
+      "A loop that runs once",
+      "A false condition"
+    ],
+    "a": [
+      0
+    ],
+    "e": "It creates an intentionally unbounded loop unless exited."
+  },
+  {
+    "type": "Single-select",
+    "q": "Which loop is commonly used to iterate over items in a collection?",
+    "opts": [
+      "for",
+      "switch",
+      "repeat",
+      "foreach"
+    ],
+    "a": [
+      0
+    ],
+    "e": "Python's for loop iterates over iterables."
+  },
+  {
+    "type": "Multiple-select",
+    "q": "Which are valid `range()` forms?",
+    "opts": [
+      "range(5)",
+      "range(2,5)",
+      "range(2,10,2)",
+      "range()"
+    ],
+    "a": [
+      0,
+      1,
+      2
+    ],
+    "e": "range accepts 1, 2 or 3 integer arguments."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "1 2 3",
+      "0 1 2",
+      "1 2 3 4",
+      "3"
+    ],
+    "a": [
+      0
+    ],
+    "e": "The loop prints 1, 2 and 3.",
+    "code": "x = 1
+while x <= 3:
+    print(x, end=' ')
+    x += 1"
+  },
+  {
+    "type": "Single-select",
+    "q": "What happens when `break` executes?",
+    "opts": [
+      "The current loop ends",
+      "The next iteration starts",
+      "The program always crashes",
+      "Only the current statement ends"
+    ],
+    "a": [
+      0
+    ],
+    "e": "break terminates the nearest enclosing loop."
+  },
+  {
+    "type": "Single-select",
+    "q": "What happens when `continue` executes?",
+    "opts": [
+      "The loop ends",
+      "The current iteration is skipped",
+      "The program ends",
+      "The condition becomes False"
+    ],
+    "a": [
+      1
+    ],
+    "e": "continue proceeds to the next iteration."
+  },
+  {
+    "type": "Multiple-select",
+    "q": "Which are control-flow constructs?",
+    "opts": [
+      "if",
+      "for",
+      "while",
+      "print"
+    ],
+    "a": [
+      0,
+      1,
+      2
+    ],
+    "e": "if, for and while control execution flow."
+  },
+  {
+    "type": "Single-select",
+    "q": "What is printed?",
+    "opts": [
+      "A",
+      "B",
+      "C",
+      "Nothing"
+    ],
+    "a": [
+      1
+    ],
+    "e": "The elif condition is true.",
+    "code": "x = 10
+if x > 10:
+    print('A')
+elif x == 10:
+    print('B')
+else:
+    print('C')"
+  }
+];
+
+const questionMeta = [{"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Control Flow — Conditions & Loops", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}];
+
+let submitted=false, remaining=40*60, interval;
+const telemetry = questions.map((_,i)=>({
+  firstAnswer:null, firstAnswerAt:null, lastAnswer:null, lastAnswerAt:null,
+  answerChanges:0, visits:0, lastSeenAt:null
+}));
+const assessmentStartedAt = Date.now();
+function render(){
+ const root=document.getElementById("test");
+ root.innerHTML=questions.map((x,i)=>`
+ <section class="question">
+  <div class="qhead"><div class="qnum">Question ${i+1} of ${questions.length}</div><div class="type">${x.type}</div></div>
+  <div>${x.q}</div>${x.code?`<pre>${escapeHtml(x.code)}</pre>`:""}
+  <div>${x.opts.map((o,j)=>`<label class="option"><input type="${x.type==="Multiple-select"?"checkbox":"radio"}" name="q${i}" value="${j}"> ${escapeHtml(o)}</label>`).join("")}</div>
+ </section>`).join("");
+}
+function escapeHtml(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+
+function recordInteraction(i){
+  if(submitted) return;
+  const now=Date.now();
+  const sel=selected(i);
+  const value=JSON.stringify(sel);
+  const t=telemetry[i];
+  t.visits++;
+  t.lastSeenAt=now;
+  if(t.firstAnswer===null && sel.length){
+    t.firstAnswer=[...sel];
+    t.firstAnswerAt=now;
+  }
+  if(sel.length){
+    if(t.lastAnswer!==null && JSON.stringify(t.lastAnswer)!==value) t.answerChanges++;
+    t.lastAnswer=[...sel];
+    t.lastAnswerAt=now;
+  }
+}
+function installTelemetry(){
+  document.querySelectorAll('input').forEach(el=>{
+    el.addEventListener('change',()=>{
+      const i=+el.name.replace('q','');
+      recordInteraction(i);
+    });
+  });
+  document.querySelectorAll('.question').forEach((el,i)=>{
+    el.addEventListener('mouseenter',()=>{ if(!telemetry[i].lastSeenAt) telemetry[i].lastSeenAt=Date.now(); });
+  });
+}
+
+function startTimer(){
+ interval=setInterval(()=>{if(submitted)return;remaining--;updateTimer();if(remaining<=0)submitTest(true)},1000);
+}
+function updateTimer(){
+ const m=Math.floor(remaining/60),s=remaining%60, el=document.getElementById("timer");
+ el.textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+ el.className="timer"+(remaining<=300?" danger":remaining<=600?" warn":"");
+}
+function selected(i){return [...document.querySelectorAll(`input[name="q${i}"]:checked`)].map(x=>+x.value).sort((a,b)=>a-b)}
+function same(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i])}
+function pct(n,d){return d?Math.round((n/d)*100):0;}
+function average(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+function classifyFluency(avgSec, accuracy){
+  if(avgSec<=25 && accuracy>=70) return ["HIGH","Fast responses with solid accuracy."];
+  if(avgSec>=90 && accuracy<70) return ["LOW","Long response times combined with lower accuracy suggest difficulty or overthinking."];
+  if(avgSec>=60) return ["MODERATE","Several responses required extended reasoning time."];
+  return ["MODERATE","Response speed is reasonable; accuracy is the stronger signal."];
+}
+function buildProfile(score){
+  const now=Date.now();
+  const totalSec=Math.max(1,Math.round((now-assessmentStartedAt)/1000));
+  const answered=telemetry.filter(t=>t.lastAnswer!==null).length;
+  const skipped=questions.length-answered;
+  const changes=telemetry.reduce((s,t)=>s+t.answerChanges,0);
+  const accuracy=pct(score,questions.length);
+
+  // Per-question time: time from first interaction to the next question's
+  // first interaction, with the final question measured to submission.
+  const responseTimes=[];
+  for(let i=0;i<questions.length;i++){
+    const t=telemetry[i];
+    if(t.firstAnswerAt){
+      const next=telemetry[i+1]?.firstAnswerAt || now;
+      responseTimes.push(Math.max(1,(next-t.firstAnswerAt)/1000));
+    }
+  }
+  const avgResponse=average(responseTimes);
+
+  const codeQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Code tracing");
+  const syntaxQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Syntax");
+  const conceptQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Concept");
+  const multiQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Multiple-select");
+
+  const accFor = ids => ids.length ? pct(ids.filter(i=>same(selected(i),questions[i].a)).length,ids.length) : accuracy;
+
+  const codeReasoning=accFor(codeQs);
+  const conceptual=accFor(conceptQs);
+  const syntax=accFor(syntaxQs);
+
+  // Fluency rewards accurate answers delivered without excessive hesitation.
+  const speedScore = avgResponse<=20 ? 100 : avgResponse<=40 ? 85 : avgResponse<=70 ? 70 : avgResponse<=100 ? 55 : 40;
+  const fluency=Math.round((accuracy*.65)+(speedScore*.35));
+
+  // Consistency measures whether the learner performs steadily across domains.
+  const domainScores=[];
+  const domains={};
+  questions.forEach((q,i)=>{
+    const d=questionMeta[i].domain;
+    if(!domains[d]) domains[d]={c:0,t:0};
+    domains[d].t++;
+    if(same(selected(i),q.a)) domains[d].c++;
+  });
+  Object.values(domains).forEach(v=>domainScores.push(pct(v.c,v.t)));
+  const consistency=Math.max(0,Math.round(100-(Math.max(...domainScores)-Math.min(...domainScores))*.7));
+
+  // Time management: combines completion and unanswered-item behavior.
+  const completionRatio=Math.min(1,totalSec/(40*60));
+  const timeManagement=Math.round(
+    Math.max(0,100 - (skipped*12) - (changes>10?(changes-10)*2:0) - (completionRatio>0.98 && skipped>0?10:0))
+  );
+
+  // Knowledge Index is a weighted learning-readiness signal, not a psychological score.
+  const knowledgeIndex=Math.round(
+    accuracy*.30 +
+    codeReasoning*.20 +
+    conceptual*.15 +
+    syntax*.10 +
+    fluency*.10 +
+    consistency*.10 +
+    timeManagement*.05
+  );
+
+  const guessing=questions.reduce((s,_,i)=>{
+    const t=telemetry[i];
+    return s+(t.firstAnswerAt && ((t.firstAnswerAt-assessmentStartedAt)/1000<8) &&
+      !same(t.firstAnswer||[],questions[i].a)?1:0);
+  },0);
+  const guessingRisk=guessing>=5?"HIGH":guessing>=2?"MODERATE":"LOW";
+
+  const confidence=changes>=8?"LOW":changes>=4?"MODERATE":"HIGH";
+  const readiness=accuracy>=85?"STRONG":accuracy>=70?"DEVELOPING":"FOUNDATIONAL";
+
+  const domainRows=Object.entries(domains).map(([k,v])=>`
+    <div class="metric-row"><span>${escapeHtml(k)}</span><strong>${pct(v.c,v.t)}%</strong>
+      <div class="bar"><i style="width:${pct(v.c,v.t)}%"></i></div>
+    </div>`).join("");
+
+  const wrongTopics={};
+  questions.forEach((q,i)=>{
+    if(!same(selected(i),q.a)){
+      const t=questionMeta[i].topic;
+      wrongTopics[t]=(wrongTopics[t]||0)+1;
+    }
+  });
+  const weakTopics=Object.entries(wrongTopics).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const recommendations=weakTopics.length
+    ? weakTopics.map(([t,n])=>`<li><strong>${escapeHtml(t)}</strong> — review with focused exercises (${n} missed).</li>`).join("")
+    : "<li>Maintain current coverage with mixed code-tracing practice.</li>";
+
+  return `
+  <div class="profile">
+    <div class="profile-head">
+      <div>
+        <div class="eyebrow2">Python Knowledge Profile</div>
+        <h2>${knowledgeIndex} / 100 <small>Python Knowledge Index</small></h2>
+      </div>
+      <div class="profile-status">${readiness} READINESS</div>
+    </div>
+
+    <div class="profile-grid profile-six">
+      <div class="profile-card"><span>Knowledge</span><b>${accuracy}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Code Reasoning</span><b>${codeReasoning}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Conceptual Understanding</span><b>${conceptual}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Fluency</span><b>${fluency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Consistency</span><b>${consistency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Time Management</span><b>${timeManagement}</b><small>/ 100</small></div>
+    </div>
+
+    <h3>Topic Mastery</h3>${domainRows}
+
+    <h3>Observed Assessment Behavior</h3>
+    <div class="behavior-grid">
+      <div><span>Response fluency</span><b>${fluency>=80?"HIGH":fluency>=60?"MODERATE":"LOW"}</b><small>Average response interval: ${Math.round(avgResponse)} sec</small></div>
+      <div><span>Answer-change confidence proxy</span><b>${confidence}</b><small>${changes} answer change${changes===1?"":"s"} recorded</small></div>
+      <div><span>Rapid-guessing risk</span><b>${guessingRisk}</b><small>${guessing} very-fast incorrect response${guessing===1?"":"s"}</small></div>
+      <div><span>Completion</span><b>${answered}/${questions.length}</b><small>${skipped} unanswered</small></div>
+    </div>
+
+    <h3>Performance by Difficulty</h3>
+    <div class="pill-row">
+      ${["Easy","Medium","Hard"].map(d=>{
+        const ids=questions.map((q,i)=>i).filter(i=>questionMeta[i].difficulty===d);
+        return `<span class="profile-pill">${d}: <b>${ids.length?accFor(ids):"—"}%</b></span>`;
+      }).join("")}
+    </div>
+
+    <h3>Recommended Remediation</h3>
+    <ol class="recommendations">${recommendations}</ol>
+
+    <p class="profile-disclaimer"><strong>Interpretation:</strong> These are observable assessment and learning signals. They are not psychological, personality, IQ, or high-stakes behavioral measurements.</p>
+  </div>`;
+}
+function submitTest(auto){
+ if(submitted)return;
+ submitted=true;clearInterval(interval);
+ let score=0, rows=[];
+ questions.forEach((x,i)=>{
+  const sel=selected(i), ok=same(sel,x.a); if(ok)score++;
+  if(!ok) rows.push(`<div class="review wrong"><h3>Question ${i+1}</h3><div><strong>Your answer:</strong> ${sel.length?sel.map(n=>escapeHtml(x.opts[n])).join(", "):"Not answered"}</div><div class="correct">Correct answer: ${x.a.map(n=>escapeHtml(x.opts[n])).join(", ")}</div><div class="explain">${escapeHtml(x.e)}</div></div>`);
+ });
+ document.querySelectorAll("input").forEach(x=>x.disabled=true);
+ document.getElementById("submitBtn").disabled=true;
+ const pct=Math.round(score/questions.length*100), pass=pct>=70;
+ const r=document.getElementById("results");r.style.display="block";
+ r.innerHTML=`<h2>Assessment Result</h2><div class="score ${pass?"pass":"fail"}">${score} / ${questions.length} (${pct}%)</div>
+ <p><strong>${pass?"Practice target reached":"Practice target not reached"}</strong> — target: 70%.</p>
+ ${auto?"<p><strong>Time expired:</strong> the assessment was submitted automatically.</p>":""}
+ ${buildProfile(score)}
+ <h2>Review of Incorrect Answers</h2>${rows.length?rows.join(""):"<p class='correct'>All answers are correct. Excellent work.</p>"}
+ <button class="secondary" onclick="location.reload()">Restart Assessment</button>`;
+ window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+render();updateTimer();startTimer();
+
+</script>
+</body>
+</html>
