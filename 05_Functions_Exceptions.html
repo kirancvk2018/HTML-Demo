@@ -93,9 +93,7 @@ const questions = [
       0
     ],
     "e": "The function returns 5.",
-    "code": "def add(a,b):
-    return a+b
-print(add(2,3))"
+    "code": "def add(a,b):\n    return a+b\nprint(add(2,3))"
   },
   {
     "type": "Single-select",
@@ -152,9 +150,7 @@ print(add(2,3))"
       2
     ],
     "e": "4 multiplied by 2 is 8.",
-    "code": "def f(x):
-    return x * 2
-print(f(4))"
+    "code": "def f(x):\n    return x * 2\nprint(f(4))"
   },
   {
     "type": "Single-select",
@@ -199,9 +195,7 @@ print(f(4))"
       2
     ],
     "e": "The function prints A and then returns None, which print displays.",
-    "code": "def f():
-    print('A')
-print(f())"
+    "code": "def f():\n    print('A')\nprint(f())"
   },
   {
     "type": "Single-select",
@@ -230,11 +224,7 @@ print(f())"
       1
     ],
     "e": "The local x inside f is 5.",
-    "code": "x = 10
-def f():
-    x = 5
-    return x
-print(f())"
+    "code": "x = 10\ndef f():\n    x = 5\n    return x\nprint(f())"
   },
   {
     "type": "Single-select",
@@ -291,10 +281,7 @@ print(f())"
       2
     ],
     "e": "ValueError is caught and Invalid is printed.",
-    "code": "try:
-    x = int('abc')
-except ValueError:
-    print('Invalid')"
+    "code": "try:\n    x = int('abc')\nexcept ValueError:\n    print('Invalid')"
   },
   {
     "type": "Multiple-select",
@@ -382,9 +369,7 @@ except ValueError:
       1
     ],
     "e": "3 squared is 9.",
-    "code": "def square(x):
-    return x*x
-print(square(3))"
+    "code": "def square(x):\n    return x*x\nprint(square(3))"
   },
   {
     "type": "Multiple-select",
@@ -429,9 +414,7 @@ print(square(3))"
       1
     ],
     "e": "The default parameter value is Sam.",
-    "code": "def greet(name='Sam'):
-    return 'Hi ' + name
-print(greet())"
+    "code": "def greet(name='Sam'):\n    return 'Hi ' + name\nprint(greet())"
   },
   {
     "type": "Single-select",
@@ -504,11 +487,7 @@ print(greet())"
       1
     ],
     "e": "The condition is false, so N is returned.",
-    "code": "def f(x):
-    if x > 0:
-        return 'P'
-    return 'N'
-print(f(-2))"
+    "code": "def f(x):\n    if x > 0:\n        return 'P'\n    return 'N'\nprint(f(-2))"
   },
   {
     "type": "Single-select",

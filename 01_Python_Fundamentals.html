@@ -235,8 +235,7 @@ const questions = [
       0
     ],
     "e": "x contains the integer 5.",
-    "code": "x = 5
-print(x)"
+    "code": "x = 5\nprint(x)"
   },
   {
     "type": "Single-select",
@@ -244,16 +243,14 @@ print(x)"
     "opts": [
       "AB",
       "A B",
-      "A
-B",
+      "A\nB",
       "Error"
     ],
     "a": [
       2
     ],
     "e": "Each print call writes a newline by default.",
-    "code": "print('A')
-print('B')"
+    "code": "print('A')\nprint('B')"
   },
   {
     "type": "Single-select",
@@ -368,9 +365,7 @@ print('B')"
       0
     ],
     "e": "A nonzero integer is truthy.",
-    "code": "x = 3
-if x:
-    print('yes')"
+    "code": "x = 3\nif x:\n    print('yes')"
   },
   {
     "type": "Single-select",
