@@ -502,6 +502,20 @@ const questions = [
 
 const questionMeta = [{"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Collections — Lists, Tuples, Dictionaries & Sets", "topic": "PCEP objective", "difficulty": "Medium", "kind": "Multiple-select"}];
 
+/* Safety net: questionMeta must have one entry per question, otherwise
+   buildProfile() throws on meta(i).kind and the results never render. */
+const DEFAULT_DOMAIN="Data Collections — Lists, Tuples, Dictionaries & Sets";
+while(questionMeta.length<questions.length){
+  const q=questions[questionMeta.length];
+  questionMeta.push({
+    domain: DEFAULT_DOMAIN,
+    topic: "PCEP objective",
+    difficulty: q.type==="Multiple-select" ? "Medium" : "Easy",
+    kind: q.type==="Multiple-select" ? "Multiple-select" : (q.code ? "Code tracing" : "Concept")
+  });
+}
+function meta(i){return questionMeta[i] || {domain:DEFAULT_DOMAIN,topic:"PCEP objective",difficulty:"Easy",kind:"Concept"};}
+
 let submitted=false, remaining=40*60, interval;
 const telemetry = questions.map((_,i)=>({
   firstAnswer:null, firstAnswerAt:null, lastAnswer:null, lastAnswerAt:null,
@@ -587,10 +601,10 @@ function buildProfile(score){
   }
   const avgResponse=average(responseTimes);
 
-  const codeQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Code tracing");
-  const syntaxQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Syntax");
-  const conceptQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Concept");
-  const multiQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Multiple-select");
+  const codeQs=questions.map((q,i)=>i).filter(i=>meta(i).kind==="Code tracing");
+  const syntaxQs=questions.map((q,i)=>i).filter(i=>meta(i).kind==="Syntax");
+  const conceptQs=questions.map((q,i)=>i).filter(i=>meta(i).kind==="Concept");
+  const multiQs=questions.map((q,i)=>i).filter(i=>meta(i).kind==="Multiple-select");
 
   const accFor = ids => ids.length ? pct(ids.filter(i=>same(selected(i),questions[i].a)).length,ids.length) : accuracy;
 
@@ -606,7 +620,7 @@ function buildProfile(score){
   const domainScores=[];
   const domains={};
   questions.forEach((q,i)=>{
-    const d=questionMeta[i].domain;
+    const d=meta(i).domain;
     if(!domains[d]) domains[d]={c:0,t:0};
     domains[d].t++;
     if(same(selected(i),q.a)) domains[d].c++;
@@ -649,7 +663,7 @@ function buildProfile(score){
   const wrongTopics={};
   questions.forEach((q,i)=>{
     if(!same(selected(i),q.a)){
-      const t=questionMeta[i].topic;
+      const t=meta(i).topic;
       wrongTopics[t]=(wrongTopics[t]||0)+1;
     }
   });
@@ -690,8 +704,8 @@ function buildProfile(score){
     <h3>Performance by Difficulty</h3>
     <div class="pill-row">
       ${["Easy","Medium","Hard"].map(d=>{
-        const ids=questions.map((q,i)=>i).filter(i=>questionMeta[i].difficulty===d);
-        return `<span class="profile-pill">${d}: <b>${ids.length?accFor(ids):"—"}%</b></span>`;
+        const ids=questions.map((q,i)=>i).filter(i=>meta(i).difficulty===d);
+        return `<span class="profile-pill">${d}: <b>${ids.length?accFor(ids)+"%":"—"}</b></span>`;
       }).join("")}
     </div>
 
@@ -700,6 +714,14 @@ function buildProfile(score){
 
     <p class="profile-disclaimer"><strong>Interpretation:</strong> These are observable assessment and learning signals. They are not psychological, personality, IQ, or high-stakes behavioral measurements.</p>
   </div>`;
+}
+function safeProfile(score){
+ try{ return buildProfile(score); }
+ catch(err){
+  console.error("Profile generation failed:",err);
+  return '<div class="profile"><div class="eyebrow2">Python Knowledge Profile</div>'+
+         '<p class="explain">The detailed profile could not be generated for this attempt. Your score and answer review below are unaffected.</p></div>';
+ }
 }
 function submitTest(auto){
  if(submitted)return;
@@ -716,12 +738,12 @@ function submitTest(auto){
  r.innerHTML=`<h2>Assessment Result</h2><div class="score ${pass?"pass":"fail"}">${score} / ${questions.length} (${pct}%)</div>
  <p><strong>${pass?"Practice target reached":"Practice target not reached"}</strong> — target: 70%.</p>
  ${auto?"<p><strong>Time expired:</strong> the assessment was submitted automatically.</p>":""}
- ${buildProfile(score)}
+ ${safeProfile(score)}
  <h2>Review of Incorrect Answers</h2>${rows.length?rows.join(""):"<p class='correct'>All answers are correct. Excellent work.</p>"}
  <button class="secondary" onclick="location.reload()">Restart Assessment</button>`;
  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
 }
-render();updateTimer();startTimer();
+render();installTelemetry();updateTimer();startTimer();
 
 </script>
 </body>
