@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1 Practice Assessment — Python &amp; Engineering Foundation</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--border:#dfe5ef;--good:#16794a;--bad:#c93636;--warn:#9a6700}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+header{background:#101828;color:white;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.brand{font-weight:700}.exam-code{font-size:13px;color:#cbd5e1}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:20px;background:#25324a;padding:8px 14px;border-radius:8px}
+.timer.warn{color:#ffd166}.timer.danger{color:#ff8a8a}
+main{max-width:1000px;margin:28px auto;padding:0 18px}.intro,.question,.results{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}
+.intro h1{margin-top:0}.meta{display:flex;gap:12px;flex-wrap:wrap}.pill{background:#eef3ff;color:#23449c;border-radius:20px;padding:6px 10px;font-size:13px}
+.qhead{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.qnum{font-weight:700}.type{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:6px}
+pre{background:#111827;color:#e5e7eb;padding:16px;border-radius:8px;overflow:auto;line-height:1.5}
+.option{display:block;border:1px solid var(--border);border-radius:9px;padding:12px;margin:9px 0;cursor:pointer}
+.option:hover{border-color:#9bb3f4;background:#f8faff}.option input{margin-right:10px}
+.actions{display:flex;justify-content:center;margin:26px 0}.submit{background:var(--accent);color:white;border:0;border-radius:9px;padding:13px 26px;font-size:16px;font-weight:700;cursor:pointer}.submit:hover{filter:brightness(.95)}
+.results{display:none}.score{font-size:42px;font-weight:800}.pass{color:var(--good)}.fail{color:var(--bad)}
+.review{border-top:1px solid var(--border);padding:16px 0}.review h3{margin:0 0 8px}.wrong{border-left:4px solid var(--bad);padding-left:12px}.correct{color:var(--good);font-weight:700}.explain{color:#475467}
+button.secondary{background:white;border:1px solid var(--border);padding:10px 15px;border-radius:8px;cursor:pointer}
+
+.profile{margin-top:22px;border:1px solid var(--border);border-radius:10px;padding:20px;background:#fbfcfe}
+.profile-head{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:16px}
+.eyebrow2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.profile h2{font-size:36px;margin:3px 0}.profile h2 small{font-size:14px;color:var(--muted);font-weight:500}
+.profile-status{font-size:12px;font-weight:800;padding:8px 10px;border:1px solid var(--border);border-radius:7px}
+.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+.profile-card,.behavior-grid>div{border:1px solid var(--border);border-radius:8px;padding:13px;background:#fff}
+.profile-card span,.behavior-grid span{display:block;color:var(--muted);font-size:12px}.profile-card b{font-size:24px}
+.profile h3{margin:22px 0 10px;font-size:16px}
+.metric-row{display:grid;grid-template-columns:190px 55px 1fr;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.bar{height:8px;background:#e9edf3;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.behavior-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.behavior-grid b{display:block;margin:4px 0}.behavior-grid small{display:block;color:var(--muted);font-size:11px;line-height:1.4}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap}.profile-pill{padding:7px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px}
+.recommendations{padding-left:20px}.recommendations li{margin:7px 0;font-size:13px}
+.profile-disclaimer{font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:20px}
+
+@media(max-width:650px){header{padding:14px}.qhead{flex-direction:column}.timer{font-size:17px}main{margin:14px auto}}
+
+.profile-six{grid-template-columns:repeat(3,1fr)}
+.profile-card small{color:var(--muted);font-size:11px;margin-left:2px}
+@media(max-width:800px){.profile-six{grid-template-columns:repeat(2,1fr)}.behavior-grid{grid-template-columns:repeat(2,1fr)}}
+
+.profile{display:block!important;margin:24px 0 28px!important;border:2px solid var(--accent)!important;background:#f8fbff!important}
+.profile-head{background:#eef4ff;border-radius:8px;padding:14px 16px}
+.profile-status{background:#fff}
+</style>
+</head>
+<body>
+<header><div><div class="brand">Phase 1 Practice Assessment</div><div class="exam-code">Python &amp; Engineering Foundation — Days 1–3 • Practice only</div></div><div id="timer" class="timer">40:00</div></header>
+<main>
+<section class="intro">
+<h1>Python &amp; Engineering Foundation — Practice Test</h1>
+<p>This assessment contains original practice questions covering <strong>Phase 1 (Days 1–3)</strong> of the Agentic AI Training Plan: Python foundations, applied Python for AI (typing, Pydantic, async, HTTP), and engineering practices including Git, testing, AI-assisted coding, and the first LLM call.</p>
+<div class="meta"><span class="pill">30 questions</span><span class="pill">40 minutes</span><span class="pill">70% target</span><span class="pill">Single &amp; multiple select</span></div>
+<p><strong>Instructions:</strong> Select the best answer. For multiple-select items, select all answers that apply. The test auto-submits when the timer reaches zero.</p>
+</section>
+<div id="test"></div>
+<div class="actions"><button class="submit" id="submitBtn" onclick="submitTest(false)">Submit Assessment</button></div>
+<section id="results" class="results"></section>
+</main>
+<script>
+const questions = [
+{type:"Single-select",q:"Which command creates a new Python virtual environment named 'myenv'?",opts:["python -m venv myenv","pip install venv myenv","venv create myenv","python venv myenv"],a:[0],e:"python -m venv <name> creates a new virtual environment using the built-in venv module."},
+{type:"Single-select",q:"Which command installs the 'requests' package using pip?",opts:["pip get requests","pip install requests","python install requests","pip add requests"],a:[1],e:"pip install <package> is the standard way to install a package."},
+{type:"Single-select",q:"What is printed by the following code?",code:`squares = [x**2 for x in range(5) if x % 2 == 0]
+print(squares)`,opts:["[0, 4, 16]","[0, 1, 4, 9, 16]","[1, 4, 9, 16]","[0, 2, 4]"],a:[0],e:"The comprehension keeps only even x values (0, 2, 4) from range(5) and squares them: 0, 4, 16."},
+{type:"Single-select",q:"Which built-in data structure does NOT allow duplicate elements?",opts:["list","tuple","set","dict values"],a:[2],e:"A set stores only unique elements; duplicates are automatically discarded."},
+{type:"Multiple-select",q:"Which statements about *args and **kwargs are correct?",opts:["*args collects extra positional arguments into a tuple.","**kwargs collects extra keyword arguments into a dictionary.","*args must always be named 'args'.","A function can accept both *args and **kwargs."],a:[0,1,3],e:"*args and **kwargs are naming conventions, not requirements; a function may use both together."},
+{type:"Single-select",q:"What is printed by the following code?",code:`square = lambda x: x * x
+print(square(4))`,opts:["4","8","16","Error"],a:[2],e:"The lambda returns x * x, so square(4) evaluates to 16."},
+{type:"Single-select",q:"Which property correctly describes Python tuples?",opts:["Mutable and ordered","Immutable and ordered","Mutable and unordered","Immutable and unordered"],a:[1],e:"Tuples preserve order but cannot be modified after creation."},
+{type:"Single-select",q:"What is printed by the following code?",code:`import json
+data = {"name": "Ana", "age": 30}
+print(json.dumps(data))`,opts:['{"name": "Ana", "age": 30}',"{'name': 'Ana', 'age': 30}","name:Ana,age:30","Error"],a:[0],e:"json.dumps() serializes a dict into a JSON string using double quotes."},
+{type:"Single-select",q:"What is the recommended way to open and automatically close a file in Python?",opts:["Using a with statement","Using try/finally only","Calling file.close() manually is always required","Files close automatically at program exit only"],a:[0],e:"The with statement (context manager) ensures the file is closed automatically, even if an error occurs."},
+{type:"Single-select",q:"Which statement correctly imports the sqrt function from the math module?",opts:["import sqrt from math","from math import sqrt","include math.sqrt","using math import sqrt"],a:[1],e:"The correct syntax is 'from module import name'."},
+{type:"Single-select",q:"Which decorator automatically generates __init__, __repr__, and __eq__ for a class?",opts:["@staticmethod","@property","@dataclass","@classmethod"],a:[2],e:"@dataclass generates these special methods automatically based on the declared fields."},
+{type:"Single-select",q:"What happens when the following code runs?",code:`from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+
+user = User(name="Sam", age="thirty")`,opts:["A User instance is created with age='thirty'","A ValidationError is raised because 'thirty' is not a valid integer","age is silently set to 0","name is silently discarded"],a:[1],e:"Pydantic validates field types and raises a ValidationError when a value cannot be coerced to the declared type."},
+{type:"Single-select",q:"What is the purpose of type hints such as 'def add(a: int, b: int) -> int:'?",opts:["They enforce types at runtime and stop the program on mismatch","They are documentation-only comments with no tooling value","They help tools and readers understand expected types without enforcing them at runtime","They convert arguments to the specified type automatically"],a:[2],e:"Type hints are not enforced by the interpreter by default, but they improve readability and enable static analysis and editor tooling."},
+{type:"Single-select",q:"What is printed by the following code?",code:`try:
+    result = 10 / 0
+except ZeroDivisionError:
+    print("A")
+except Exception:
+    print("B")
+finally:
+    print("C")`,opts:["A C","B C","A","C only"],a:[0],e:"ZeroDivisionError matches the first except clause and prints 'A'; the finally block always runs and prints 'C'."},
+{type:"Multiple-select",q:"Which are part of robust retry logic when calling an external service?",opts:["Using exponential backoff between attempts","Retrying indefinitely with no limit","Distinguishing transient errors from permanent ones before retrying","Setting a maximum number of retry attempts"],a:[0,2,3],e:"Good retry logic uses backoff, a retry limit, and classifies errors as transient or permanent; unlimited retries risk cascading failures."},
+{type:"Single-select",q:"Using the requests library, which attribute of a Response object gives the HTTP status code?",opts:["response.code","response.status","response.status_code","response.http_code"],a:[2],e:"response.status_code returns the numeric HTTP status code, e.g. 200 or 404."},
+{type:"Single-select",q:"Which HTTP header is commonly used to send a bearer token for authentication?",opts:["Content-Type","Authorization","Accept","User-Agent"],a:[1],e:"The Authorization header (e.g. 'Bearer <token>') is the standard way to pass credentials on a request."},
+{type:"Single-select",q:"In a paginated REST API, what does a 'cursor' or 'next page token' typically represent?",opts:["The total number of records in the database","A pointer used to fetch the next page of results","An authentication credential","The HTTP status code of the last request"],a:[1],e:"A cursor/next-page token tells the client where to continue fetching results from on the next request."},
+{type:"Single-select",q:"What is printed by the following code?",code:`import asyncio
+
+async def greet():
+    await asyncio.sleep(1)
+    return "done"
+
+result = asyncio.run(greet())
+print(result)`,opts:["done","None","Error: greet is not callable","1"],a:[0],e:"asyncio.run() executes the coroutine to completion and returns its result, which is the string 'done'."},
+{type:"Multiple-select",q:"Which are good practices for handling secrets such as API keys?",opts:["Store them in environment variables or a .env file","Hardcode them directly in source files committed to Git","Load them at runtime using a library such as python-dotenv","Add .env to .gitignore"],a:[0,2,3],e:"Secrets should live outside source code, be loaded at runtime, and be excluded from version control."},
+{type:"Single-select",q:"Which git command stages a modified file for the next commit?",opts:["git commit file.py","git add file.py","git push file.py","git stage file.py"],a:[1],e:"git add moves changes into the staging area ahead of a commit."},
+{type:"Single-select",q:"Which command creates and switches to a new git branch named 'feature-x' in one step?",opts:["git branch feature-x","git checkout -b feature-x","git switch feature-x --create","git merge feature-x"],a:[1],e:"git checkout -b <name> creates a new branch and switches to it in a single command."},
+{type:"Single-select",q:"What is the primary purpose of a pull request in a GitHub workflow?",opts:["To permanently delete a branch","To propose and review code changes before merging","To automatically deploy code to production","To create a new repository"],a:[1],e:"A pull request lets collaborators review, discuss, and approve changes before they are merged."},
+{type:"Single-select",q:"In pytest, what is a fixture primarily used for?",opts:["Formatting test output","Providing reusable setup/teardown logic for tests","Measuring code coverage","Compiling Python code"],a:[1],e:"Fixtures supply reusable setup (and optional teardown) that tests can request as arguments."},
+{type:"Single-select",q:"What happens when the following test runs?",code:`def add(a, b):
+    return a + b
+
+def test_add():
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0`,opts:["Both assertions pass and the test succeeds","The first assertion fails","The second assertion fails","A TypeError is raised"],a:[0],e:"add(2, 3) equals 5 and add(-1, 1) equals 0, so both assertions are true and the test passes."},
+{type:"Multiple-select",q:"Which are recommended practices when using an AI coding assistant such as GitHub Copilot or Claude Code?",opts:["Review and test all AI-generated code before merging","Accept all suggestions without review to save time","Provide clear, specific prompts describing the desired behavior","Check generated code for security issues such as hardcoded secrets"],a:[0,2,3],e:"AI-assisted code should still be reviewed, tested, and checked for security issues; clear prompts improve suggestion quality."},
+{type:"Single-select",q:"When making a request to an LLM API such as the OpenAI SDK, what does the 'messages' parameter typically represent?",opts:["The model's internal weights","A list of conversation turns with roles such as 'system', 'user', and 'assistant'","The HTTP headers for the request","The billing configuration for the account"],a:[1],e:"The messages parameter is an ordered list of role-tagged turns that forms the conversation sent to the model."},
+{type:"Single-select",q:"What is the main benefit of requesting structured (e.g., JSON) output from an LLM instead of free-form text?",opts:["It reduces the model's token usage to zero","It guarantees the response is factually correct","It makes the output easier to parse and use reliably in downstream code","It removes the need for any error handling"],a:[2],e:"Structured output gives a predictable shape that downstream code can parse reliably; it does not guarantee correctness or remove the need for validation."},
+{type:"Single-select",q:"In function/tool calling with an LLM, what does the model typically return when it decides to use a tool?",opts:["A rendered image","A structured request specifying the tool name and arguments to call","A compiled binary","Nothing; tools are called automatically without model involvement"],a:[1],e:"The model returns a structured call (tool name plus arguments) that the calling application executes and feeds results back from."},
+{type:"Multiple-select",q:"Which statements about logging in a Python project are correct?",opts:["The logging module supports levels such as DEBUG, INFO, WARNING, and ERROR.","print() statements are the recommended replacement for logging in production systems.","Loggers can be configured to write to files, consoles, or both.","Logging helps with debugging and monitoring without cluttering standard output."],a:[0,2,3],e:"The logging module supports levels and configurable output destinations; print() is not a substitute for structured logging in production."}
+];
+
+
+const questionMeta = [{"domain": "Environment & Syntax", "topic": "Virtual environments", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Environment & Syntax", "topic": "Package management", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Data Structures", "topic": "Comprehensions", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Data Structures", "topic": "Data types", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Functions", "topic": "args/kwargs", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Functions", "topic": "Lambda functions", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "Data Structures", "topic": "Tuples", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Data Structures", "topic": "JSON I/O", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Environment & Syntax", "topic": "File I/O", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Environment & Syntax", "topic": "Modules & imports", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "OOP & Typing", "topic": "Dataclasses", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "OOP & Typing", "topic": "Pydantic validation", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "OOP & Typing", "topic": "Type hints", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Error Handling", "topic": "Exception handling", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "Error Handling", "topic": "Retry logic", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "APIs & Async", "topic": "HTTP & REST", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "APIs & Async", "topic": "HTTP auth", "difficulty": "Easy", "kind": "Concept"}, {"domain": "APIs & Async", "topic": "Pagination", "difficulty": "Medium", "kind": "Concept"}, {"domain": "APIs & Async", "topic": "Async/await", "difficulty": "Medium", "kind": "Code tracing"}, {"domain": "APIs & Async", "topic": "Secrets management", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "Version Control", "topic": "Git basics", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Version Control", "topic": "Git branching", "difficulty": "Easy", "kind": "Syntax"}, {"domain": "Version Control", "topic": "GitHub workflow", "difficulty": "Easy", "kind": "Concept"}, {"domain": "Testing", "topic": "pytest fixtures", "difficulty": "Medium", "kind": "Concept"}, {"domain": "Testing", "topic": "pytest assertions", "difficulty": "Easy", "kind": "Code tracing"}, {"domain": "AI-Assisted Development", "topic": "AI coding practices", "difficulty": "Medium", "kind": "Multiple-select"}, {"domain": "AI-Assisted Development", "topic": "First LLM call", "difficulty": "Easy", "kind": "Concept"}, {"domain": "AI-Assisted Development", "topic": "Structured outputs", "difficulty": "Medium", "kind": "Concept"}, {"domain": "AI-Assisted Development", "topic": "Function/tool calling", "difficulty": "Medium", "kind": "Concept"}, {"domain": "Engineering Practices", "topic": "Logging", "difficulty": "Medium", "kind": "Multiple-select"}];
+
+let submitted=false, remaining=40*60, interval;
+const telemetry = questions.map((_,i)=>({
+  firstAnswer:null, firstAnswerAt:null, lastAnswer:null, lastAnswerAt:null,
+  answerChanges:0, visits:0, lastSeenAt:null
+}));
+const assessmentStartedAt = Date.now();
+function render(){
+ const root=document.getElementById("test");
+ root.innerHTML=questions.map((x,i)=>`
+ <section class="question">
+  <div class="qhead"><div class="qnum">Question ${i+1} of ${questions.length}</div><div class="type">${x.type}</div></div>
+  <div>${x.q}</div>${x.code?`<pre>${escapeHtml(x.code)}</pre>`:""}
+  <div>${x.opts.map((o,j)=>`<label class="option"><input type="${x.type==="Multiple-select"?"checkbox":"radio"}" name="q${i}" value="${j}"> ${escapeHtml(o)}</label>`).join("")}</div>
+ </section>`).join("");
+}
+function escapeHtml(s){return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+
+function recordInteraction(i){
+  if(submitted) return;
+  const now=Date.now();
+  const sel=selected(i);
+  const value=JSON.stringify(sel);
+  const t=telemetry[i];
+  t.visits++;
+  t.lastSeenAt=now;
+  if(t.firstAnswer===null && sel.length){
+    t.firstAnswer=[...sel];
+    t.firstAnswerAt=now;
+  }
+  if(sel.length){
+    if(t.lastAnswer!==null && JSON.stringify(t.lastAnswer)!==value) t.answerChanges++;
+    t.lastAnswer=[...sel];
+    t.lastAnswerAt=now;
+  }
+}
+function installTelemetry(){
+  document.querySelectorAll('input').forEach(el=>{
+    el.addEventListener('change',()=>{
+      const i=+el.name.replace('q','');
+      recordInteraction(i);
+    });
+  });
+  document.querySelectorAll('.question').forEach((el,i)=>{
+    el.addEventListener('mouseenter',()=>{ if(!telemetry[i].lastSeenAt) telemetry[i].lastSeenAt=Date.now(); });
+  });
+}
+
+function startTimer(){
+ interval=setInterval(()=>{if(submitted)return;remaining--;updateTimer();if(remaining<=0)submitTest(true)},1000);
+}
+function updateTimer(){
+ const m=Math.floor(remaining/60),s=remaining%60, el=document.getElementById("timer");
+ el.textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+ el.className="timer"+(remaining<=300?" danger":remaining<=600?" warn":"");
+}
+function selected(i){return [...document.querySelectorAll(`input[name="q${i}"]:checked`)].map(x=>+x.value).sort((a,b)=>a-b)}
+function same(a,b){return a.length===b.length&&a.every((v,i)=>v===b[i])}
+function pct(n,d){return d?Math.round((n/d)*100):0;}
+function average(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+function classifyFluency(avgSec, accuracy){
+  if(avgSec<=25 && accuracy>=70) return ["HIGH","Fast responses with solid accuracy."];
+  if(avgSec>=90 && accuracy<70) return ["LOW","Long response times combined with lower accuracy suggest difficulty or overthinking."];
+  if(avgSec>=60) return ["MODERATE","Several responses required extended reasoning time."];
+  return ["MODERATE","Response speed is reasonable; accuracy is the stronger signal."];
+}
+function buildProfile(score){
+  const now=Date.now();
+  const totalSec=Math.max(1,Math.round((now-assessmentStartedAt)/1000));
+  const answered=telemetry.filter(t=>t.lastAnswer!==null).length;
+  const skipped=questions.length-answered;
+  const changes=telemetry.reduce((s,t)=>s+t.answerChanges,0);
+  const accuracy=pct(score,questions.length);
+
+  // Per-question time: time from first interaction to the next question's
+  // first interaction, with the final question measured to submission.
+  const responseTimes=[];
+  for(let i=0;i<questions.length;i++){
+    const t=telemetry[i];
+    if(t.firstAnswerAt){
+      const next=telemetry[i+1]?.firstAnswerAt || now;
+      responseTimes.push(Math.max(1,(next-t.firstAnswerAt)/1000));
+    }
+  }
+  const avgResponse=average(responseTimes);
+
+  const codeQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Code tracing");
+  const syntaxQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Syntax");
+  const conceptQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Concept");
+  const multiQs=questions.map((q,i)=>i).filter(i=>questionMeta[i].kind==="Multiple-select");
+
+  const accFor = ids => ids.length ? pct(ids.filter(i=>same(selected(i),questions[i].a)).length,ids.length) : accuracy;
+
+  const codeReasoning=accFor(codeQs);
+  const conceptual=accFor(conceptQs);
+  const syntax=accFor(syntaxQs);
+
+  // Fluency rewards accurate answers delivered without excessive hesitation.
+  const speedScore = avgResponse<=20 ? 100 : avgResponse<=40 ? 85 : avgResponse<=70 ? 70 : avgResponse<=100 ? 55 : 40;
+  const fluency=Math.round((accuracy*.65)+(speedScore*.35));
+
+  // Consistency measures whether the learner performs steadily across domains.
+  const domainScores=[];
+  const domains={};
+  questions.forEach((q,i)=>{
+    const d=questionMeta[i].domain;
+    if(!domains[d]) domains[d]={c:0,t:0};
+    domains[d].t++;
+    if(same(selected(i),q.a)) domains[d].c++;
+  });
+  Object.values(domains).forEach(v=>domainScores.push(pct(v.c,v.t)));
+  const consistency=Math.max(0,Math.round(100-(Math.max(...domainScores)-Math.min(...domainScores))*.7));
+
+  // Time management: combines completion and unanswered-item behavior.
+  const completionRatio=Math.min(1,totalSec/(40*60));
+  const timeManagement=Math.round(
+    Math.max(0,100 - (skipped*12) - (changes>10?(changes-10)*2:0) - (completionRatio>0.98 && skipped>0?10:0))
+  );
+
+  // Knowledge Index is a weighted learning-readiness signal, not a psychological score.
+  const knowledgeIndex=Math.round(
+    accuracy*.30 +
+    codeReasoning*.20 +
+    conceptual*.15 +
+    syntax*.10 +
+    fluency*.10 +
+    consistency*.10 +
+    timeManagement*.05
+  );
+
+  const guessing=questions.reduce((s,_,i)=>{
+    const t=telemetry[i];
+    return s+(t.firstAnswerAt && ((t.firstAnswerAt-assessmentStartedAt)/1000<8) &&
+      !same(t.firstAnswer||[],questions[i].a)?1:0);
+  },0);
+  const guessingRisk=guessing>=5?"HIGH":guessing>=2?"MODERATE":"LOW";
+
+  const confidence=changes>=8?"LOW":changes>=4?"MODERATE":"HIGH";
+  const readiness=accuracy>=85?"STRONG":accuracy>=70?"DEVELOPING":"FOUNDATIONAL";
+
+  const domainRows=Object.entries(domains).map(([k,v])=>`
+    <div class="metric-row"><span>${escapeHtml(k)}</span><strong>${pct(v.c,v.t)}%</strong>
+      <div class="bar"><i style="width:${pct(v.c,v.t)}%"></i></div>
+    </div>`).join("");
+
+  const wrongTopics={};
+  questions.forEach((q,i)=>{
+    if(!same(selected(i),q.a)){
+      const t=questionMeta[i].topic;
+      wrongTopics[t]=(wrongTopics[t]||0)+1;
+    }
+  });
+  const weakTopics=Object.entries(wrongTopics).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const recommendations=weakTopics.length
+    ? weakTopics.map(([t,n])=>`<li><strong>${escapeHtml(t)}</strong> — review with focused exercises (${n} missed).</li>`).join("")
+    : "<li>Maintain current coverage with mixed code-tracing practice.</li>";
+
+  return `
+  <div class="profile">
+    <div class="profile-head">
+      <div>
+        <div class="eyebrow2">Phase 1 Knowledge Profile</div>
+        <h2>${knowledgeIndex} / 100 <small>Readiness Index</small></h2>
+      </div>
+      <div class="profile-status">${readiness} READINESS</div>
+    </div>
+
+    <div class="profile-grid profile-six">
+      <div class="profile-card"><span>Knowledge</span><b>${accuracy}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Code Reasoning</span><b>${codeReasoning}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Conceptual Understanding</span><b>${conceptual}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Fluency</span><b>${fluency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Consistency</span><b>${consistency}</b><small>/ 100</small></div>
+      <div class="profile-card"><span>Time Management</span><b>${timeManagement}</b><small>/ 100</small></div>
+    </div>
+
+    <h3>Topic Mastery</h3>${domainRows}
+
+    <h3>Observed Assessment Behavior</h3>
+    <div class="behavior-grid">
+      <div><span>Response fluency</span><b>${fluency>=80?"HIGH":fluency>=60?"MODERATE":"LOW"}</b><small>Average response interval: ${Math.round(avgResponse)} sec</small></div>
+      <div><span>Answer-change confidence proxy</span><b>${confidence}</b><small>${changes} answer change${changes===1?"":"s"} recorded</small></div>
+      <div><span>Rapid-guessing risk</span><b>${guessingRisk}</b><small>${guessing} very-fast incorrect response${guessing===1?"":"s"}</small></div>
+      <div><span>Completion</span><b>${answered}/${questions.length}</b><small>${skipped} unanswered</small></div>
+    </div>
+
+    <h3>Performance by Difficulty</h3>
+    <div class="pill-row">
+      ${["Easy","Medium","Hard"].map(d=>{
+        const ids=questions.map((q,i)=>i).filter(i=>questionMeta[i].difficulty===d);
+        return `<span class="profile-pill">${d}: <b>${ids.length?accFor(ids):"—"}%</b></span>`;
+      }).join("")}
+    </div>
+
+    <h3>Recommended Remediation</h3>
+    <ol class="recommendations">${recommendations}</ol>
+
+    <p class="profile-disclaimer"><strong>Interpretation:</strong> These are observable assessment and learning signals. They are not psychological, personality, IQ, or high-stakes behavioral measurements.</p>
+  </div>`;
+}
+function submitTest(auto){
+ if(submitted)return;
+ submitted=true;clearInterval(interval);
+ let score=0, rows=[];
+ questions.forEach((x,i)=>{
+  const sel=selected(i), ok=same(sel,x.a); if(ok)score++;
+  if(!ok) rows.push(`<div class="review wrong"><h3>Question ${i+1}</h3><div><strong>Your answer:</strong> ${sel.length?sel.map(n=>escapeHtml(x.opts[n])).join(", "):"Not answered"}</div><div class="correct">Correct answer: ${x.a.map(n=>escapeHtml(x.opts[n])).join(", ")}</div><div class="explain">${escapeHtml(x.e)}</div></div>`);
+ });
+ document.querySelectorAll("input").forEach(x=>x.disabled=true);
+ document.getElementById("submitBtn").disabled=true;
+ const pct=Math.round(score/questions.length*100), pass=pct>=70;
+ const r=document.getElementById("results");r.style.display="block";
+ r.innerHTML=`<h2>Assessment Result</h2><div class="score ${pass?"pass":"fail"}">${score} / ${questions.length} (${pct}%)</div>
+ <p><strong>${pass?"Practice target reached":"Practice target not reached"}</strong> — target: 70%.</p>
+ ${auto?"<p><strong>Time expired:</strong> the assessment was submitted automatically.</p>":""}
+ ${buildProfile(score)}
+ <h2>Review of Incorrect Answers</h2>${rows.length?rows.join(""):"<p class='correct'>All answers are correct. Excellent work.</p>"}
+ <button class="secondary" onclick="location.reload()">Restart Assessment</button>`;
+ window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+render();installTelemetry();updateTimer();startTimer();
+</script>
+</body>
+</html>
