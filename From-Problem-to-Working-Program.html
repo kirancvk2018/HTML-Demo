@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDLC, Refinement & Debugging — Interactive Lab</title>
+<style>
+:root{--bg:#06101d;--panel:#0c1b2d;--panel2:#10263d;--text:#eff7ff;--muted:#9bb0c6;--cyan:#54d6ff;--purple:#8e7dff;--green:#43dda1;--red:#ff6b7a;--amber:#ffc857;--line:#213b56}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#18395c 0,#07121f 42%,#030811 100%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;min-height:100vh}.app{max-width:1280px;margin:auto;padding:20px}
+header{position:sticky;top:10px;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 20px;border:1px solid var(--line);background:#0a1829eF;border-radius:17px;backdrop-filter:blur(12px)}.brand{font-weight:850}.brand b{color:var(--cyan)}.progress{width:250px}.bar{height:8px;background:#17283b;border-radius:20px;overflow:hidden}.fill{height:100%;width:17%;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:.3s}.pct{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}
+.hero{padding:52px 10px 34px;display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center}.eyebrow{display:inline-block;padding:7px 12px;border:1px solid #315673;border-radius:999px;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}h1{font-size:clamp(38px,5vw,68px);line-height:.98;margin:15px 0}.hero p{font-size:18px;line-height:1.6;color:var(--muted);max-width:760px}.hero-card{background:linear-gradient(145deg,#102a45,#0a1728);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 22px 70px #0008}.flow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:16px}.node{padding:9px 12px;background:#132b45;border:1px solid #315572;border-radius:10px;font-size:12px;font-weight:800}.arrow{color:var(--cyan)}
+.nav{display:flex;gap:7px;overflow:auto;padding:5px 0 15px}.nav button{white-space:nowrap;background:#0b192a;border:1px solid var(--line);color:var(--muted);padding:10px 13px;border-radius:10px;cursor:pointer}.nav button.active{background:#153655;color:#fff;border-color:#4781a9}
+section{display:none;animation:in .3s ease}section.active{display:block}@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}h2{font-size:34px;margin:24px 0 6px}.lead{color:var(--muted);font-size:17px;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:17px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:rgba(12,27,45,.92);border:1px solid var(--line);border-radius:17px;padding:19px}.card h3{margin:0 0 10px}.card p,.card li{color:var(--muted);line-height:1.55}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(90deg,#28b9e5,#7467e8);color:#fff;font-weight:800;cursor:pointer}.btn.secondary{background:#142a42;border:1px solid #31516d}.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 13px;border-radius:10px;background:#0a192a;border:1px solid #29445e;color:var(--text);cursor:pointer}.choice:hover{border-color:#4c88ae}.choice.correct{border-color:var(--green);background:#0b3027}.choice.wrong{border-color:var(--red);background:#341923}.result{display:none;margin-top:12px;padding:13px;border-radius:11px;line-height:1.5}.result.good{display:block;background:#0a3027;border:1px solid #286e59;color:#a2f1d2}.result.bad{display:block;background:#351923;border:1px solid #74404a;color:#ffb7c0}.stage{padding:17px;border-radius:14px;border:1px solid var(--line);background:#0b1929;cursor:pointer;transition:.2s}.stage:hover{transform:translateY(-2px);border-color:#487e9e}.stage.active{background:#123551;border-color:var(--cyan)}.stage small{color:var(--muted)}.stage-detail{min-height:100px;margin-top:14px;padding:16px;background:#071421;border:1px solid #203a53;border-radius:12px;color:#cbd9e7}
+.code{background:#050e17;border:1px solid #20384f;border-radius:13px;padding:16px;overflow:auto;color:#d4ebff;line-height:1.65;font-family:Consolas,monospace;font-size:14px}.badline{background:#48202a;color:#ffabb5;display:block;margin:0 -16px;padding:0 16px}.goodline{background:#0e382e;color:#a9f2d8;display:block;margin:0 -16px;padding:0 16px}
+.trace{width:100%;border-collapse:collapse}.trace th,.trace td{border:1px solid #29445d;padding:11px;text-align:center}.trace th{background:#132a43}.trace td{color:#c9d8e8}.trace .focus{background:#163e4b}
+input,textarea{width:100%;background:#071421;color:#eef7ff;border:1px solid #2a4863;border-radius:10px;padding:12px;font:inherit}textarea{min-height:125px;resize:vertical}
+.refine-level{border-left:3px solid var(--purple);padding:14px 18px;margin:13px 0;background:#0a192a;border-radius:0 12px 12px 0}.refine-level b{color:#c7bfff}
+.footer{text-align:center;color:#71879c;font-size:12px;padding:35px 0 12px}
+@media(max-width:850px){.hero,.grid,.grid3{grid-template-columns:1fr}.progress{width:145px}header{position:relative}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="brand">Programming <b>Lab</b> / PDLC</div>
+<div class="progress"><div class="pct"><span>Learning progress</span><span id="pct">17%</span></div><div class="bar"><div class="fill" id="fill"></div></div></div>
+</header>
+
+<div class="hero">
+<div><span class="eyebrow">Interactive Programming Fundamentals</span><h1>Build it.<br><span style="color:var(--cyan)">Trace it.</span><br>Fix it.</h1><p>Explore the Program Development Life Cycle, practice stepwise refinement, and debug a real logic error using trace tables.</p><div class="flow"><span class="node">Problem</span><span class="arrow">→</span><span class="node">Design</span><span class="arrow">→</span><span class="node">Refine</span><span class="arrow">→</span><span class="node">Code</span><span class="arrow">→</span><span class="node">Test</span><span class="arrow">→</span><span class="node">Debug</span></div></div>
+<div class="hero-card"><h3>Mission</h3><p style="color:var(--muted)">Use evidence, not guesses, to move from a problem statement to a reliable program.</p><div class="grid3"><div><b>06</b><br><small style="color:var(--muted)">Stages</small></div><div><b>04</b><br><small style="color:var(--muted)">Activities</small></div><div><b>01</b><br><small style="color:var(--muted)">Debug challenge</small></div></div></div>
+</div>
+
+<div class="nav" id="nav">
+<button class="active" onclick="go(0)">01 PDLC</button><button onclick="go(1)">02 PDLC in Action</button><button onclick="go(2)">03 Refinement</button><button onclick="go(3)">04 Practice</button><button onclick="go(4)">05 Debugging</button><button onclick="go(5)">06 Trace Table</button><button onclick="go(6)">07 Challenge</button>
+</div>
+
+<section class="active">
+<h2>01 — Program Development Life Cycle</h2><p class="lead">PDLC provides a structured path from a problem statement to a working and maintainable program.</p>
+<div class="grid3" id="stages">
+<div class="stage active" onclick="stage(0,this)"><b>01 Problem</b><br><small>Define the need</small></div>
+<div class="stage" onclick="stage(1,this)"><b>02 Analysis</b><br><small>Understand inputs & outputs</small></div>
+<div class="stage" onclick="stage(2,this)"><b>03 Design</b><br><small>Build the solution logic</small></div>
+<div class="stage" onclick="stage(3,this)"><b>04 Implementation</b><br><small>Write Python</small></div>
+<div class="stage" onclick="stage(4,this)"><b>05 Testing</b><br><small>Verify behavior</small></div>
+<div class="stage" onclick="stage(5,this)"><b>06 Maintenance</b><br><small>Improve over time</small></div>
+</div>
+<div id="stageDetail" class="stage-detail"><b>Problem Definition</b><br>Clearly state what the program must accomplish, who needs it and what the expected outcome is.</div>
+<div class="card" style="margin-top:17px"><h3>Quick check</h3><p>At which PDLC stage do you primarily convert the solution design into Python code?</p>
+<button class="choice" onclick="q(this,false)">Analysis</button><button class="choice" onclick="q(this,true)">Implementation</button><button class="choice" onclick="q(this,false)">Maintenance</button><div id="q1" class="result"></div></div>
+</section>
+
+<section>
+<h2>02 — PDLC in Action</h2><p class="lead">Follow one problem through the lifecycle: a student grade calculator.</p>
+<div class="card"><h3>Problem</h3><p>Read three marks, calculate the average and determine the grade.</p><div class="grid">
+<div><h3>Analysis</h3><p><b>Inputs:</b> three marks</p><p><b>Process:</b> total → average → grade</p><p><b>Outputs:</b> average and grade</p></div>
+<div><h3>Design</h3><p>Decompose the problem, write pseudocode, define the grade rules, then create test cases.</p></div>
+</div></div>
+<div class="grid" style="margin-top:17px"><div class="card"><h3>Implementation</h3><div class="code">marks = [80, 70, 90]<br>total = sum(marks)<br>average = total / len(marks)<br><br>if average &gt;= 90:<br>&nbsp;&nbsp;&nbsp;&nbsp;grade = "A"<br>elif average &gt;= 75:<br>&nbsp;&nbsp;&nbsp;&nbsp;grade = "B"<br>else:<br>&nbsp;&nbsp;&nbsp;&nbsp;grade = "C"</div></div>
+<div class="card"><h3>Testing</h3><p>Try sample data and compare the actual output with the expected result.</p><button class="btn" onclick="gradeTest()">Run test case</button><div id="gradeResult" class="result"></div></div></div>
+</section>
+
+<section>
+<h2>03 — Stepwise Refinement</h2><p class="lead">Refinement progressively turns a broad idea into precise, implementable logic.</p>
+<div class="refine-level"><b>LEVEL 1 — Goal</b><br>Process Customer Order</div>
+<div class="refine-level"><b>LEVEL 2 — Major Tasks</b><br>Read order → Calculate subtotal → Apply discount → Calculate tax → Calculate final amount → Display result</div>
+<div class="refine-level"><b>LEVEL 3 — Detail One Task</b><div class="code" style="margin-top:10px">IF subtotal &gt;= 10000<br>&nbsp;&nbsp;discount_rate ← 0.10<br>ELSE IF subtotal &gt;= 5000<br>&nbsp;&nbsp;discount_rate ← 0.05<br>ELSE<br>&nbsp;&nbsp;discount_rate ← 0</div></div>
+<div class="card"><h3>When should refinement stop?</h3><p>Stop when each step is sufficiently precise to translate into programming constructs without having to invent missing logic while coding.</p><div class="flow"><span class="node">Idea</span><span class="arrow">→</span><span class="node">Structure</span><span class="arrow">→</span><span class="node">Detail</span><span class="arrow">→</span><span class="node">Python</span></div></div>
+</section>
+
+<section>
+<h2>04 — Refinement Practice</h2><p class="lead">Your task: refine an online shopping checkout from a high-level goal to implementable steps.</p>
+<div class="grid">
+<div class="card"><h3>Level 1</h3><div class="stage active">Process Customer Order</div><p>What smaller jobs must happen?</p><button class="choice" onclick="refChoice(this,false)">Open Python and start coding</button><button class="choice" onclick="refChoice(this,true)">Read cart → calculate subtotal → discount → tax → final amount → display</button><button class="choice" onclick="refChoice(this,false)">Display the final bill first</button><div id="refResult" class="result"></div></div>
+<div class="card"><h3>Level 2 → Level 3</h3><p>Choose the best refinement of <b>Apply Discount</b>.</p><button class="choice" onclick="refChoice2(this,true)">IF subtotal ≥ 10000 → 10%; ELSE IF subtotal ≥ 5000 → 5%; ELSE → 0%</button><button class="choice" onclick="refChoice2(this,false)">Apply some discount depending on the order</button><button class="choice" onclick="refChoice2(this,false)">Print the discount</button><div id="refResult2" class="result"></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Your own refinement</h3><p>Write 4–6 steps to refine: <b>“Calculate Employee Net Salary”</b></p><textarea id="refText" placeholder="1. Read ...&#10;2. Calculate ..."></textarea><button class="btn" style="margin-top:10px" onclick="checkRefText()">Review my refinement</button><div id="refTextResult" class="result"></div></div>
+</section>
+
+<section>
+<h2>05 — Debugging: Find the Logic Error</h2><p class="lead">This program runs, but its result is wrong. Your job is to identify why.</p>
+<div class="grid">
+<div class="card"><h3>Buggy Python</h3><div class="code">numbers = [10, 20, 30, 40, 50]<br><br>total = 0<br><br>for number in numbers:<br><span class="badline">    total = number</span><br><br>average = total / len(numbers)<br>print("Average:", average)</div></div>
+<div class="card"><h3>Expected vs Actual</h3><p><b>Expected:</b> Average = 30</p><p><b>Actual:</b> Average = 10</p><p>Which statement is responsible?</p><button class="choice" onclick="bug(this,true)">total = number</button><button class="choice" onclick="bug(this,false)">average = total / len(numbers)</button><button class="choice" onclick="bug(this,false)">print("Average:", average)</button><div id="bugResult" class="result"></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>What should the statement do?</h3><p>The variable <b>total</b> should accumulate each number, not replace its previous value.</p><div class="code"><span class="badline">total = number</span><span class="goodline">total = total + number</span></div></div>
+</section>
+
+<section>
+<h2>06 — Debugging with a Trace Table</h2><p class="lead">Trace the buggy loop one iteration at a time. Watch how <b>total</b> changes.</p>
+<div class="grid">
+<div class="card"><h3>Trace the bug</h3><p>Click Next Iteration to execute one loop pass.</p><div class="controls"><button class="btn" id="traceBtn" onclick="nextTrace()">Next Iteration</button><button class="btn secondary" onclick="resetTrace()">Reset</button></div><div id="traceState" style="margin-top:14px;color:var(--muted)">Iteration 0 — total = 0</div></div>
+<div class="card"><h3>Ask yourself</h3><p>After iteration 2, should <b>total</b> be:</p><button class="choice" onclick="traceQ(this,true)">30 — because 10 + 20 = 30</button><button class="choice" onclick="traceQ(this,false)">20 — because total is replaced by the current number</button><button class="choice" onclick="traceQ(this,false)">10 — because the first number stays forever</button><div id="traceQResult" class="result"></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Live trace table</h3><table class="trace"><thead><tr><th>Iteration</th><th>number</th><th>total Before</th><th>Statement</th><th>total After</th></tr></thead><tbody id="traceBody"><tr><td>0</td><td>—</td><td>0</td><td>—</td><td>0</td></tr></tbody></table></div>
+</section>
+
+<section>
+<h2>07 — Final Challenge</h2><p class="lead">Use the complete workflow: analyze → refine → implement → test → trace → debug → retest.</p>
+<div class="card"><h3>Challenge: Employee Net Salary</h3><p>Basic salary = ₹50,000, allowance = ₹5,000, deduction = ₹3,000.</p><div class="grid">
+<div><h3>1. Analyze</h3><p>What is the correct calculation?</p><button class="choice" onclick="finalQ(this,true)">Gross = Basic + Allowance; Net = Gross − Deduction</button><button class="choice" onclick="finalQ(this,false)">Net = Basic − Allowance + Deduction</button><button class="choice" onclick="finalQ(this,false)">Gross = Basic − Deduction</button><div id="finalQ1" class="result"></div></div>
+<div><h3>2. Dry Run</h3><button class="btn" onclick="salary()">Run calculation</button><div id="salary" class="result"></div></div>
+</div></div>
+<div class="card" style="margin-top:17px"><h3>3. Complete the workflow</h3><div class="flow"><span class="node">Analyze</span><span class="arrow">→</span><span class="node">Design</span><span class="arrow">→</span><span class="node">Refine</span><span class="arrow">→</span><span class="node">Implement</span><span class="arrow">→</span><span class="node">Test</span><span class="arrow">→</span><span class="node">Debug</span><span class="arrow">→</span><span class="node">Retest</span></div></div>
+<div class="card" style="margin-top:17px"><h3>Final takeaway</h3><p style="font-size:20px;color:var(--text)"><b>Good programmers do not simply write code. They develop, trace, test, debug and refine solutions.</b></p><p>Use trace tables as evidence when the program's behavior does not match your expectation.</p></div>
+</section>
+
+<div class="footer">PDLC • Stepwise Refinement • Debugging with Trace Tables | Interactive classroom module</div>
+</div>
+
+<script>
+let current=0;
+function go(i){document.querySelectorAll('section').forEach((s,n)=>s.classList.toggle('active',n===i));document.querySelectorAll('#nav button').forEach((b,n)=>b.classList.toggle('active',n===i));current=i;let p=Math.round(((i+1)/7)*100);document.getElementById('fill').style.width=p+'%';document.getElementById('pct').textContent=p+'%';window.scrollTo({top:0,behavior:'smooth'})}
+const details=[
+['Problem Definition','Clearly state what the program must accomplish, who needs it and what the expected outcome is.'],
+['Analysis','Identify inputs, outputs, constraints and the processing required to transform inputs into outputs.'],
+['Design','Create the algorithm, decomposition, pseudocode, flow and decision logic before coding.'],
+['Implementation','Translate the approved design into Python code using appropriate constructs.'],
+['Testing & Debugging','Run test cases, compare expected and actual behavior, trace logic and correct defects.'],
+['Maintenance','Modify, improve, fix or extend the program as requirements evolve.']];
+function stage(i,el){document.querySelectorAll('.stage').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.getElementById('stageDetail').innerHTML='<b>'+details[i][0]+'</b><br>'+details[i][1]}
+function q(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('q1');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. Implementation is where the design is translated into Python.':'Not quite. Analysis and design happen before the program is implemented.'}
+function gradeTest(){let marks=[80,70,90],avg=marks.reduce((a,b)=>a+b,0)/marks.length,r=document.getElementById('gradeResult');r.className='result good';r.innerHTML='Test passed: total = 240, average = '+avg+', grade = <b>B</b>.'}
+function refChoice(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('refResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. These are meaningful problem-solving steps.':'Refinement should expose the work the solution needs to perform, not coding mechanics.'}
+function refChoice2(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('refResult2');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. The condition and resulting discount rates are precise enough to implement.':'Too vague. A refined step should remove ambiguity and specify the actual decision logic.'}
+function checkRefText(){let v=document.getElementById('refText').value.toLowerCase(),hasRead=v.includes('read')||v.includes('input'),hasGross=v.includes('gross'),hasDed=v.includes('deduction'),hasNet=v.includes('net');let r=document.getElementById('refTextResult');let ok=hasRead&&hasGross&&hasDed&&hasNet;r.className='result '+(ok?'good':'bad');r.textContent=ok?'Good refinement. You identified the inputs and the key calculation stages.':'Add explicit steps for reading inputs, calculating gross salary, applying deduction and calculating/displaying net salary.'}
+function bug(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('bugResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. The assignment replaces total on every iteration instead of accumulating it.':'That statement depends on total, but it is not the source of the accumulation error.'}
+let ti=0;const nums=[10,20,30,40,50];
+function nextTrace(){if(ti<nums.length){let n=nums[ti],before=ti===0?0:nums[ti-1],after=n;ti++;document.getElementById('traceBody').innerHTML+=`<tr class="focus"><td>${ti}</td><td>${n}</td><td>${before}</td><td>total = number</td><td>${after}</td></tr>`;document.getElementById('traceState').textContent='Iteration '+ti+' — total = '+after}if(ti===nums.length)document.getElementById('traceBtn').disabled=true}
+function resetTrace(){ti=0;document.getElementById('traceBtn').disabled=false;document.getElementById('traceBody').innerHTML='<tr><td>0</td><td>—</td><td>0</td><td>—</td><td>0</td></tr>';document.getElementById('traceState').textContent='Iteration 0 — total = 0'}
+function traceQ(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('traceQResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. In a correct accumulation, total should carry the previous value forward.':'The buggy assignment replaces the previous total. That is exactly the logic defect you need to identify.'}
+function finalQ(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('finalQ1');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. First calculate gross, then subtract the deduction to obtain net salary.':'Recheck the relationship between basic salary, allowance and deduction.'}
+function salary(){let gross=50000+5000,net=gross-3000,r=document.getElementById('salary');r.className='result good';r.innerHTML='<b>Dry run complete</b><br>Gross = ₹'+gross.toLocaleString('en-IN')+'<br>Net = ₹'+net.toLocaleString('en-IN')+'<br><br>Expected final result: <b>₹52,000</b>'}
+</script>
+</body>
+</html>

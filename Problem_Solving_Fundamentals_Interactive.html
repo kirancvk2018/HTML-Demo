@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problem Solving Fundamentals — Interactive Learning</title>
+<style>
+:root{
+  --bg:#07111f; --panel:#0d1b2e; --panel2:#10243c; --text:#edf5ff;
+  --muted:#9db1c8; --accent:#54d6ff; --accent2:#8b7cff; --good:#45e0a0;
+  --warn:#ffc857; --bad:#ff6b7a; --line:#203751; --white:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at 80% 0%,#16365b 0,#07111f 40%,#040a12 100%);color:var(--text);min-height:100vh}
+.app{max-width:1280px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 22px;background:rgba(13,27,46,.9);border:1px solid var(--line);border-radius:18px;position:sticky;top:12px;z-index:10;backdrop-filter:blur(12px)}
+.brand{font-weight:800;letter-spacing:.3px}.brand span{color:var(--accent)}
+.progress{width:260px}.bar{height:8px;background:#1a2b40;border-radius:20px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:20%;transition:.35s}
+.hero{padding:58px 18px 42px;display:grid;grid-template-columns:1.25fr .75fr;gap:30px;align-items:center}
+h1{font-size:clamp(38px,5vw,68px);line-height:.98;margin:0 0 18px}.hero p{font-size:19px;color:var(--muted);max-width:760px;line-height:1.6}
+.pill{display:inline-block;padding:7px 11px;border:1px solid #31516e;border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.hero-card{background:linear-gradient(145deg,#102944,#0a1728);border:1px solid var(--line);border-radius:24px;padding:25px;box-shadow:0 20px 60px #0006}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px}.node{padding:10px 13px;border-radius:12px;background:#132b45;border:1px solid #294866;font-weight:700;font-size:13px}.arrow{color:var(--accent)}
+.nav{display:flex;gap:8px;overflow:auto;padding:4px 0 14px}.nav button{white-space:nowrap;background:#0c1a2b;border:1px solid var(--line);color:var(--muted);padding:10px 14px;border-radius:10px;cursor:pointer}.nav button.active{background:#143452;color:var(--white);border-color:#3a6d94}
+section{display:none;animation:fade .3s ease}section.active{display:block}@keyframes fade{from{opacity:.2;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{font-size:34px;margin:25px 0 8px}.lead{color:var(--muted);font-size:17px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:rgba(13,27,46,.9);border:1px solid var(--line);border-radius:18px;padding:20px}.card h3{margin:0 0 10px}.card p,.card li{color:var(--muted);line-height:1.55}
+.tree{display:flex;flex-direction:column;align-items:center;gap:10px;margin:24px 0}.tree-row{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.tree-box{background:#122b46;border:1px solid #356084;border-radius:12px;padding:13px 16px;text-align:center;min-width:150px}.root{background:linear-gradient(135deg,#164d6b,#3d3278);border-color:#5d8fae;font-weight:800}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(90deg,#27b8e4,#7567e8);color:white;font-weight:800;cursor:pointer}.btn.secondary{background:#162b43;border:1px solid #31506c}.btn:disabled{opacity:.45;cursor:not-allowed}
+textarea,input,select{width:100%;background:#081522;color:var(--text);border:1px solid #2a4662;border-radius:10px;padding:12px;font:inherit}textarea{min-height:150px;resize:vertical}
+code,pre{font-family:Consolas,monospace}.code{background:#06101b;border:1px solid #213a54;border-radius:14px;padding:17px;overflow:auto;color:#cfe9ff;line-height:1.7}
+.keyword{color:#70dcff}.comment{color:#7190a8}.result{margin-top:14px;padding:14px;border-radius:12px;display:none}.result.good{display:block;background:#0b3028;border:1px solid #286d59;color:#9ff2d0}.result.bad{display:block;background:#351923;border:1px solid #74404a;color:#ffb4bd}
+.trace-table{width:100%;border-collapse:collapse;margin-top:14px}.trace-table th,.trace-table td{border:1px solid #28425b;padding:12px;text-align:center}.trace-table th{background:#142b44}.trace-table td{color:#c9d8e8}.highlight{background:#173d4a!important}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.step{display:none}.step.show{display:block}
+.choice{display:block;width:100%;text-align:left;margin:9px 0;background:#0c1b2d;border:1px solid #29435d;color:var(--text);padding:13px;border-radius:10px;cursor:pointer}.choice:hover{border-color:#4c8bb2}.choice.correct{border-color:var(--good);background:#0d3028}.choice.wrong{border-color:var(--bad);background:#351923}
+.score{font-size:18px;font-weight:800;color:var(--accent)}
+.footer{margin:40px 0 10px;color:#71869c;text-align:center;font-size:13px}
+@media(max-width:850px){.hero,.grid,.grid3{grid-template-columns:1fr}.progress{width:140px}header{position:relative}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">Problem Solving <span>Lab</span></div>
+  <div class="progress"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px"><span>Learning progress</span><span id="pct">20%</span></div><div class="bar"><div class="fill" id="fill"></div></div></div>
+</header>
+
+<div class="hero">
+  <div>
+    <span class="pill">Interactive Python Foundations</span>
+    <h1>Think first.<br><span style="color:var(--accent)">Then code.</span></h1>
+    <p>Explore how programmers turn a problem statement into a clear, testable algorithm using decomposition, pseudocode, dry runs, trace tables, correctness checks and stepwise refinement.</p>
+    <div class="flow"><span class="node">Problem</span><span class="arrow">→</span><span class="node">Decompose</span><span class="arrow">→</span><span class="node">Pseudocode</span><span class="arrow">→</span><span class="node">Trace</span><span class="arrow">→</span><span class="node">Verify</span></div>
+  </div>
+  <div class="hero-card">
+    <h3>Learning mission</h3>
+    <p style="color:var(--muted)">By the end, you should be able to look at a programming problem and explain the logic before writing Python.</p>
+    <div class="grid3">
+      <div><strong>05</strong><br><small style="color:var(--muted)">Core skills</small></div>
+      <div><strong>10</strong><br><small style="color:var(--muted)">Mini activities</small></div>
+      <div><strong>01</strong><br><small style="color:var(--muted)">Final challenge</small></div>
+    </div>
+  </div>
+</div>
+
+<div class="nav" id="nav">
+<button class="active" onclick="go(0)">01 Decompose</button>
+<button onclick="go(1)">02 Dry Run</button>
+<button onclick="go(2)">03 Pseudocode</button>
+<button onclick="go(3)">04 Correctness</button>
+<button onclick="go(4)">05 Refine</button>
+<button onclick="go(5)">06 Challenge</button>
+</div>
+
+<section class="active">
+<h2>01 — Top-Down Design</h2><p class="lead">A complex problem becomes manageable when you solve it at progressively smaller levels of detail.</p>
+<div class="grid">
+<div class="card"><h3>The principle</h3><p><b>Top-down design</b> starts with the complete problem and repeatedly breaks it into smaller tasks until each task is simple enough to implement.</p><button class="btn" onclick="reveal('decompTip')">Reveal instructor tip</button><div id="decompTip" class="result good">Do not ask “What Python code should I write?” first. Ask “What smaller jobs must be completed?”</div></div>
+<div class="card"><h3>Example: Student Result</h3><p>Goal: calculate and display a student's final result.</p><div class="tree"><div class="tree-box root">Calculate Student Result</div><div>↓</div><div class="tree-row"><div class="tree-box">Read marks</div><div class="tree-box">Calculate total</div><div class="tree-box">Calculate percentage</div><div class="tree-box">Determine grade</div><div class="tree-box">Display result</div></div></div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Interactive: choose the right decomposition</h3><p>Which set of steps best decomposes “Calculate a customer’s final bill”?</p>
+<button class="choice" onclick="pick(this,true)">Read items → calculate subtotal → apply discount → calculate tax → display final bill</button>
+<button class="choice" onclick="pick(this,false)">Open Python → create variables → use print() → close Python</button>
+<button class="choice" onclick="pick(this,false)">Write code immediately → run → fix errors → repeat</button>
+<div id="dResult" class="result"></div></div>
+</section>
+
+<section>
+<h2>02 — Dry Run & Trace Tables</h2><p class="lead">A dry run manually executes the algorithm using sample values. A trace table records what changes after each step.</p>
+<div class="grid">
+<div class="card"><h3>Algorithm</h3><div class="code">START<br>READ a<br>READ b<br>sum ← a + b<br>average ← sum / 2<br>DISPLAY sum<br>DISPLAY average<br>END</div></div>
+<div class="card"><h3>Try it yourself</h3><p>Use <b>a = 20</b> and <b>b = 30</b>. Step through the algorithm.</p><div class="controls"><button class="btn" id="traceBtn" onclick="traceStep()">Next step</button><button class="btn secondary" onclick="resetTrace()">Reset</button></div><div id="traceMsg" style="margin-top:14px;color:var(--muted)">Step 0 — ready</div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Live trace table</h3>
+<table class="trace-table"><thead><tr><th>Step</th><th>Statement</th><th>a</th><th>b</th><th>sum</th><th>average</th></tr></thead>
+<tbody id="traceBody"><tr><td>0</td><td>Initial</td><td>20</td><td>30</td><td>—</td><td>—</td></tr></tbody></table></div>
+</section>
+
+<section>
+<h2>03 — Pseudocode Creation</h2><p class="lead">Pseudocode expresses the logic clearly without forcing you to think about Python syntax too early.</p>
+<div class="grid">
+<div class="card"><h3>Basic computation pattern</h3><div class="flow"><span class="node">INPUT</span><span class="arrow">→</span><span class="node">PROCESS</span><span class="arrow">→</span><span class="node">OUTPUT</span></div><p style="margin-top:20px">Example: calculate the area of a rectangle.</p><div class="code">START<br>READ length<br>READ width<br>area ← length × width<br>DISPLAY area<br>END</div></div>
+<div class="card"><h3>Build the algorithm</h3><p>Arrange these fragments into the correct order.</p><div id="puzzle"></div><div class="controls"><button class="btn" onclick="checkPuzzle()">Check order</button><button class="btn secondary" onclick="resetPuzzle()">Reset</button></div><div id="pResult" class="result"></div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Practice: write pseudocode</h3><p>Write pseudocode for: <b>Read a student's three marks, calculate the total and average, then display both.</b></p><textarea id="pseudo" placeholder="START&#10;..."></textarea><div class="controls"><button class="btn" onclick="checkPseudo()">Check my logic</button></div><div id="pseudoResult" class="result"></div></div>
+</section>
+
+<section>
+<h2>04 — Correctness & Readability</h2><p class="lead">A solution should not only work. Its logic should be understandable, testable and maintainable.</p>
+<div class="grid">
+<div class="card"><h3>Correctness</h3><p>Ask:</p><ul><li>Does it produce the expected result?</li><li>Does the formula match the problem?</li><li>What happens for boundary values?</li><li>Can the result be verified with sample data?</li></ul><button class="btn" onclick="runCorrectness()">Run test case</button><div id="correctResult" class="result"></div></div>
+<div class="card"><h3>Readability</h3><div class="code"><span style="color:#ff9ba6">x=a+b</span><br><span style="color:#ff9ba6">y=x*0.18</span><br><span style="color:#ff9ba6">z=x+y</span></div><p>Now compare:</p><div class="code">subtotal ← item_price + service_charge<br>tax ← subtotal × 0.18<br>final_amount ← subtotal + tax</div><p><b>Meaningful names expose intent.</b></p></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Quick check</h3><p>Which property most directly helps another developer understand what a variable represents?</p>
+<button class="choice" onclick="pick2(this,false)">Using the shortest possible variable names</button>
+<button class="choice" onclick="pick2(this,true)">Using meaningful, consistent variable names</button>
+<button class="choice" onclick="pick2(this,false)">Putting every operation on one line</button>
+<div id="rResult" class="result"></div></div>
+</section>
+
+<section>
+<h2>05 — Stepwise Refinement</h2><p class="lead">Start broad, then add detail one level at a time until every step is implementable.</p>
+<div class="grid3">
+<div class="card"><h3>Level 1</h3><div class="tree-box root">Process Customer Order</div><p>Focus only on the overall goal.</p></div>
+<div class="card"><h3>Level 2</h3><ul><li>Read order</li><li>Calculate total</li><li>Apply discount</li><li>Calculate tax</li><li>Generate final amount</li></ul></div>
+<div class="card"><h3>Level 3</h3><p><b>Apply discount</b></p><div class="code">IF total ≥ 10000<br>&nbsp;&nbsp;discount ← 10%<br>ELSE IF total ≥ 5000<br>&nbsp;&nbsp;discount ← 5%<br>ELSE<br>&nbsp;&nbsp;discount ← 0</div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Top-down design vs. stepwise refinement</h3><div class="grid"><div><b>Top-down design</b><p>Defines how a large problem is broken into smaller problems.</p></div><div><b>Stepwise refinement</b><p>Adds detail to each smaller problem until the solution is ready to implement.</p></div></div></div>
+</section>
+
+<section>
+<h2>06 — Final Challenge</h2><p class="lead">Apply the complete workflow: understand → decompose → pseudocode → dry run → verify → refine.</p>
+<div class="card">
+<h3>Challenge: Employee Net Salary</h3>
+<p>Read basic salary, allowance and deduction. Calculate gross salary and net salary. Display both.</p>
+<div class="grid">
+<div><h3>Step 1 — Identify the flow</h3><p>Choose the correct sequence:</p>
+<button class="choice" onclick="challenge(this,true)">Input → Calculate gross → Calculate net → Output</button>
+<button class="choice" onclick="challenge(this,false)">Output → Input → Calculate → Output</button>
+<button class="choice" onclick="challenge(this,false)">Calculate net → Read input → Display gross</button></div>
+<div><h3>Step 2 — Dry run</h3><p>Basic = ₹50,000<br>Allowance = ₹5,000<br>Deduction = ₹3,000</p><button class="btn" onclick="salaryTest()">Calculate expected values</button><div id="salaryResult" class="result"></div></div>
+</div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Remember the workflow</h3><div class="flow"><span class="node">Understand</span><span class="arrow">→</span><span class="node">Decompose</span><span class="arrow">→</span><span class="node">Pseudocode</span><span class="arrow">→</span><span class="node">Dry Run</span><span class="arrow">→</span><span class="node">Verify</span><span class="arrow">→</span><span class="node">Refine</span><span class="arrow">→</span><span class="node">Code</span></div></div>
+<div class="card" style="margin-top:18px"><h3>Key takeaway</h3><p style="font-size:20px;color:var(--text)"><b>Do not jump directly from a problem statement to Python code.</b></p><p>Think first. Decompose. Represent the logic. Trace it. Verify it. Then code.</p></div>
+</section>
+
+<div class="footer">Interactive learning module • Introduction to Programming with Problem Solving</div>
+</div>
+<script>
+let current=0;
+function go(i){document.querySelectorAll('section').forEach((s,n)=>s.classList.toggle('active',n===i));document.querySelectorAll('#nav button').forEach((b,n)=>b.classList.toggle('active',n===i));current=i;let p=Math.round(((i+1)/6)*100);document.getElementById('fill').style.width=p+'%';document.getElementById('pct').textContent=p+'%';window.scrollTo({top:0,behavior:'smooth'})}
+function reveal(id){document.getElementById(id).style.display='block'}
+function pick(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('dResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. This decomposition focuses on the work the solution must perform.':'Not quite. Decomposition should describe meaningful problem-solving tasks, not coding mechanics.'}
+function pick2(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById('rResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. Names such as subtotal and final_amount communicate intent.':'Try again. Readability depends on making the purpose of the logic easy to understand.'}
+let ts=0;
+const rows=[
+['1','READ a','20','30','—','—'],
+['2','READ b','20','30','—','—'],
+['3','sum ← a + b','20','30','50','—'],
+['4','average ← sum / 2','20','30','50','25'],
+['5','DISPLAY sum','20','30','50','25'],
+['6','DISPLAY average','20','30','50','25']];
+function traceStep(){if(ts<rows.length){ts++;let r=rows[ts-1];document.getElementById('traceBody').innerHTML='<tr class="highlight">'+r.map(x=>'<td>'+x+'</td>').join('')+'</tr>';document.getElementById('traceMsg').textContent='Step '+r[0]+' — '+r[1];}if(ts===rows.length)document.getElementById('traceBtn').disabled=true}
+function resetTrace(){ts=0;document.getElementById('traceBtn').disabled=false;document.getElementById('traceBody').innerHTML='<tr><td>0</td><td>Initial</td><td>20</td><td>30</td><td>—</td><td>—</td></tr>';document.getElementById('traceMsg').textContent='Step 0 — ready'}
+const puzzleItems=['START','READ length','READ width','area ← length × width','DISPLAY area','END'];
+let puzzleOrder=[...puzzleItems].sort(()=>Math.random()-.5);
+function renderPuzzle(){document.getElementById('puzzle').innerHTML=puzzleOrder.map((x,i)=>'<div style="display:flex;gap:8px;margin:8px 0;align-items:center"><span style="color:var(--muted);width:25px">'+(i+1)+'.</span><select onchange="movePuzzle('+i+',this.value)">'+puzzleOrder.map(y=>'<option '+(y===x?'selected':'')+'>'+y+'</option>').join('')+'</select></div>').join('')}
+function movePuzzle(i,v){puzzleOrder[i]=v}
+function resetPuzzle(){puzzleOrder=[...puzzleItems].sort(()=>Math.random()-.5);renderPuzzle();document.getElementById('pResult').className='result'}
+function checkPuzzle(){let ok=puzzleOrder.join('|')===puzzleItems.join('|');let r=document.getElementById('pResult');r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. The computation has a clear input → process → output flow.':'The order should begin with START, gather both inputs, calculate, display the result, and then END.'}
+renderPuzzle();
+function checkPseudo(){let v=document.getElementById('pseudo').value.toLowerCase();let hasInput=(v.includes('read')||v.includes('input'));let hasCalc=v.includes('total')||v.includes('average');let hasOutput=v.includes('display')||v.includes('print')||v.includes('output');let r=document.getElementById('pseudoResult');let ok=hasInput&&hasCalc&&hasOutput;r.className='result '+(ok?'good':'bad');r.textContent=ok?'Good logic coverage. You identified input, processing and output. Refine the wording so each operation is explicit.':'Your pseudocode should clearly contain INPUT → PROCESS (total/average) → OUTPUT.'}
+function runCorrectness(){let basic=50000,charge=3000,total=basic+charge,tax=total*.18,final=total+tax;let r=document.getElementById('correctResult');r.className='result good';r.innerHTML='Test case passed: subtotal = ₹'+total.toLocaleString('en-IN')+'; tax = ₹'+tax.toLocaleString('en-IN')+'; final amount = ₹'+final.toLocaleString('en-IN')+'.'}
+function challenge(el,ok){document.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong')}
+function salaryTest(){let gross=50000+5000,net=gross-3000,r=document.getElementById('salaryResult');r.className='result good';r.innerHTML='<b>Dry run result</b><br>Gross salary = ₹'+gross.toLocaleString('en-IN')+'<br>Net salary = ₹'+net.toLocaleString('en-IN')}
+</script>
+</body>
+</html>

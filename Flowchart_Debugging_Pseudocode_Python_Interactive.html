@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flowchart Debugging & Pseudocode → Python | Interactive Lab</title>
+<style>
+:root{--bg:#050c16;--panel:#0b1929;--panel2:#10263e;--text:#edf7ff;--muted:#9bb0c5;--cyan:#51d7ff;--purple:#927cff;--green:#42dfa0;--red:#ff6979;--amber:#ffc857;--line:#223d58}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 78% 0,#173a5f 0,#071321 40%,#030811 100%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+.app{max-width:1280px;margin:auto;padding:20px}
+header{position:sticky;top:10px;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:15px 19px;background:#0a1829eF;border:1px solid var(--line);border-radius:17px;backdrop-filter:blur(12px)}
+.brand{font-weight:850}.brand span{color:var(--cyan)}.progress{width:250px}.pct{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}.bar{height:8px;background:#17293c;border-radius:20px;overflow:hidden}.fill{height:100%;width:14%;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:.3s}
+.hero{padding:54px 10px 34px;display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center}.eyebrow{display:inline-block;padding:7px 12px;border:1px solid #315774;border-radius:999px;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase}
+h1{font-size:clamp(38px,5vw,67px);line-height:.96;margin:16px 0}.hero p{font-size:18px;line-height:1.6;color:var(--muted);max-width:760px}
+.hero-card{background:linear-gradient(145deg,#102b47,#091626);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 22px 70px #0008}
+.flow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:17px}.node{padding:9px 12px;border-radius:10px;background:#132b45;border:1px solid #315572;font-size:12px;font-weight:800}.arrow{color:var(--cyan)}
+.nav{display:flex;gap:7px;overflow:auto;padding:4px 0 15px}.nav button{white-space:nowrap;background:#0b192a;border:1px solid var(--line);color:var(--muted);padding:10px 13px;border-radius:10px;cursor:pointer}.nav button.active{background:#153655;color:#fff;border-color:#4b86ad}
+section{display:none;animation:fade .3s ease}section.active{display:block}@keyframes fade{from{opacity:.1;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{font-size:34px;margin:24px 0 6px}.lead{color:var(--muted);font-size:17px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:17px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{background:rgba(11,25,41,.94);border:1px solid var(--line);border-radius:17px;padding:19px}.card h3{margin:0 0 10px}.card p,.card li{color:var(--muted);line-height:1.55}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(90deg,#27b8e5,#7567e8);color:white;font-weight:800;cursor:pointer}.btn.secondary{background:#142a42;border:1px solid #31516d}.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 13px;border-radius:10px;background:#091827;border:1px solid #29445e;color:var(--text);cursor:pointer}.choice:hover{border-color:#4d89af}.choice.correct{border-color:var(--green);background:#0b3027}.choice.wrong{border-color:var(--red);background:#351923}
+.result{display:none;margin-top:12px;padding:13px;border-radius:11px;line-height:1.5}.result.good{display:block;background:#0a3027;border:1px solid #286d59;color:#a2f1d2}.result.bad{display:block;background:#351923;border:1px solid #74404a;color:#ffb7c0}
+.code{background:#040d16;border:1px solid #20394f;border-radius:13px;padding:16px;overflow:auto;color:#d4ebff;line-height:1.7;font:14px Consolas,monospace}.badline{display:block;background:#48202a;color:#ffadb7;margin:0 -16px;padding:0 16px}.goodline{display:block;background:#0d382d;color:#a8f1d7;margin:0 -16px;padding:0 16px}
+.flowchart{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px}.shape{padding:12px 20px;min-width:170px;text-align:center;border:2px solid #437596;background:#102b44;color:#dff5ff}.start{border-radius:50px}.process{border-radius:7px}.decision{transform:rotate(45deg);width:125px;height:125px;display:flex;align-items:center;justify-content:center}.decision span{transform:rotate(-45deg);font-weight:800}.branch{display:grid;grid-template-columns:1fr 1fr;gap:25px;width:100%;max-width:430px;text-align:center}.branch .shape{min-width:auto}.bug{border-color:var(--red)!important;background:#321922!important}.ok{border-color:var(--green)!important;background:#0b3027!important}
+.map{display:grid;grid-template-columns:1fr 55px 1fr;gap:10px;align-items:center}.map-item{padding:12px;background:#0e253c;border:1px solid #2d4d68;border-radius:10px;font-family:Consolas,monospace}.map-arrow{text-align:center;color:var(--purple);font-size:22px}
+.trace{width:100%;border-collapse:collapse}.trace th,.trace td{border:1px solid #29445e;padding:11px;text-align:center}.trace th{background:#132a43}.trace td{color:#cad9e8}.trace .focus{background:#163f4d}
+textarea,input{width:100%;background:#071421;color:#eef7ff;border:1px solid #2a4863;border-radius:10px;padding:12px;font:inherit}textarea{min-height:125px;resize:vertical}
+.footer{text-align:center;color:#71879c;font-size:12px;padding:35px 0 12px}
+@media(max-width:850px){.hero,.grid,.grid3{grid-template-columns:1fr}.progress{width:145px}header{position:relative}.map{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="brand">Logic <span>→</span> Python Lab</div>
+<div class="progress"><div class="pct"><span>Learning progress</span><span id="pct">14%</span></div><div class="bar"><div class="fill" id="fill"></div></div></div>
+</header>
+
+<div class="hero">
+<div><span class="eyebrow">Interactive Programming Fundamentals</span><h1>Debug the flow.<br><span style="color:var(--cyan)">Translate the logic.</span></h1><p>Trace visual logic, identify flowchart defects, map pseudocode to Python, and verify that the translated program behaves exactly as intended.</p><div class="flow"><span class="node">Flowchart</span><span class="arrow">→</span><span class="node">Debug</span><span class="arrow">→</span><span class="node">Pseudocode</span><span class="arrow">→</span><span class="node">Python</span><span class="arrow">→</span><span class="node">Test</span></div></div>
+<div class="hero-card"><h3>Lab mission</h3><p style="color:var(--muted)">Logic is language-independent. Your job is to preserve that logic when moving into Python.</p><div class="grid3"><div><b>07</b><br><small style="color:var(--muted)">Labs</small></div><div><b>05</b><br><small style="color:var(--muted)">Activities</small></div><div><b>01</b><br><small style="color:var(--muted)">Final challenge</small></div></div></div>
+</div>
+
+<div class="nav" id="nav">
+<button class="active" onclick="go(0)">01 Visual Logic</button><button onclick="go(1)">02 Flowchart Debug</button><button onclick="go(2)">03 Trace Path</button><button onclick="go(3)">04 Pseudocode → Python</button><button onclick="go(4)">05 Decisions</button><button onclick="go(5)">06 Loops</button><button onclick="go(6)">07 Challenge</button>
+</div>
+
+<section class="active">
+<h2>01 — Read the Flow Before the Code</h2><p class="lead">A flowchart lets you reason about program execution without depending on Python syntax.</p>
+<div class="grid">
+<div class="card"><h3>Flowchart symbols</h3><div class="grid3"><div><div class="shape start">START / END</div><p>Beginning or termination</p></div><div><div class="shape process">PROCESS</div><p>Calculation or action</p></div><div><div class="shape" style="transform:skew(-15deg)">INPUT / OUTPUT</div><p>Data movement</p></div></div><div style="margin-top:10px"><div class="shape decision" style="margin:auto"><span>DECISION?</span></div><p style="text-align:center;margin-top:35px">Branch based on a condition</p></div></div>
+<div class="card"><h3>Student pass/fail logic</h3><div class="flowchart"><div class="shape start">START</div><div>↓</div><div class="shape process">Read marks</div><div>↓</div><div class="shape process">Calculate average</div><div>↓</div><div class="shape decision"><span>Average ≥ 40?</span></div><div class="branch"><div><b>YES</b><div class="shape">PASS</div></div><div><b>NO</b><div class="shape">FAIL</div></div></div></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Quick check</h3><p>What should you do first when debugging a flowchart?</p><button class="choice" onclick="choose(this,false,'qc1')">Rewrite it in Python</button><button class="choice" onclick="choose(this,true,'qc1')">Trace a known test case through the flow</button><button class="choice" onclick="choose(this,false,'qc1')">Change every decision condition</button><div id="qc1" class="result"></div></div>
+</section>
+
+<section>
+<h2>02 — Flowchart Debug Activity</h2><p class="lead">The flowchart below contains a deliberate logic defect. Find it before seeing the correction.</p>
+<div class="card"><h3>Buggy flowchart</h3><div class="flowchart"><div class="shape start">START</div><div>↓</div><div class="shape process">Read 3 marks</div><div>↓</div><div class="shape process">Calculate average</div><div>↓</div><div class="shape decision">Average ≥ 40?</div><div class="branch"><div><b>YES</b><div class="shape bug">FAIL</div></div><div><b>NO</b><div class="shape bug">PASS</div></div></div></div><p style="text-align:center;color:var(--muted)">Test case: 50, 60, 70 → average = 60</p></div>
+<div class="grid" style="margin-top:17px">
+<div class="card"><h3>What is wrong?</h3><button class="choice" onclick="choose(this,true,'bug1')">The YES and NO outputs are reversed</button><button class="choice" onclick="choose(this,false,'bug1')">The average should be multiplied by 3</button><button class="choice" onclick="choose(this,false,'bug1')">The START symbol is incorrect</button><div id="bug1" class="result"></div></div>
+<div class="card"><h3>What should happen?</h3><p>60 ≥ 40 is <b>TRUE</b>, so the YES branch must produce:</p><button class="choice" onclick="choose(this,true,'bug2')">PASS</button><button class="choice" onclick="choose(this,false,'bug2')">FAIL</button><div id="bug2" class="result"></div></div>
+</div>
+</section>
+
+<section>
+<h2>03 — Trace the Decision Path</h2><p class="lead">Follow each test case through the decision. Debugging becomes evidence-based when you can show the exact path.</p>
+<div class="grid">
+<div class="card"><h3>Test case simulator</h3><p>Choose a student's average:</p><div class="controls"><button class="btn" onclick="traceCase(60)">Average = 60</button><button class="btn secondary" onclick="traceCase(35)">Average = 35</button><button class="btn secondary" onclick="traceCase(40)">Average = 40</button></div><div id="path" class="stage-detail" style="margin-top:14px">Choose a test case to trace.</div></div>
+<div class="card"><h3>Debug rule</h3><p>For each test case, compare:</p><div class="flow"><span class="node">Input</span><span class="arrow">→</span><span class="node">Condition</span><span class="arrow">→</span><span class="node">Branch</span><span class="arrow">→</span><span class="node">Output</span></div><p>When the output is unexpected, identify which branch or condition caused it.</p></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Corrected flow logic</h3><div class="grid"><div><div class="shape decision" style="margin:auto"><span>average ≥ 40?</span></div></div><div><div class="shape ok">YES → PASS</div><br><div class="shape">NO → FAIL</div></div></div></div>
+</section>
+
+<section>
+<h2>04 — Pseudocode → Python</h2><p class="lead">Translate the algorithm's meaning into Python syntax. Do not translate words mechanically.</p>
+<div class="map">
+<div class="map-item">READ length</div><div class="map-arrow">→</div><div class="map-item">length = float(input())</div>
+<div class="map-item">READ width</div><div class="map-arrow">→</div><div class="map-item">width = float(input())</div>
+<div class="map-item">area ← length × width</div><div class="map-arrow">→</div><div class="map-item">area = length * width</div>
+<div class="map-item">DISPLAY area</div><div class="map-arrow">→</div><div class="map-item">print(area)</div>
+</div>
+<div class="grid" style="margin-top:17px">
+<div class="card"><h3>Pseudocode</h3><div class="code">START<br>READ length<br>READ width<br>area ← length × width<br>DISPLAY area<br>END</div></div>
+<div class="card"><h3>Python</h3><div class="code">length = float(input("Enter length: "))<br>width = float(input("Enter width: "))<br><br>area = length * width<br><br>print("Area:", area)</div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Interactive translation check</h3><p>Which Python construct best represents <b>DISPLAY</b>?</p><button class="choice" onclick="choose(this,false,'mapq')">input()</button><button class="choice" onclick="choose(this,true,'mapq')">print()</button><button class="choice" onclick="choose(this,false,'mapq')">float()</button><div id="mapq" class="result"></div></div>
+</section>
+
+<section>
+<h2>05 — Translate Decision Logic</h2><p class="lead">The structure of a pseudocode decision maps directly to Python's conditional structure.</p>
+<div class="grid">
+<div class="card"><h3>Pseudocode</h3><div class="code">IF average &gt;= 90<br>&nbsp;&nbsp;grade ← "A"<br>ELSE IF average &gt;= 75<br>&nbsp;&nbsp;grade ← "B"<br>ELSE IF average &gt;= 60<br>&nbsp;&nbsp;grade ← "C"<br>ELSE<br>&nbsp;&nbsp;grade ← "F"</div></div>
+<div class="card"><h3>Python</h3><div class="code"><span class="goodline">if average &gt;= 90:</span><span class="goodline">&nbsp;&nbsp;&nbsp;&nbsp;grade = "A"</span><span class="goodline">elif average &gt;= 75:</span><span class="goodline">&nbsp;&nbsp;&nbsp;&nbsp;grade = "B"</span><span class="goodline">elif average &gt;= 60:</span><span class="goodline">&nbsp;&nbsp;&nbsp;&nbsp;grade = "C"</span><span class="goodline">else:</span><span class="goodline">&nbsp;&nbsp;&nbsp;&nbsp;grade = "F"</span></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Construct mapping</h3><div class="grid3"><div class="map-item">IF → <b>if</b></div><div class="map-item">ELSE IF → <b>elif</b></div><div class="map-item">ELSE → <b>else</b></div></div><div style="margin-top:14px"><b>Key rule:</b> preserve the order and meaning of the decisions while translating.</div></div>
+<div class="card" style="margin-top:17px"><h3>Test the translation</h3><p>What grade should an average of 82 receive?</p><button class="choice" onclick="choose(this,false,'gradeq')">A</button><button class="choice" onclick="choose(this,true,'gradeq')">B</button><button class="choice" onclick="choose(this,false,'gradeq')">C</button><div id="gradeq" class="result"></div></div>
+</section>
+
+<section>
+<h2>06 — Translate Loop Logic</h2><p class="lead">A loop in pseudocode becomes a Python loop with the same execution logic.</p>
+<div class="grid">
+<div class="card"><h3>Pseudocode</h3><div class="code">START<br>total ← 0<br><br>FOR each number in numbers<br>&nbsp;&nbsp;total ← total + number<br><br>DISPLAY total<br>END</div></div>
+<div class="card"><h3>Python</h3><div class="code">numbers = [10, 20, 30, 40, 50]<br><br>total = 0<br><br>for number in numbers:<br>&nbsp;&nbsp;&nbsp;&nbsp;total = total + number<br><br>print("Total:", total)</div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>Live dry run</h3><div class="controls"><button class="btn" id="loopBtn" onclick="loopStep()">Next iteration</button><button class="btn secondary" onclick="resetLoop()">Reset</button></div><table class="trace" style="margin-top:14px"><thead><tr><th>Iteration</th><th>number</th><th>total before</th><th>total after</th></tr></thead><tbody id="loopBody"><tr><td>0</td><td>—</td><td>0</td><td>0</td></tr></tbody></table></div>
+</section>
+
+<section>
+<h2>07 — Integrated Challenge</h2><p class="lead">Debug the logic, correct the pseudocode, translate it into Python, then test it.</p>
+<div class="card"><h3>Problem: Positive, Negative or Zero</h3><p>A program reads a number and should display whether it is positive, negative or zero.</p><div class="grid">
+<div><h3>Buggy pseudocode</h3><div class="code">READ number<br><br>IF number &gt; 0<br>&nbsp;&nbsp;DISPLAY "Negative"<br>ELSE IF number &lt; 0<br>&nbsp;&nbsp;DISPLAY "Positive"<br>ELSE<br>&nbsp;&nbsp;DISPLAY "Zero"</div></div>
+<div><h3>1. Identify the bug</h3><button class="choice" onclick="choose(this,true,'final1')">The Positive and Negative outputs are swapped</button><button class="choice" onclick="choose(this,false,'final1')">Zero needs a separate input statement</button><button class="choice" onclick="choose(this,false,'final1')">The IF condition should be removed</button><div id="final1" class="result"></div></div>
+</div></div>
+<div class="grid" style="margin-top:17px">
+<div class="card"><h3>2. Correct Python</h3><div class="code">number = int(input("Enter a number: "))<br><br>if number &gt; 0:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("Positive")<br>elif number &lt; 0:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("Negative")<br>else:<br>&nbsp;&nbsp;&nbsp;&nbsp;print("Zero")</div></div>
+<div class="card"><h3>3. Test the logic</h3><button class="btn" onclick="finalTest(10)">Test 10</button><button class="btn secondary" onclick="finalTest(-5)">Test -5</button><button class="btn secondary" onclick="finalTest(0)">Test 0</button><div id="finalTest" class="result"></div></div>
+</div>
+<div class="card" style="margin-top:17px"><h3>The complete mental model</h3><div class="flow"><span class="node">See logic</span><span class="arrow">→</span><span class="node">Trace</span><span class="arrow">→</span><span class="node">Debug</span><span class="arrow">→</span><span class="node">Pseudocode</span><span class="arrow">→</span><span class="node">Python</span><span class="arrow">→</span><span class="node">Test</span><span class="arrow">→</span><span class="node">Verify ✓</span></div><p style="font-size:20px"><b>If the logic is correct, translation becomes much easier.</b></p></div>
+</section>
+
+<div class="footer">Flowchart Debugging • Pseudocode → Python • Interactive classroom module</div>
+</div>
+
+<script>
+let current=0;
+function go(i){document.querySelectorAll('section').forEach((s,n)=>s.classList.toggle('active',n===i));document.querySelectorAll('#nav button').forEach((b,n)=>b.classList.toggle('active',n===i));current=i;let p=Math.round(((i+1)/7)*100);document.getElementById('fill').style.width=p+'%';document.getElementById('pct').textContent=p+'%';window.scrollTo({top:0,behavior:'smooth'})}
+function choose(el,ok,id){let parent=el.parentElement;parent.querySelectorAll('.choice').forEach(x=>x.classList.remove('correct','wrong'));el.classList.add(ok?'correct':'wrong');let r=document.getElementById(id);r.className='result '+(ok?'good':'bad');r.textContent=ok?'Correct. Your reasoning preserves the intended program logic.':'Not quite. Trace the condition and expected output again.'}
+function traceCase(avg){let pass=avg>=40,el=document.getElementById('path');el.innerHTML='<b>Trace:</b> START → Read marks → Calculate average → <b>average ≥ 40?</b> → '+(pass?'YES':'NO')+' → <b style="color:'+(pass?'var(--green)':'var(--red)')+'">'+(pass?'PASS':'FAIL')+'</b><br><span style="color:var(--muted)">Test input: average = '+avg+' | Condition = '+pass+'</span>'}
+let li=0,total=0,nums=[10,20,30,40,50];
+function loopStep(){if(li<nums.length){let n=nums[li],before=total;total+=n;li++;document.getElementById('loopBody').innerHTML+=`<tr class="focus"><td>${li}</td><td>${n}</td><td>${before}</td><td>${total}</td></tr>`}if(li===nums.length)document.getElementById('loopBtn').disabled=true}
+function resetLoop(){li=0;total=0;document.getElementById('loopBtn').disabled=false;document.getElementById('loopBody').innerHTML='<tr><td>0</td><td>—</td><td>0</td><td>0</td></tr>'}
+function finalTest(n){let out=n>0?'Positive':n<0?'Negative':'Zero';let r=document.getElementById('finalTest');r.className='result good';r.innerHTML='Input: <b>'+n+'</b><br>Condition path: '+(n>0?'number &gt; 0 → TRUE':n<0?'number &gt; 0 → FALSE → number &lt; 0 → TRUE':'both conditions FALSE')+'<br>Output: <b>'+out+'</b> ✓'}
+</script>
+</body>
+</html>
