@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCEP Advanced I - Assessment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--border:#dfe5ef;--good:#16794a;--bad:#c93636}
+* {box-sizing: border-box}
+body {margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6}
+header {background: #101828; color: white; padding: 20px 28px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center}
+.brand {font-weight: 700; font-size: 18px}
+.exam-code {font-size: 13px; color: #cbd5e1}
+.timer {font-size: 24px; font-weight: 800; background: #25324a; padding: 8px 16px; border-radius: 8px; font-variant-numeric: tabular-nums}
+.timer.warn {color: #ffd166}
+.timer.danger {color: #ff8a8a}
+main {max-width: 1000px; margin: 24px auto; padding: 0 16px}
+.intro {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px}
+.intro h1 {margin-top: 0}
+.meta {display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0}
+.pill {background: #eef3ff; color: #23449c; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600}
+.question {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px}
+.qnum {font-weight: 700; color: var(--accent); margin-right: 12px}
+.qtext {font-weight: 600; margin: 12px 0}
+pre {background: #111827; color: #e5e7eb; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 12px 0}
+.options {margin: 12px 0}
+.option {display: flex; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; cursor: pointer; transition: all 0.2s}
+.option:hover {background: #f8faff; border-color: #9bb3f4}
+.option input {margin-right: 12px; cursor: pointer}
+.actions {text-align: center; margin: 24px 0}
+.submit-btn {background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer}
+.submit-btn:hover {filter: brightness(0.95)}
+.submit-btn:disabled {opacity: 0.5; cursor: not-allowed}
+.results {display: none; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px}
+.score-card {background: linear-gradient(135deg, #eef4ff, #f8fbff); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px}
+.score-value {font-size: 48px; font-weight: 800; color: var(--accent); margin: 10px 0}
+.score-label {font-size: 14px; color: var(--muted); text-transform: uppercase}
+.pass {color: var(--good)}
+.fail {color: var(--bad)}
+.dashboard {display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px; margin: 20px 0}
+.chart-box {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px}
+.chart-box h3 {margin-top: 0}
+.review {border-left: 4px solid var(--bad); padding: 16px; margin: 16px 0; background: #fef2f2; border-radius: 8px}
+.review h4 {margin-top: 0; color: var(--bad)}
+.correct-ans {color: var(--good); font-weight: 600; margin: 8px 0}
+.explanation {color: var(--muted); margin-top: 8px; font-size: 14px; font-style: italic}
+.download-btn {background: var(--good); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; margin: 10px 5px 0 0; font-weight: 600}
+.download-btn:hover {filter: brightness(0.95)}
+.restart-btn {background: white; border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; margin: 10px 5px 0 0}
+.stats-grid {display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0}
+.stat {background: linear-gradient(135deg, #eef4ff, #f8fbff); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center}
+.stat-value {font-size: 28px; font-weight: 800; color: var(--accent)}
+.stat-label {font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase}
+@media(max-width: 768px) {.stats-grid {grid-template-columns: repeat(2, 1fr)}}
+</style>
+</head>
+<body>
+<header>
+<div>
+<div class="brand">PCEP Advanced I Assessment</div>
+<div class="exam-code">Python Certified Entry-Level Programmer</div>
+</div>
+<div id="timer" class="timer">40:00</div>
+</header>
+
+<main>
+<section class="intro">
+<h1>PCEP Advanced I - Intermediate to Advanced Test</h1>
+<p>This comprehensive assessment covers all PCEP-30-02 exam domains including Python basics, control flow, data collections, functions, exception handling, and OOP fundamentals. Questions range from intermediate to advanced difficulty.</p>
+<div class="meta">
+<span class="pill">30 Questions</span>
+<span class="pill">40 Minutes</span>
+<span class="pill">70% Target</span>
+<span class="pill">All Difficulty Levels</span>
+</div>
+</section>
+
+<div id="questionsContainer"></div>
+
+<div class="actions">
+<button class="submit-btn" id="submitBtn" onclick="submitTest()">Submit Assessment</button>
+</div>
+
+<section id="resultsSection" class="results"></section>
+</main>
+
+<script>
+const questions = [
+{q: "What is printed?", code: "x = 10\ny = 2\nprint(x // y, x % y)", opts: ["5 0", "4 2", "5 2", "4 0"], a: 0, e: "// (floor div): 10//2=5. % (modulo): 10%2=0. PCEP: Arithmetic operators.", topic: "Operators"},
+{q: "What is output?", code: "s = [1, 2, 3, 4]\nprint(s[-1] + s[0])", opts: ["1", "4", "5", "7"], a: 2, e: "s[-1]=4 (last), s[0]=1 (first). 4+1=5. PCEP: List indexing.", topic: "Lists"},
+{q: "Which are True?", code: "t = 'Python'\nprint(len(t))\nprint(t[0:2])", opts: ["len(t)==6", "t[0:2]=='Py'", "t[5]=='n'", "t[-1]=='n'"], a: [0,1,2,3], multi: true, e: "All correct. PCEP: String operations.", topic: "Strings"},
+{q: "What prints?", code: "x = 5\nif x > 3:\n    y = 10\nelse:\n    y = 20\nprint(y)", opts: ["3", "5", "10", "20"], a: 2, e: "x>3 is True, y=10. PCEP: Conditionals.", topic: "Conditionals"},
+{q: "Output?", code: "for i in range(3, 7):\n    print(i, end=' ')", opts: ["3 4 5 6", "3 4 5", "0 1 2 3", "Error"], a: 0, e: "range(3,7) yields 3,4,5,6. PCEP: For loops.", topic: "For Loops"},
+{q: "What prints?", code: "x = 0\nwhile x < 3:\n    x += 1\nprint(x)", opts: ["0", "1", "2", "3"], a: 3, e: "Loop increments x to 3. PCEP: While loops.", topic: "While Loops"},
+{q: "Which describe this correctly?", code: "lst = [1, 2, 3]\nlst.append(4)\nlst.insert(0, 0)", opts: ["5 elements", "First is 0", "Last is 4", "lst[2]==2"], a: [0,1,2], multi: true, e: "append() adds end, insert(0,0) adds start. PCEP: List methods.", topic: "Collections"},
+{q: "Result?", code: "def add(a, b):\n    return a + b\nprint(add(3, 5))", opts: ["35", "8", "3 5", "Error"], a: 1, e: "Returns sum. PCEP: Functions.", topic: "Functions"},
+{q: "What prints?", code: "x = [1, 2, 3]\ny = x\ny.append(4)\nprint(x)", opts: ["[1,2,3]", "[1,2,3,4]", "Error", "[4]"], a: 1, e: "y=x references same list. PCEP: References.", topic: "References"},
+{q: "Output?", code: "d = {'a': 1, 'b': 2}\nprint(d.get('c', 'default'))", opts: ["None", "KeyError", "'default'", "False"], a: 2, e: "get() returns default if key missing. PCEP: Dict methods.", topic: "Dictionaries"},
+{q: "What prints?", code: "try:\n    10 / 0\nexcept ZeroDivisionError:\n    print('caught')", opts: ["caught", "0", "Infinity", "Error"], a: 0, e: "ZeroDivisionError caught. PCEP: Exceptions.", topic: "Exceptions"},
+{q: "Valid variable names?", code: "", opts: ["my_var", "2var", "_private", "class"], a: [0,2], multi: true, e: "Names: letter/underscore start. 'class' is reserved. PCEP: Syntax.", topic: "Syntax"},
+{q: "Output?", code: "def func(x, y=10):\n    return x + y\nprint(func(5))", opts: ["5", "15", "Error", "10"], a: 1, e: "y defaults to 10. 5+10=15. PCEP: Default args.", topic: "Parameters"},
+{q: "What prints?", code: "nums = [1, 2, 3, 4, 5]\nresult = [x*2 for x in nums if x > 2]\nprint(result)", opts: ["[2,4,6,8,10]", "[6,8,10]", "[2,4,6]", "Error"], a: 1, e: "Filters x>2: [3,4,5]. Multiplies: [6,8,10]. PCEP: List comp.", topic: "Comprehensions"},
+{q: "Output?", code: "s = 'Hello'\nprint(s.upper())\nprint(s.lower())", opts: ["HELLO hello", "hello HELLO", "Error", "HELLO HELLO"], a: 0, e: "upper()/lower() return new strings. PCEP: String methods.", topic: "Methods"},
+{q: "True about tuples?", code: "t = (1, 2, 3)\nprint(len(t))", opts: ["Immutable", "len(t)==3", "Use commas", "Has append()"], a: [0,1,2], multi: true, e: "Tuples immutable, comma syntax, no append(). PCEP: Tuples.", topic: "Tuples"},
+{q: "Output?", code: "x = 10\ny = x\nx = 20\nprint(x, y)", opts: ["10 10", "20 10", "20 20", "Error"], a: 1, e: "y=10 initially, x changes to 20. PCEP: Assignment.", topic: "Variables"},
+{q: "Output?", code: "import math\nprint(math.sqrt(16))", opts: ["4", "4.0", "Error", "16"], a: 1, e: "sqrt() returns float. PCEP: Modules.", topic: "Modules"},
+{q: "About break?", code: "", opts: ["Exits current loop", "Skips iteration", "For loops only", "Skips nested loops only"], a: [0], multi: true, e: "break exits nearest loop only. PCEP: Loop control.", topic: "Control"},
+{q: "Result?", code: "d = {1: 'a', 2: 'b', 1: 'c'}\nprint(d[1])", opts: ["'a'", "'c'", "Error", "'b'"], a: 1, e: "Duplicate keys overwrite. PCEP: Dict behavior.", topic: "Dicts"},
+{q: "Output?", code: "x = '5'\ny = 5\nprint(x == y)\nprint(x is y)", opts: ["True True", "True False", "False True", "False False"], a: 1, e: "== checks value, is checks type. PCEP: Equality.", topic: "Dicts"},
+{q: "About functions?", code: "", opts: ["Must return", "Can return tuple", "Assignable to var", "Only positional args"], a: [1,2], multi: true, e: "Don't need return. Tuples=multi-return. First-class. PCEP: Functions.", topic: "Functions"},
+{q: "Output?", code: "lst = [1, 2, 3]\nlst.reverse()\nprint(lst)", opts: ["[3,2,1]", "[1,2,3]", "Error", "[1]"], a: 0, e: "reverse() reverses in place. PCEP: List methods.", topic: "Lists"},
+{q: "Output?", code: "x = 0\nx = x or 5\nprint(x)", opts: ["0", "5", "True", "Error"], a: 1, e: "0 is falsy, or returns 5. PCEP: Boolean ops.", topic: "Control"},
+{q: "About strings?", code: "", opts: ["Immutable", "+ concatenates", "* repeats", "Has split()"], a: [0,1,2,3], multi: true, e: "All true. PCEP: String ops.", topic: "Strings"},
+{q: "Output?", code: "def test(x):\n    x = x + 1\n    return x\na = 5\nprint(test(a), a)", opts: ["6 6", "6 5", "5 6", "Error"], a: 1, e: "Local x modified, not a. PCEP: Scope.", topic: "Functions"},
+{q: "Result?", code: "print(10 > 5 and 3 < 2)", opts: ["True", "False", "None", "Error"], a: 1, e: "True and False = False. PCEP: Logical ops.", topic: "Operators"},
+{q: "Valid dict ops?", code: "", opts: ["d = {}", "d['k']='v'", "d.keys()", "del d['k']"], a: [0,1,2,3], multi: true, e: "All valid. PCEP: Dict ops.", topic: "Dictionaries"},
+{q: "Output?", code: "for i in [1, 2, 3]:\n    if i == 2:\n        continue\n    print(i, end=' ')", opts: ["1 2 3", "1 3", "2", "3"], a: 1, e: "continue skips i==2. PCEP: Loop control.", topic: "Control"},
+{q: "Output?", code: "x = [1, 2, 3]\nprint(max(x), min(x))", opts: ["3 1", "3 3", "1 1", "Error"], a: 0, e: "max/min on iterables. PCEP: Built-ins.", topic: "Collections"}
+];
+
+let submitted = false;
+let timerInterval = null;
+
+function escape(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = questions.map((q, i) => {
+    const isMulti = q.multi;
+    const inputType = isMulti ? 'checkbox' : 'radio';
+    return `
+    <div class="question">
+      <div><span class="qnum">Q${i+1}.</span><span class="qtext">${escape(q.q)}</span></div>
+      ${q.code ? `<pre>${escape(q.code)}</pre>` : ''}
+      <div class="options">
+        ${q.opts.map((opt, j) => `
+        <label class="option">
+          <input type="${inputType}" name="q${i}" value="${j}">
+          ${escape(opt)}
+        </label>
+        `).join('')}
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function startTimer() {
+  let time = 40 * 60;
+  timerInterval = setInterval(() => {
+    const m = Math.floor(time / 60);
+    const s = time % 60;
+    document.getElementById('timer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    if (m <= 0 && s <= 60) document.getElementById('timer').classList.add('warn');
+    if (m === 0 && s <= 10) document.getElementById('timer').classList.add('danger');
+    time--;
+    if (time < 0) { submitTest(); }
+  }, 1000);
+}
+
+function getAnswers(i) {
+  return Array.from(document.querySelectorAll(`input[name="q${i}"]:checked`)).map(e => Number(e.value));
+}
+
+function downloadCSV() {
+  const headers = ["Q#", "Question", "OptA", "OptB", "OptC", "OptD", "Your Answer", "Correct"];
+  const rows = questions.map((q, i) => {
+    const ans = getAnswers(i);
+    const yourAns = ans.length ? ans.map(n => q.opts[n]).join(" | ") : "Not answered";
+    const correct = (Array.isArray(q.a) ? q.a : [q.a]).map(n => q.opts[n]).join(" | ");
+    return [i+1, q.q.substring(0,50), q.opts[0]||'', q.opts[1]||'', q.opts[2]||'', q.opts[3]||'', yourAns, correct];
+  });
+  const csv = [[...headers], ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const link = document.createElement('a');
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = 'PCEP_Advanced_I.csv';
+  link.click();
+}
+
+function submitTest() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+  
+  let score = 0, wrong = [];
+  questions.forEach((q, i) => {
+    const ans = getAnswers(i);
+    const correct = Array.isArray(q.a) ? q.a.sort() : [q.a];
+    const match = ans.sort().length === correct.length && ans.sort().every((v,j) => v === correct[j]);
+    if (match) score++;
+    else {
+      const yourAns = ans.length ? ans.map(n => q.opts[n]).join(", ") : "Not answered";
+      const corrAns = correct.map(n => q.opts[n]).join(", ");
+      wrong.push({q: i+1, yours: yourAns, correct: corrAns, exp: q.e});
+    }
+  });
+  
+  document.querySelectorAll('input').forEach(e => e.disabled = true);
+  document.getElementById('submitBtn').disabled = true;
+  
+  const pct = Math.round(score / questions.length * 100);
+  const pass = pct >= 70;
+  
+  let html = `
+  <div class="score-card ${pass ? 'pass' : 'fail'}">
+    <div class="score-label">Your Score</div>
+    <div class="score-value">${score}/30</div>
+    <div class="score-label">${pct}% - ${pass ? '✓ PASS' : '✗ FAIL'}</div>
+  </div>
+  
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="stat-value">${pct}</div>
+      <div class="stat-label">Accuracy %</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">${score}</div>
+      <div class="stat-label">Correct</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">${30-score}</div>
+      <div class="stat-label">Incorrect</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">70%</div>
+      <div class="stat-label">Target</div>
+    </div>
+  </div>
+  
+  <div style="margin: 20px 0; text-align: center;">
+    <button class="download-btn" onclick="downloadCSV()">📥 Download CSV</button>
+    <button class="restart-btn" onclick="location.reload()">🔄 Restart</button>
+  </div>
+  
+  <h2 style="margin-top: 30px;">Domain Performance</h2>
+  <div id="domainPerformance"></div>
+  `;
+  
+  if (wrong.length > 0) {
+    html += '<h2 style="margin-top: 30px;">Incorrect Answers</h2>';
+    wrong.forEach(w => {
+      html += `
+      <div class="review">
+        <h4>Question ${w.q}</h4>
+        <div><strong>Your answer:</strong> ${escape(w.yours)}</div>
+        <div class="correct-ans"><strong>Correct:</strong> ${escape(w.correct)}</div>
+        <div class="explanation">${escape(w.exp)}</div>
+      </div>
+      `;
+    });
+  } else {
+    html += '<h2 style="color: var(--good); text-align: center; margin-top: 30px;">Perfect Score! 🎉</h2>';
+  }
+  
+  document.getElementById('resultsSection').innerHTML = html;
+  document.getElementById('resultsSection').style.display = 'block';
+  
+  // Build domain performance
+  const topics = {};
+  questions.forEach((q, i) => {
+    const topicName = (q.topic || `Topic ${i+1}`);
+    if (!topics[topicName]) topics[topicName] = {c: 0, t: 0};
+    topics[topicName].t++;
+    const ans = getAnswers(i);
+    const correct = Array.isArray(q.a) ? q.a.sort() : [q.a];
+    const match = ans.sort().length === correct.length && ans.sort().every((v,j) => v === correct[j]);
+    if (match) topics[topicName].c++;
+  });
+  
+  const topicHtml = Object.entries(topics).sort((a,b) => b[1].t - a[1].t).map(([name, data]) => {
+    const pct = Math.round(data.c / data.t * 100);
+    return `
+    <div style="display: grid; grid-template-columns: 180px 50px 1fr; gap: 12px; align-items: center; margin: 10px 0; font-size: 13px;">
+      <div style="font-weight: 500;">${escape(name)}</div>
+      <div style="font-weight: 700; color: var(--accent);">${pct}%</div>
+      <div style="height: 8px; background: #e9edf3; border-radius: 8px; overflow: hidden;">
+        <div style="height: 100%; width: ${pct}%; background: var(--accent);"></div>
+      </div>
+    </div>
+    `;
+  }).join('');
+  
+  document.getElementById('domainPerformance').innerHTML = topicHtml;
+}
+
+window.addEventListener('load', () => {
+  renderQuestions();
+  startTimer();
+});
+</script>
+</body>
+</html>

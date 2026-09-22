@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCEP Advanced II - Assessment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--border:#dfe5ef;--good:#16794a;--bad:#c93636}
+* {box-sizing: border-box}
+body {margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6}
+header {background: #101828; color: white; padding: 20px 28px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center}
+.brand {font-weight: 700; font-size: 18px}
+.exam-code {font-size: 13px; color: #cbd5e1}
+.timer {font-size: 24px; font-weight: 800; background: #25324a; padding: 8px 16px; border-radius: 8px; font-variant-numeric: tabular-nums}
+.timer.warn {color: #ffd166}
+.timer.danger {color: #ff8a8a}
+main {max-width: 1000px; margin: 24px auto; padding: 0 16px}
+.intro {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px}
+.intro h1 {margin-top: 0}
+.meta {display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0}
+.pill {background: #eef3ff; color: #23449c; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600}
+.question {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px}
+.qnum {font-weight: 700; color: var(--accent); margin-right: 12px}
+.qtext {font-weight: 600; margin: 12px 0}
+pre {background: #111827; color: #e5e7eb; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 12px 0}
+.options {margin: 12px 0}
+.option {display: flex; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; cursor: pointer; transition: all 0.2s}
+.option:hover {background: #f8faff; border-color: #9bb3f4}
+.option input {margin-right: 12px; cursor: pointer}
+.actions {text-align: center; margin: 24px 0}
+.submit-btn {background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer}
+.submit-btn:hover {filter: brightness(0.95)}
+.submit-btn:disabled {opacity: 0.5; cursor: not-allowed}
+.results {display: none; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px}
+.score-card {background: linear-gradient(135deg, #eef4ff, #f8fbff); border: 2px solid var(--accent); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px}
+.score-value {font-size: 48px; font-weight: 800; color: var(--accent); margin: 10px 0}
+.score-label {font-size: 14px; color: var(--muted); text-transform: uppercase}
+.pass {color: var(--good)}
+.fail {color: var(--bad)}
+.dashboard {display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px; margin: 20px 0}
+.chart-box {background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px}
+.chart-box h3 {margin-top: 0}
+.review {border-left: 4px solid var(--bad); padding: 16px; margin: 16px 0; background: #fef2f2; border-radius: 8px}
+.review h4 {margin-top: 0; color: var(--bad)}
+.correct-ans {color: var(--good); font-weight: 600; margin: 8px 0}
+.explanation {color: var(--muted); margin-top: 8px; font-size: 14px; font-style: italic}
+.download-btn {background: var(--good); color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; margin: 10px 5px 0 0; font-weight: 600}
+.download-btn:hover {filter: brightness(0.95)}
+.restart-btn {background: white; border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; margin: 10px 5px 0 0}
+.stats-grid {display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0}
+.stat {background: linear-gradient(135deg, #eef4ff, #f8fbff); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center}
+.stat-value {font-size: 28px; font-weight: 800; color: var(--accent)}
+.stat-label {font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase}
+@media(max-width: 768px) {.stats-grid {grid-template-columns: repeat(2, 1fr)}}
+</style>
+</head>
+<body>
+<header>
+<div>
+<div class="brand">PCEP Advanced II Assessment</div>
+<div class="exam-code">Python Certified Entry-Level Programmer</div>
+</div>
+<div id="timer" class="timer">45:00</div>
+</header>
+
+<main>
+<section class="intro">
+<h1>PCEP Advanced II - Mastery Level Test</h1>
+<p>This advanced assessment focuses on complex Python concepts including OOP, decorators, generators, functional programming, and intricate code patterns. All questions are PCEP-grade with emphasis on edge cases and deep conceptual understanding.</p>
+<div class="meta">
+<span class="pill">30 Questions</span>
+<span class="pill">45 Minutes</span>
+<span class="pill">70% Target</span>
+<span class="pill">Mixed Difficulty</span>
+</div>
+</section>
+
+<div id="questionsContainer"></div>
+
+<div class="actions">
+<button class="submit-btn" id="submitBtn" onclick="submitTest()">Submit Assessment</button>
+</div>
+
+<section id="resultsSection" class="results"></section>
+</main>
+
+<script>
+const questions = [
+{q: "What is printed?", code: "class A:\n    x = 10\n    def __init__(self):\n        self.x = 20\na = A()\nprint(A.x, a.x, a.__class__.x)", opts: ["10 20 10", "10 20 20", "20 20 20", "Error"], a: 0, e: "Class attr x=10, instance attr x=20. a.__class__.x accesses class attr. PCEP: Class vs instance attributes."},
+{q: "Output?", code: "def decorator(func):\n    def wrapper(*args, **kwargs):\n        print('Before')\n        return func(*args, **kwargs)\n    return wrapper\n@decorator\ndef greet():\n    return 'Hello'\nprint(greet())", opts: ["Hello", "BeforeHello", "Before\\nHello", "Error"], a: 2, e: "Decorator executes wrapper which prints Before, then calls original function. PCEP: Decorators."},
+{q: "Which are True?", code: "class Parent:\n    def method(self):\n        return 'Parent'\nclass Child(Parent):\n    def method(self):\n        return 'Child'\nc = Child()\nprint(c.method())", opts: ["c.method() returns 'Child'", "Child overrides Parent", "Parent.method() returns 'Parent'", "isinstance(c, Parent) is True"], a: [0,1,2,3], multi: true, e: "All true. Child overrides method. isinstance checks hierarchy. PCEP: Inheritance."},
+{q: "What prints?", code: "def gen():\n    yield 1\n    yield 2\n    return 3\ng = gen()\nfor x in g:\n    print(x)", opts: ["1\\n2", "1\\n2\\n3", "Error: return in generator", "1\\n2 then StopIteration(3)"], a: 0, e: "return value in generator becomes StopIteration.value, not yielded. PCEP: Generators."},
+{q: "Output?", code: "x = [1, 2, 3]\ny = x[:]\nz = x\nx.append(4)\nprint(len(x), len(y), len(z))", opts: ["4 3 4", "4 4 4", "4 3 3", "Error"], a: 0, e: "y=x[:] is shallow copy (separate list). z=x is reference (same list). PCEP: Copy vs reference."},
+{q: "True about this?", code: "d = {1: 'a', 2: 'b'}\nfor k in d:\n    print(k)", opts: ["Iterates over keys", "d.items() would give tuples", "d.values() gives values", "Dictionary order is insertion order (3.7+)"], a: [0,1,2,3], multi: true, e: "All true. Dict iteration yields keys. Order preserved since Python 3.7. PCEP: Dicts."},
+{q: "What is result?", code: "lst = [[1, 2], [3, 4]]\nfor row in lst:\n    row[0] = 99\nprint(lst)", opts: ["[[1,2],[3,4]]", "[[99,2],[99,4]]", "[[99],[99]]", "Error"], a: 1, e: "Modifying nested lists affects original. PCEP: Nested structures."},
+{q: "Output?", code: "def f(*args):\n    return sum(args)\nprint(f(1, 2, 3, 4, 5))", opts: ["15", "(1,2,3,4,5)", "Error", "54321"], a: 0, e: "*args collects args into tuple. sum() returns 15. PCEP: *args."},
+{q: "What prints?", code: "x = 5\ny = x\nx += 1\nprint(x, y)", opts: ["6 5", "6 6", "5 5", "Error"], a: 0, e: "x+=1 creates new int (5->6). y still references 5. PCEP: Immutable behavior."},
+{q: "Which statements are True?", code: "try:\n    [1, 2][10]\nexcept IndexError as e:\n    print(str(e))", opts: ["IndexError is caught", "str(e) shows error msg", "e contains message", "except without type works"], a: [0,1,2], multi: true, e: "All true. IndexError caught, str(e) shows message. PCEP: Exception objects."},
+{q: "Result?", code: "lst = [x**2 for x in range(5) if x % 2 == 0]\nprint(lst)", opts: ["[0,4,16]", "[0,1,4,9,16]", "[1,9]", "[0,4]"], a: 0, e: "Filters even (0,2,4), squares to [0,4,16]. PCEP: List comprehensions."},
+{q: "Output?", code: "d = {}\nfor i in range(3):\n    d[i] = i**2\nprint(list(d.values()))", opts: ["[0,1,4]", "[0,1,2]", "Error", "[0,2,4]"], a: 0, e: "d = {0:0, 1:1, 2:4}. values() gives [0,1,4]. PCEP: Dict methods."},
+{q: "What is printed?", code: "class Counter:\n    count = 0\n    def __init__(self):\n        Counter.count += 1\nc1 = Counter()\nc2 = Counter()\nprint(Counter.count, c1.count, c2.count)", opts: ["2 2 2", "2 1 1", "Error", "1 1 1"], a: 0, e: "Class variable count shared. All access same count=2. PCEP: Class variables."},
+{q: "True?", code: "s = {1, 2, 3}\nt = {2, 3, 4}\nprint(s & t)", opts: ["& is intersection", "Result is {2,3}", "| would give union", "Sets are unordered"], a: [0,1,2,3], multi: true, e: "All true. & intersection, | union, sets unordered. PCEP: Sets."},
+{q: "Output?", code: "def modify(lst):\n    lst = [99]\nx = [1, 2, 3]\nmodify(x)\nprint(x)", opts: ["[99]", "[1,2,3]", "Error", "[]"], a: 1, e: "Parameter reassignment doesn't affect original. PCEP: Pass by object reference."},
+{q: "Result?", code: "x = lambda a, b: a + b\nprint(x(3, 5))", opts: ["8", "'35'", "Error", "lambda"], a: 0, e: "Lambda returns sum. PCEP: Lambda functions."},
+{q: "Output?", code: "lst = list(filter(lambda x: x > 2, [1,2,3,4,5]))\nprint(lst)", opts: ["[3,4,5]", "[1,2]", "[True,True,True]", "Error"], a: 0, e: "filter() keeps elements where lambda returns True. PCEP: filter()."},
+{q: "True?", code: "class C:\n    @property\n    def x(self):\n        return self._x", opts: ["@property makes getter", "Need @x.setter for assignment", "c.x = 5 fails without setter", "Properties are descriptors"], a: [0,1,2], multi: true, e: "@property creates read-only; need @x.setter. Without setter, assignment fails. PCEP: Properties."},
+{q: "Output?", code: "try:\n    x = 10 / 0\nexcept (ValueError, TypeError):\n    print('error1')\nexcept ZeroDivisionError:\n    print('error2')", opts: ["error1", "error2", "Both printed", "Error"], a: 1, e: "ZeroDivisionError caught by second except. First except doesn't match. PCEP: Exception order."},
+{q: "Result?", code: "d = dict(a=1, b=2, c=3)\nprint(d.get('d', 'default'))", opts: ["None", "Error", "'default'", "KeyError"], a: 2, e: "get() with default returns default if key missing. PCEP: dict.get()."},
+{q: "Which statements True?", code: "", opts: ["__init__ is constructor", "__str__ customizes str()", "__repr__ for developers", "__len__ for len()"], a: [0,1,2,3], multi: true, e: "All true. These are dunder methods. PCEP: Magic methods."},
+{q: "Output?", code: "x = 'abc'\ny = x\nx = 'def'\nprint(x, y)", opts: ["'def' 'abc'", "'def' 'def'", "'abc' 'abc'", "Error"], a: 0, e: "x reassigned to new string. y still references 'abc'. PCEP: String immutability."},
+{q: "What prints?", code: "lst = [1, 2, 3]\nprint(lst * 2)", opts: ["[2,4,6]", "[1,2,3,1,2,3]", "Error", "[1,2,3,2]"], a: 1, e: "* repeats list. [1,2,3]*2 = [1,2,3,1,2,3]. PCEP: Sequence operations."},
+{q: "Result?", code: "def f(x=[]):\n    x.append(1)\n    return x\nprint(f())\nprint(f())", opts: ["[1]\\n[1]", "[1]\\n[1,1]", "[1]\\n[]", "Error"], a: 1, e: "Mutable default created once, reused. Second call appends to same list. PCEP: Mutable defaults."},
+{q: "True?", code: "with open('file.txt', 'w') as f:\n    f.write('hello')", opts: ["Context manager opens file", "with closes file automatically", "FileNotFoundError if missing in 'w'", "'w' creates/overwrites file"], a: [0,1,3], multi: true, e: "with auto-closes. 'w' doesn't raise error. PCEP: Context managers."},
+{q: "Output?", code: "x = [1, 2, 3]\nx.insert(1, 99)\nprint(x)", opts: ["[1,99,2,3]", "[1,2,99,3]", "[99,1,2,3]", "[1,2,3,99]"], a: 0, e: "insert(1, 99) inserts at index 1. PCEP: list.insert()."},
+{q: "What is result?", code: "d = {'a': [1, 2], 'b': [3, 4]}\nfor v in d.values():\n    print(len(v), end=' ')", opts: ["2 2", "a b", "2 3 4", "Error"], a: 0, e: "d.values() gives lists [1,2] and [3,4], each len=2. PCEP: Dict values."},
+{q: "Which are correct?", code: "", opts: ["isinstance(5, int) is True", "isinstance('hi', (int, str)) is True", "issubclass(bool, int) is True", "type(5) == int"], a: [0,1,2,3], multi: true, e: "All true. bool is subclass of int. isinstance checks inheritance. PCEP: Type checking."},
+{q: "Output?", code: "s = 'hello'\nfor i, c in enumerate(s):\n    print(i, c, end=' ')", opts: ["0 h 1 e 2 l 3 l 4 o", "h e l l o", "0 1 2 3 4", "Error"], a: 0, e: "enumerate() gives (index, value) pairs. PCEP: enumerate()."},
+{q: "Result?", code: "from functools import reduce\nprint(reduce(lambda x, y: x + y, [1, 2, 3, 4]))", opts: ["10", "Error: no module", "[1,2,3,4]", "[10]"], a: 0, e: "reduce() accumulates: ((1+2)+3)+4 = 10. PCEP: reduce()."}
+];
+
+let submitted = false, telemetry = [], startTime = 0;
+let timerInterval = null;
+
+function escape(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = questions.map((q, i) => {
+    const isMulti = q.multi;
+    const inputType = isMulti ? 'checkbox' : 'radio';
+    return `
+    <div class="question">
+      <div><span class="qnum">Q${i+1}.</span><span class="qtext">${escape(q.q)}</span></div>
+      ${q.code ? `<pre>${escape(q.code)}</pre>` : ''}
+      <div class="options">
+        ${q.opts.map((opt, j) => `
+        <label class="option">
+          <input type="${inputType}" name="q${i}" value="${j}">
+          ${escape(opt)}
+        </label>
+        `).join('')}
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function startTimer() {
+  let time = 45 * 60;
+  timerInterval = setInterval(() => {
+    const m = Math.floor(time / 60);
+    const s = time % 60;
+    document.getElementById('timer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    if (m <= 0 && s <= 60) document.getElementById('timer').classList.add('warn');
+    if (m === 0 && s <= 10) document.getElementById('timer').classList.add('danger');
+    time--;
+    if (time < 0) { submitTest(); }
+  }, 1000);
+}
+
+function getAnswers(i) {
+  return Array.from(document.querySelectorAll(`input[name="q${i}"]:checked`)).map(e => Number(e.value));
+}
+
+function downloadCSV() {
+  const headers = ["Q#", "Question", "OptA", "OptB", "OptC", "OptD", "Your Answer", "Correct"];
+  const rows = questions.map((q, i) => {
+    const ans = getAnswers(i);
+    const yourAns = ans.length ? ans.map(n => q.opts[n]).join(" | ") : "Not answered";
+    const correct = (Array.isArray(q.a) ? q.a : [q.a]).map(n => q.opts[n]).join(" | ");
+    return [i+1, q.q.substring(0,50), q.opts[0]||'', q.opts[1]||'', q.opts[2]||'', q.opts[3]||'', yourAns, correct];
+  });
+  const csv = [[...headers], ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const link = document.createElement('a');
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = 'PCEP_Advanced_II.csv';
+  link.click();
+}
+
+function submitTest() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+  
+  let score = 0, wrong = [];
+  questions.forEach((q, i) => {
+    const ans = getAnswers(i);
+    const correct = Array.isArray(q.a) ? q.a.sort() : [q.a];
+    const match = ans.sort().length === correct.length && ans.sort().every((v,j) => v === correct[j]);
+    if (match) score++;
+    else {
+      const yourAns = ans.length ? ans.map(n => q.opts[n]).join(", ") : "Not answered";
+      const corrAns = correct.map(n => q.opts[n]).join(", ");
+      wrong.push({q: i+1, yours: yourAns, correct: corrAns, exp: q.e});
+    }
+  });
+  
+  document.querySelectorAll('input').forEach(e => e.disabled = true);
+  document.getElementById('submitBtn').disabled = true;
+  
+  const pct = Math.round(score / questions.length * 100);
+  const pass = pct >= 70;
+  
+  let html = `
+  <div class="score-card ${pass ? 'pass' : 'fail'}">
+    <div class="score-label">Your Score</div>
+    <div class="score-value">${score}/30</div>
+    <div class="score-label">${pct}% - ${pass ? '✓ PASS' : '✗ FAIL'}</div>
+  </div>
+  
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="stat-value">${pct}</div>
+      <div class="stat-label">Accuracy %</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">${score}</div>
+      <div class="stat-label">Correct</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">${30-score}</div>
+      <div class="stat-label">Incorrect</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">70%</div>
+      <div class="stat-label">Target</div>
+    </div>
+  </div>
+  
+  <div style="margin: 20px 0; text-align: center;">
+    <button class="download-btn" onclick="downloadCSV()">📥 Download CSV</button>
+    <button class="restart-btn" onclick="location.reload()">🔄 Restart</button>
+  </div>
+  `;
+  
+  if (wrong.length > 0) {
+    html += '<h2>Incorrect Answers</h2>';
+    wrong.forEach(w => {
+      html += `
+      <div class="review">
+        <h4>Question ${w.q}</h4>
+        <div><strong>Your answer:</strong> ${escape(w.yours)}</div>
+        <div class="correct-ans"><strong>Correct:</strong> ${escape(w.correct)}</div>
+        <div class="explanation">${escape(w.exp)}</div>
+      </div>
+      `;
+    });
+  } else {
+    html += '<h2 style="color: var(--good); text-align: center">Perfect Score! 🎉</h2>';
+  }
+  
+  document.getElementById('resultsSection').innerHTML = html;
+  document.getElementById('resultsSection').style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+window.addEventListener('load', () => {
+  renderQuestions();
+  startTimer();
+});
+</script>
+</body>
+</html>
