@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBA Flowchart, Pseudocode & Debug Interactive Lab</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#202938;--muted:#687386;--primary:#3657d6;--primary2:#edf1ff;--good:#12824b;--bad:#c83d3d;--border:#dce2ec;--warn:#fff7df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+header{background:linear-gradient(135deg,#24377f,#536bdd);color:#fff;padding:34px 7%}header h1{margin:0 0 8px;font-size:30px}header p{margin:0;max-width:900px}
+.wrap{max-width:1180px;margin:22px auto;padding:0 18px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}.tabs button{background:#fff;border:1px solid var(--border);padding:10px 13px;border-radius:9px;cursor:pointer;font-weight:700}.tabs button.active{background:var(--primary);color:#fff}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:21px;margin-bottom:17px;box-shadow:0 3px 12px #1725540b}
+h2{margin-top:0}h3{margin-bottom:7px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+textarea,input,select{width:100%;padding:10px;border:1px solid #cbd3df;border-radius:8px;font:inherit}textarea{min-height:85px;resize:vertical}
+button.primary{background:var(--primary);color:white;border:0;padding:11px 17px;border-radius:9px;cursor:pointer;font-weight:700}button.secondary{background:white;border:1px solid var(--border);padding:10px 15px;border-radius:9px;cursor:pointer}
+.badge{display:inline-block;background:var(--primary2);color:#2945ae;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:700}.small{font-size:13px;color:var(--muted)}
+.progress{height:9px;background:#e8ebf2;border-radius:10px;overflow:hidden}.bar{height:100%;width:0;background:var(--primary);transition:.3s}
+.taskbank{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.task{padding:10px 12px;background:var(--primary2);border:1px solid #cbd4ff;border-radius:8px;cursor:pointer}.task.used{opacity:.35;pointer-events:none}
+.sequence,.flowcanvas{min-height:70px;border:2px dashed #c8d0df;border-radius:10px;padding:12px;margin:10px 0}
+.seqitem{background:#f8fafc;border:1px solid var(--border);padding:8px;margin:6px 0;border-radius:7px}
+.choice{display:block;border:1px solid var(--border);border-radius:8px;padding:9px;margin:7px 0;cursor:pointer}.choice:hover{background:#f7f8ff}
+.feedback{margin-top:10px;padding:10px;border-radius:8px}.good{color:var(--good)}.bad{color:var(--bad)}
+.code{background:#111827;color:#e7eaf0;border-radius:10px;padding:15px;font:13px/1.55 Consolas,monospace;white-space:pre-wrap}
+.flowbox{display:inline-block;padding:11px 16px;margin:5px;background:#eef2ff;border:1px solid #c9d2ff;border-radius:9px;font-weight:600}.arrow{font-weight:bold;margin:0 4px}
+.reviewrow{display:grid;grid-template-columns:1fr 100px 2fr;gap:8px;align-items:center;margin:8px 0}.reviewrow input[type=text]{width:100%}
+table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid var(--border);padding:9px;text-align:left;vertical-align:top}th{background:#f0f3f8}
+details{margin:8px 0;border:1px solid var(--border);border-radius:8px;padding:9px;background:#fafbfc}
+footer{text-align:center;color:var(--muted);padding:25px}
+@media(max-width:700px){header h1{font-size:24px}.reviewrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>BBA Interactive Project Design Lab</h1>
+<p>Flowchart + Pseudocode → Top-Down Project Breakdown → Peer Review → Debugging</p>
+</header>
+
+<div class="wrap">
+<div class="card">
+<strong>Learning progress</strong>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<p class="small" id="progressText">Complete the activities in sequence.</p>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="tab('start',this)">1. Learn</button>
+<button onclick="tab('breakdown',this)">2. Breakdown</button>
+<button onclick="tab('pseudo',this)">3. Pseudocode</button>
+<button onclick="tab('flow',this)">4. Flowchart</button>
+<button onclick="tab('review',this)">5. Peer Review</button>
+<button onclick="tab('debug',this)">6. Debug</button>
+<button onclick="tab('challenge',this)">7. Challenge</button>
+</div>
+
+<section id="start" class="panel active">
+<div class="card">
+<span class="badge">CASE STUDY</span>
+<h2>Student Expense Tracker</h2>
+<p>A BBA student wants a simple program to record expenses and calculate the total amount spent.</p>
+<h3>Think before coding</h3>
+<div class="grid">
+<div class="flowbox">Problem</div><div class="flowbox">Inputs</div><div class="flowbox">Processing</div><div class="flowbox">Outputs</div>
+</div>
+<p><b>Top-down thinking:</b> Start with the whole problem, then break it into smaller tasks. Only after the logic is clear should it be translated into Python.</p>
+</div>
+<div class="card">
+<h2>What are you learning?</h2>
+<table><tr><th>Topic</th><th>Skill</th></tr>
+<tr><td>Top-Down Breakdown</td><td>Turn a large project into manageable tasks.</td></tr>
+<tr><td>Algorithm</td><td>Describe the solution as ordered steps.</td></tr>
+<tr><td>Pseudocode</td><td>Express logic without depending on Python syntax.</td></tr>
+<tr><td>Flowchart</td><td>Represent sequence, decisions and loops visually.</td></tr>
+<tr><td>Peer Review</td><td>Check another solution for clarity and completeness.</td></tr>
+<tr><td>Debugging</td><td>Find and correct logic defects before coding.</td></tr></table>
+</div>
+</section>
+
+<section id="breakdown" class="panel">
+<div class="card">
+<h2>Activity 1 — Build the Top-Down Breakdown</h2>
+<p>Click the tasks in the best execution/design order.</p>
+<div class="taskbank" id="tasks">
+<div class="task" onclick="chooseTask(this)">Display total</div>
+<div class="task" onclick="chooseTask(this)">Start</div>
+<div class="task" onclick="chooseTask(this)">Ask number of expenses</div>
+<div class="task" onclick="chooseTask(this)">Initialize total = 0</div>
+<div class="task" onclick="chooseTask(this)">Input expense</div>
+<div class="task" onclick="chooseTask(this)">Add expense to total</div>
+<div class="task" onclick="chooseTask(this)">Repeat until all expenses are processed</div>
+<div class="task" onclick="chooseTask(this)">End</div>
+</div>
+<h3>Your breakdown</h3><div id="sequence" class="sequence"></div>
+<button class="secondary" onclick="resetBreakdown()">Reset</button>
+<button class="primary" onclick="checkBreakdown()">Check</button>
+<div id="breakFeedback"></div>
+</div>
+
+<div class="card">
+<h2>Activity 1B — Decompose a Business Project</h2>
+<p>Choose one project and write its Level 1 tasks.</p>
+<select id="proj">
+<option>Shopping Bill Calculator</option><option>Attendance Calculator</option><option>Library Fine Calculator</option><option>Travel Expense Calculator</option><option>Student Grade Calculator</option>
+</select>
+<textarea id="decomp" placeholder="Example:
+1. Collect information
+2. Calculate...
+3. Determine...
+4. Display..."></textarea>
+<button class="primary" onclick="checkDecomp()">Evaluate Breakdown</button>
+<div id="decompFeedback"></div>
+</div>
+</section>
+
+<section id="pseudo" class="panel">
+<div class="card">
+<h2>Activity 2 — Build the Pseudocode</h2>
+<p>Scenario: A shopping program accepts multiple products, calculates each item cost, adds them to a total, and displays the final bill.</p>
+<p>Include: start, input count, initialization, repetition, input price/quantity, calculation, accumulation, output and end.</p>
+<textarea id="pseudo" placeholder="START
+...
+STOP"></textarea>
+<button class="primary" onclick="checkPseudo()">Review My Pseudocode</button>
+<div id="pseudoFeedback"></div>
+</div>
+<div class="card">
+<h3>Pseudocode reference</h3>
+<div class="code">START
+    INPUT number_of_products
+    total = 0
+
+    REPEAT number_of_products times
+        INPUT price
+        INPUT quantity
+        item_cost = price * quantity
+        total = total + item_cost
+    END REPEAT
+
+    OUTPUT total
+STOP</div>
+</div>
+</section>
+
+<section id="flow" class="panel">
+<div class="card">
+<h2>Activity 3 — Build the Flowchart Logic</h2>
+<p>Select the next flowchart element in the correct order. This is a logic builder; you can later draw the final diagram on paper or a diagramming tool.</p>
+<div id="flowChoices"></div>
+<h3>Your flow</h3><div id="flowSequence" class="sequence"></div>
+<button class="secondary" onclick="resetFlow()">Reset</button>
+<button class="primary" onclick="checkFlow()">Check Flow</button>
+<div id="flowFeedback"></div>
+</div>
+<div class="card">
+<h2>Flowchart Symbol Guide</h2>
+<table><tr><th>Symbol type</th><th>Use</th></tr>
+<tr><td>Start / End</td><td>Beginning and termination.</td></tr>
+<tr><td>Input / Output</td><td>Read information or display results.</td></tr>
+<tr><td>Process</td><td>Calculation or assignment.</td></tr>
+<tr><td>Decision</td><td>Condition with alternative paths.</td></tr>
+<tr><td>Loop</td><td>Repeat work while a condition requires it.</td></tr></table>
+</div>
+</section>
+
+<section id="review" class="panel">
+<div class="card">
+<h2>Activity 4 — Peer Review</h2>
+<p>Imagine another team submitted the following project design. Review the artifact, not the person.</p>
+<h3>Submitted pseudocode</h3>
+<div class="code">START
+INPUT number_of_items
+total = 0
+
+REPEAT number_of_items times
+    INPUT price
+    INPUT quantity
+    item_cost = price * quantity
+    total = total + item_cost
+END REPEAT
+
+OUTPUT total
+STOP</div>
+<h3>Reviewer checklist</h3>
+<div id="reviewList"></div>
+<button class="primary" onclick="scoreReview()">Submit Review</button>
+<div id="reviewFeedback"></div>
+</div>
+</section>
+
+<section id="debug" class="panel">
+<div class="card">
+<h2>Activity 5 — Debug the Broken Solution</h2>
+<p>Find the logic defects in this Attendance Calculator.</p>
+<div class="code">START
+INPUT total_classes
+INPUT attended_classes
+
+percentage = total_classes / attended_classes * 100
+
+IF percentage > 75
+    status = "Eligible"
+END IF
+
+OUTPUT percentage
+OUTPUT status
+STOP</div>
+<h3>Select the problems you can identify</h3>
+<div id="bugs"></div>
+<button class="primary" onclick="checkBugs()">Check My Diagnosis</button>
+<div id="bugFeedback"></div>
+</div>
+
+<div class="card">
+<h2>Debugging Questions</h2>
+<ol>
+<li>Is the percentage formula correct?</li>
+<li>What happens when total classes is zero?</li>
+<li>What happens when attended classes exceed total classes?</li>
+<li>What happens exactly at 75%?</li>
+<li>What happens below the threshold?</li>
+<li>Is status always assigned?</li>
+</ol>
+<textarea id="fix" placeholder="Write your corrected logic or pseudocode here..."></textarea>
+<button class="primary" onclick="evaluateFix()">Evaluate Correction</button>
+<div id="fixFeedback"></div>
+</div>
+</section>
+
+<section id="challenge" class="panel">
+<div class="card">
+<h2>Final Challenge — Design Your Own BBA Mini Project</h2>
+<p>Choose a project and complete the design. Your goal is to reach an implementation-ready specification, not to write Python yet.</p>
+<div class="grid">
+<div><label>Project title</label><input id="ctitle" placeholder="e.g., Travel Expense Calculator"></div>
+<div><label>Target user</label><input id="cuser" placeholder="Who will use it?"></div>
+<div><label>Problem statement</label><textarea id="cproblem"></textarea></div>
+<div><label>Inputs</label><textarea id="cinputs"></textarea></div>
+<div><label>Processing / rules</label><textarea id="crules"></textarea></div>
+<div><label>Outputs</label><textarea id="coutputs"></textarea></div>
+<div><label>Top-down breakdown</label><textarea id="cbreak"></textarea></div>
+<div><label>Pseudocode</label><textarea id="cpseudo"></textarea></div>
+<div><label>Test cases</label><textarea id="ctests"></textarea></div>
+<div><label>Potential edge cases</label><textarea id="cedges"></textarea></div>
+</div>
+<button class="primary" onclick="generateChallenge()">Generate Project Readiness Report</button>
+<button class="secondary" onclick="saveChallenge()">Save in Browser</button>
+<div id="challengeResult"></div>
+</div>
+<div class="card">
+<h2>Suggested Projects</h2>
+<div class="grid">
+<div class="flowbox">Student Expense Tracker</div>
+<div class="flowbox">Shopping Bill Calculator</div>
+<div class="flowbox">Attendance Calculator</div>
+<div class="flowbox">Library Fine Calculator</div>
+<div class="flowbox">Travel Expense Calculator</div>
+<div class="flowbox">Student Grade Calculator</div>
+</div>
+</div>
+</section>
+</div>
+<footer>BBA Interactive Project Design Lab — Think → Break Down → Represent → Review → Debug → Refine</footer>
+
+<script>
+let done=new Set(), seq=[], flow=[];
+function tab(id,b){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');done.add(id);update();}
+function update(){let p=Math.round(done.size/7*100);document.getElementById('bar').style.width=p+'%';document.getElementById('progressText').textContent=p+'% of the learning path visited';}
+
+function chooseTask(el){seq.push(el.textContent);el.classList.add('used');document.getElementById('sequence').innerHTML=seq.map((x,i)=>`<div class="seqitem"><b>${i+1}.</b> ${x}</div>`).join('');}
+function resetBreakdown(){seq=[];document.querySelectorAll('#tasks .task').forEach(x=>x.classList.remove('used'));document.getElementById('sequence').innerHTML='';document.getElementById('breakFeedback').innerHTML='';}
+function checkBreakdown(){
+const exp=['Start','Ask number of expenses','Initialize total = 0','Repeat until all expenses are processed','Input expense','Add expense to total','Display total','End'];
+let ok=seq.length===exp.length&&seq.every((x,i)=>x===exp[i]);
+document.getElementById('breakFeedback').innerHTML=`<div class="feedback ${ok?'good':'bad'}">${ok?'Correct. You have represented the core sequence from start to end.':'Not quite. Think about initialization, then repetition, then accumulation, followed by output and termination.'}</div>`;done.add('breakdown');update();
+}
+function checkDecomp(){
+let s=document.getElementById('decomp').value.toLowerCase(), hits=['input','collect','calculate','display','determine','total','output'].filter(x=>s.includes(x)).length;
+document.getElementById('decompFeedback').innerHTML=`<div class="feedback ${hits>=3?'good':'bad'}">${hits>=3?'Good decomposition. Your tasks cover multiple stages of the project.':'Add clearer tasks for collecting information, processing/calculation and displaying the result.'}</div>`;
+}
+function checkPseudo(){
+let s=document.getElementById('pseudo').value.toLowerCase();let keys=['start','input','number','total','repeat','price','quantity','item_cost','output','stop'];let hits=keys.filter(x=>s.includes(x)).length;
+document.getElementById('pseudoFeedback').innerHTML=`<div class="feedback ${hits>=8?'good':'bad'}">${hits>=8?'Strong pseudocode. It includes the major control-flow and calculation elements.':'Refine it. Make sure you have input, initialization, repetition, item calculation, accumulation, output and termination.'}</div>`;done.add('pseudo');update();
+}
+const flowItems=['START','Input number of products','Initialize total = 0','Decision: More products?','Input price and quantity','Calculate item cost','Add item cost to total','Return to “More products?”','Display total','END'];
+function renderFlowChoices(){document.getElementById('flowChoices').innerHTML=flowItems.map((x,i)=>`<button class="secondary" style="margin:4px" onclick="pickFlow(${i},this)">${x}</button>`).join('');}
+function pickFlow(i,b){flow.push(flowItems[i]);b.disabled=true;document.getElementById('flowSequence').innerHTML=flow.map((x,i)=>`<div class="seqitem"><b>${i+1}.</b> ${x}</div>`).join('');}
+function resetFlow(){flow=[];renderFlowChoices();document.getElementById('flowSequence').innerHTML='';}
+function checkFlow(){
+let ok=flow.length===flowItems.length&&flow.every((x,i)=>x===flowItems[i]);
+document.getElementById('flowFeedback').innerHTML=`<div class="feedback ${ok?'good':'bad'}">${ok?'Correct. Your flow contains input, process, decision, loop, output and end.':'Review the sequence. A flowchart should initialize before the loop, process each item, return to the loop decision, then output after the loop finishes.'}</div>`;done.add('flow');update();
+}
+const reviewQs=[
+['Does the pseudocode initialize total?',true,'The total is initialized to zero.'],
+['Are price and quantity collected for each product?',true,'Both inputs appear inside the repetition.'],
+['Is item cost calculated?',true,'item_cost = price * quantity is present.'],
+['Is the item cost added to total?',true,'The accumulation step is present.'],
+['Is there an explicit output?',true,'The total is displayed.'],
+['Does the pseudocode have a clear end?',true,'STOP is present.'],
+['Is a database required for this Phase 1 design?',false,'The submitted scope is a simple calculation workflow.'],
+];
+function renderReview(){document.getElementById('reviewList').innerHTML=reviewQs.map((q,i)=>`<div class="reviewrow"><div>${q[0]}</div><select id="rv${i}"><option value="">Choose</option><option value="yes">Yes</option><option value="no">No</option></select><input id="rc${i}" placeholder="Reviewer comment"></div>`).join('');}
+function scoreReview(){let score=0;reviewQs.forEach((q,i)=>{if(document.getElementById('rv'+i).value===(q[1]?'yes':'no'))score++;});document.getElementById('reviewFeedback').innerHTML=`<div class="feedback ${score>=6?'good':'bad'}"><b>Review score: ${score}/${reviewQs.length}</b><br>${score>=6?'Good review discipline. Remember to explain findings with specific evidence.':'Review each artifact carefully and compare it with the submitted logic.'}</div>`;done.add('review');update();}
+const bugs=[
+['The percentage formula is reversed: total_classes / attended_classes should not be used for attendance percentage.',true],
+['There is no explicit handling for total_classes = 0.',true],
+['There is no branch for the condition below the eligibility threshold.',true],
+['The condition uses > 75, so exactly 75% is excluded if the intended rule is 75% or above.',true],
+['The program should automatically connect to a database.',false],
+['The solution does not validate impossible input such as attended_classes > total_classes.',true]
+];
+function renderBugs(){document.getElementById('bugs').innerHTML=bugs.map((b,i)=>`<label class="choice"><input type="checkbox" id="bug${i}"> ${b[0]}</label>`).join('');}
+function checkBugs(){let score=0;bugs.forEach((b,i)=>{if(document.getElementById('bug'+i).checked===b[1])score++;});document.getElementById('bugFeedback').innerHTML=`<div class="feedback ${score>=5?'good':'bad'}"><b>Diagnosis score: ${score}/${bugs.length}</b><br>${score>=5?'Good debugging. You identified the major logical and validation issues.':'Look carefully at formula, boundary conditions, missing branches and validation.'}</div>`;done.add('debug');update();}
+function evaluateFix(){let s=document.getElementById('fix').value.toLowerCase();let keys=['attended','total','100','0','75','else','invalid','status'];let hits=keys.filter(x=>s.includes(x)).length;document.getElementById('fixFeedback').innerHTML=`<div class="feedback ${hits>=5?'good':'bad'}">${hits>=5?'Your correction addresses several important concerns. Before implementation, verify every business rule and edge case.':'Your correction needs more detail. Consider the formula, zero/invalid inputs, threshold boundary and both status outcomes.'}</div>`;}
+function generateChallenge(){const ids=['ctitle','cuser','cproblem','cinputs','crules','coutputs','cbreak','cpseudo','ctests','cedges'];const labels=['Project','Target User','Problem','Inputs','Rules','Outputs','Top-Down Breakdown','Pseudocode','Test Cases','Edge Cases'];let missing=ids.filter(x=>!document.getElementById(x).value.trim()).length;let html=`<div class="card"><h3>Project Readiness</h3><p class="${missing<=2?'good':'bad'}"><b>${missing===0?'Complete design canvas':missing+' section(s) still need content'}</b></p><table>`;ids.forEach((id,i)=>html+=`<tr><th>${labels[i]}</th><td>${(document.getElementById(id).value||'Not provided').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td></tr>`);html+='</table></div>';document.getElementById('challengeResult').innerHTML=html;done.add('challenge');update();}
+function saveChallenge(){let ids=['ctitle','cuser','cproblem','cinputs','crules','coutputs','cbreak','cpseudo','ctests','cedges'];let d={};ids.forEach(x=>d[x]=document.getElementById(x).value);localStorage.setItem('bbaFlowProject',JSON.stringify(d));document.getElementById('challengeResult').innerHTML='<div class="feedback good">Project saved in this browser.</div>';}
+function loadChallenge(){let d=JSON.parse(localStorage.getItem('bbaFlowProject')||'null');if(d)Object.keys(d).forEach(x=>{if(document.getElementById(x))document.getElementById(x).value=d[x];});}
+renderFlowChoices();renderReview();renderBugs();loadChallenge();
+</script>
+</body>
+</html>

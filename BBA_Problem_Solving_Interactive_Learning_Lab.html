@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBA Problem Solving Interactive Learning Lab</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--muted:#667085;--primary:#3157d5;--good:#16834b;--bad:#c43d3d;--border:#dfe4ec;--accent:#eef2ff}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text);line-height:1.5}
+header{background:linear-gradient(135deg,#263d91,#4f67d9);color:white;padding:34px 7%}
+header h1{margin:0 0 8px;font-size:32px} header p{margin:0;max-width:900px}
+.container{max-width:1180px;margin:24px auto;padding:0 18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button{border:1px solid var(--border);background:white;padding:11px 15px;border-radius:10px;cursor:pointer;font-weight:600}
+.tabs button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:18px;box-shadow:0 3px 12px #1725540b}
+h2{margin-top:0} h3{margin-bottom:8px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.step{border-left:5px solid var(--primary);padding:12px 15px;background:#fafbff;margin:10px 0;border-radius:7px}
+.badge{display:inline-block;background:var(--accent);color:#2947b2;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:bold}
+.question{padding:16px;border:1px solid var(--border);border-radius:12px;margin:13px 0}
+.option{display:block;padding:9px;margin:7px 0;border:1px solid var(--border);border-radius:8px;cursor:pointer}
+.option:hover{background:#f4f6ff}.feedback{margin-top:9px;font-weight:bold}.good{color:var(--good)}.bad{color:var(--bad)}
+button.primary{background:var(--primary);color:#fff;border:0;padding:11px 18px;border-radius:9px;cursor:pointer;font-weight:bold}
+button.secondary{background:white;border:1px solid var(--border);padding:10px 16px;border-radius:9px;cursor:pointer}
+textarea,input,select{width:100%;padding:10px;border:1px solid #cdd3dd;border-radius:8px;font:inherit}
+textarea{min-height:95px;resize:vertical}
+table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f1f4fa}
+.result{padding:14px;background:#f8fafc;border-radius:10px;margin-top:12px}
+.progress{height:10px;background:#e8ebf2;border-radius:10px;overflow:hidden}.bar{height:100%;width:0;background:var(--primary);transition:.3s}
+.small{font-size:13px;color:var(--muted)}
+.code{background:#111827;color:#e5e7eb;padding:15px;border-radius:10px;white-space:pre-wrap;font-family:Consolas,monospace}
+.dragrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.dragitem{background:#eef2ff;padding:9px 12px;border-radius:8px;border:1px solid #cbd5ff;cursor:pointer}
+.sequence{min-height:50px;border:2px dashed #cbd5e1;border-radius:10px;padding:10px}
+footer{text-align:center;color:var(--muted);padding:25px}
+@media(max-width:700px){header h1{font-size:25px}.tabs button{flex:1}}
+</style>
+</head>
+<body>
+<header>
+<h1>BBA Problem-Solving Interactive Learning Lab</h1>
+<p>Real-Life Problem Modelling → Structured Problem Solving → Algorithm → Dry Run → Mini Project Ideation</p>
+</header>
+
+<div class="container">
+<div class="card">
+<strong>Learning path:</strong>
+<div class="progress"><div class="bar" id="progress"></div></div>
+<p class="small" id="progressText">Start with Learn, then complete the activities.</p>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="showTab('learn',this)">1. Learn</button>
+<button onclick="showTab('case',this)">2. Case Scenario</button>
+<button onclick="showTab('decompose',this)">3. Decompose</button>
+<button onclick="showTab('algorithm',this)">4. Algorithm</button>
+<button onclick="showTab('dryrun',this)">5. Dry Run</button>
+<button onclick="showTab('quiz',this)">6. Quiz</button>
+<button onclick="showTab('project',this)">7. Mini Project</button>
+</div>
+
+<section id="learn" class="panel active">
+<div class="card">
+<h2>1. Think Before You Code</h2>
+<p>Programming is not only about Python syntax. For a real-life problem, first understand what the user needs, identify inputs and outputs, define the rules, break the problem into smaller tasks, and then design the solution.</p>
+<div class="grid">
+<div class="step"><b>Problem</b><br>What are we trying to solve?</div>
+<div class="step"><b>Input</b><br>What information do we need?</div>
+<div class="step"><b>Process</b><br>What calculations/rules are required?</div>
+<div class="step"><b>Output</b><br>What result should the user receive?</div>
+</div>
+</div>
+<div class="card">
+<h2>The IPO Model</h2>
+<table><tr><th>Input</th><th>Process</th><th>Output</th></tr>
+<tr><td>Information entering the program</td><td>Calculations, decisions and rules</td><td>Information presented to the user</td></tr></table>
+<p><b>Example:</b> Student Attendance Calculator</p>
+<p><b>Input:</b> total classes, classes attended<br><b>Process:</b> attended ÷ total × 100<br><b>Output:</b> attendance percentage and status</p>
+</div>
+<div class="card">
+<h2>Top-Down Problem Decomposition</h2>
+<p>Start with the complete problem and progressively break it into smaller tasks.</p>
+<div class="code">Student Performance Analyzer
+    ↓
+Collect marks
+    ↓
+Calculate total and average
+    ↓
+Determine grade
+    ↓
+Display result</div>
+</div>
+</section>
+
+<section id="case" class="panel">
+<div class="card">
+<span class="badge">CASE SCENARIO</span>
+<h2>Student Attendance Calculator</h2>
+<p>A college wants a simple program that calculates a student's attendance percentage and determines whether the student meets the required attendance level.</p>
+<h3>Your task</h3>
+<p>Complete the model before thinking about code.</p>
+<div class="grid">
+<div><label><b>Who is the user?</b></label><textarea id="c_user" placeholder="Example: Student / academic administrator"></textarea></div>
+<div><label><b>What is the problem?</b></label><textarea id="c_problem" placeholder="State the problem in your own words"></textarea></div>
+<div><label><b>What are the inputs?</b></label><textarea id="c_input" placeholder="List the required information"></textarea></div>
+<div><label><b>What is the output?</b></label><textarea id="c_output" placeholder="What should the program display?"></textarea></div>
+</div>
+<button class="primary" onclick="checkCase()">Check My Model</button>
+<div id="caseFeedback" class="result"></div>
+</div>
+</section>
+
+<section id="decompose" class="panel">
+<div class="card">
+<h2>Decompose the Problem</h2>
+<p>Arrange the tasks for the Attendance Calculator in a logical Top-Down sequence.</p>
+<p class="small">Click the items in the order you think the solution should follow.</p>
+<div class="dragrow" id="taskBank">
+<span class="dragitem" onclick="pickTask(this)">Display attendance status</span>
+<span class="dragitem" onclick="pickTask(this)">Calculate attendance percentage</span>
+<span class="dragitem" onclick="pickTask(this)">Get total classes and attended classes</span>
+<span class="dragitem" onclick="pickTask(this)">Start</span>
+<span class="dragitem" onclick="pickTask(this)">End</span>
+</div>
+<h3>Your sequence</h3>
+<div class="sequence" id="sequence"></div>
+<button class="secondary" onclick="resetSequence()">Reset</button>
+<button class="primary" onclick="checkSequence()">Check Sequence</button>
+<div id="seqFeedback" class="result"></div>
+</div>
+</section>
+
+<section id="algorithm" class="panel">
+<div class="card">
+<h2>Build an Algorithm</h2>
+<p>Write a numbered sequence for this problem:</p>
+<p><b>Scenario:</b> A BBA student wants to calculate the total cost of items purchased and display the final amount.</p>
+<ol>
+<li>Identify the inputs.</li><li>Describe the processing.</li><li>Describe the output.</li>
+</ol>
+<textarea id="algo" placeholder="1. Start
+2. ...
+3. ..."></textarea>
+<button class="primary" onclick="checkAlgorithm()">Evaluate My Algorithm</button>
+<div id="algoFeedback" class="result"></div>
+</div>
+
+<div class="card">
+<h2>Pseudocode Reference</h2>
+<div class="code">START
+    INPUT number_of_items
+    total = 0
+
+    REPEAT number_of_items times
+        INPUT price
+        total = total + price
+    END REPEAT
+
+    OUTPUT total
+STOP</div>
+<p class="small">Notice that pseudocode focuses on logic rather than Python syntax.</p>
+</div>
+</section>
+
+<section id="dryrun" class="panel">
+<div class="card">
+<h2>Interactive Dry Run</h2>
+<p>Trace the running total for the following prices:</p>
+<div class="grid">
+<div><label>Price 1</label><input type="number" id="p1" value="100"></div>
+<div><label>Price 2</label><input type="number" id="p2" value="250"></div>
+<div><label>Price 3</label><input type="number" id="p3" value="75"></div>
+<div><label>Price 4</label><input type="number" id="p4" value="125"></div>
+</div>
+<button class="primary" onclick="runDry()">Run Dry Run</button>
+<div id="dryResult" class="result"></div>
+</div>
+</section>
+
+<section id="quiz" class="panel">
+<div class="card">
+<h2>Knowledge Check</h2>
+<p>Answer all questions. Your score is calculated instantly.</p>
+<div id="questions"></div>
+<button class="primary" onclick="gradeQuiz()">Submit Quiz</button>
+<div id="quizResult" class="result"></div>
+</div>
+</section>
+
+<section id="project" class="panel">
+<div class="card">
+<h2>Mini Project Ideation – Phase 1</h2>
+<p>Choose a small real-life business/student problem and complete the project canvas. This is the design phase; full coding comes later.</p>
+<div class="grid">
+<div><label>Project Title</label><input id="ptitle" placeholder="e.g., Student Expense Tracker"></div>
+<div><label>Target User</label><input id="puser" placeholder="Who will use it?"></div>
+<div><label>Problem Statement</label><textarea id="pproblem"></textarea></div>
+<div><label>Objective</label><textarea id="pobjective"></textarea></div>
+<div><label>Inputs</label><textarea id="pinputs"></textarea></div>
+<div><label>Processing / Rules</label><textarea id="prules"></textarea></div>
+<div><label>Outputs</label><textarea id="poutputs"></textarea></div>
+<div><label>Assumptions</label><textarea id="passumptions"></textarea></div>
+<div><label>In Scope</label><textarea id="pscope"></textarea></div>
+<div><label>Out of Scope</label><textarea id="pout"></textarea></div>
+<div><label>Three Test Cases</label><textarea id="ptests"></textarea></div>
+<div><label>Initial Algorithm</label><textarea id="palgorithm"></textarea></div>
+</div>
+<button class="primary" onclick="generateProject()">Generate Project Summary</button>
+<button class="secondary" onclick="saveProject()">Save Project to Browser</button>
+<div id="projectResult" class="result"></div>
+</div>
+
+<div class="card">
+<h2>Suggested BBA-Friendly Mini Projects</h2>
+<div class="grid">
+<div class="step"><b>Student Expense Tracker</b><br>Record expenses and calculate totals.</div>
+<div class="step"><b>Shopping Bill Calculator</b><br>Calculate item totals and final bill.</div>
+<div class="step"><b>Attendance Calculator</b><br>Calculate percentage and status.</div>
+<div class="step"><b>Student Grade Calculator</b><br>Calculate average and grade.</div>
+<div class="step"><b>Travel Expense Calculator</b><br>Estimate total trip expenses.</div>
+<div class="step"><b>Library Fine Calculator</b><br>Calculate overdue charges.</div>
+</div>
+</div>
+</section>
+</div>
+
+<footer>Interactive learning lab | Designed around problem modelling, decomposition, algorithms, dry runs and mini-project ideation.</footer>
+
+<script>
+const state={done:new Set(),sequence:[]};
+
+function showTab(id,btn){
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+ state.done.add(id); updateProgress();
+}
+function updateProgress(){
+ const n=Math.min(100,Math.round(state.done.size/7*100));
+ document.getElementById('progress').style.width=n+'%';
+ document.getElementById('progressText').textContent=n+'% of the learning path visited';
+}
+function checkCase(){
+ const fields=['c_user','c_problem','c_input','c_output'];
+ const ok=fields.every(id=>document.getElementById(id).value.trim().length>5);
+ document.getElementById('caseFeedback').innerHTML=ok?
+ '<span class="good">Good start.</span> Your model contains the four essential elements. A strong answer should clearly identify total classes and attended classes as inputs, calculate attendance percentage, and produce a percentage/status as output.':
+ '<span class="bad">Complete all four fields.</span> The goal is to define the problem before coding.';
+ state.done.add('case');updateProgress();
+}
+function pickTask(el){
+ state.sequence.push(el.textContent);
+ el.style.opacity='.45'; el.style.pointerEvents='none';
+ document.getElementById('sequence').innerHTML=state.sequence.map((x,i)=>
+ '<div><b>'+(i+1)+'.</b> '+x+'</div>').join('');
+}
+function resetSequence(){location.reload()}
+function checkSequence(){
+ const expected=['Start','Get total classes and attended classes','Calculate attendance percentage','Display attendance status','End'];
+ const good=state.sequence.length===5 && state.sequence.every((x,i)=>x===expected[i]);
+ document.getElementById('seqFeedback').innerHTML=good?
+ '<span class="good">Correct.</span> You have decomposed the solution in a logical execution order.':
+ '<span class="bad">Try again.</span> Think: start → collect inputs → process → output → end.';
+ state.done.add('decompose');updateProgress();
+}
+function checkAlgorithm(){
+ const s=document.getElementById('algo').value.toLowerCase();
+ const keywords=['start','input','price','total','add','output','end'];
+ const hits=keywords.filter(k=>s.includes(k)).length;
+ document.getElementById('algoFeedback').innerHTML=hits>=6?
+ '<span class="good">Strong algorithm.</span> You included the major elements: start, inputs, processing, total, output and end.':
+ '<span class="bad">Needs refinement.</span> Make sure the algorithm includes input collection, initialization of total, repeated addition, output and termination.';
+ state.done.add('algorithm');updateProgress();
+}
+function runDry(){
+ const vals=[1,2,3,4].map(i=>Number(document.getElementById('p'+i).value)||0);
+ let total=0, rows='';
+ vals.forEach((v,i)=>{let before=total;total+=v;rows+=`<tr><td>${i+1}</td><td>${v}</td><td>${before}</td><td>${before} + ${v}</td><td>${total}</td></tr>`});
+ document.getElementById('dryResult').innerHTML=`<table><tr><th>Iteration</th><th>Price</th><th>Total Before</th><th>Operation</th><th>Total After</th></tr>${rows}</table><b>Final Total = ${total}</b>`;
+ state.done.add('dryrun');updateProgress();
+}
+const qs=[
+["What should happen before writing Python code? ",["Start coding immediately","Understand and model the problem","Choose colors for the interface","Create a database"],1],
+["In an IPO model, what does P represent? ",["Python","Process","Project","Problem"],1],
+["What is Top-Down design used for? ",["Breaking a problem into smaller tasks","Increasing screen size","Installing Python","Writing comments only"],0],
+["What is a dry run? ",["Running a program without thinking","Manually tracing logic with sample values","Deleting a program","Installing an IDE"],1],
+["Which is an output for an attendance calculator? ",["Classes attended","Total classes","Attendance percentage","Student name"],2],
+["Why are assumptions documented? ",["To hide requirements","To make boundaries and rules explicit","To avoid testing","To make code longer"],1],
+["What is the main purpose of pseudocode? ",["Focus on logic without committing to programming syntax","Replace all testing","Run directly in Python","Create a database"],0],
+["What should Phase 1 of a mini project primarily establish? ",["A complete production application","A clear, feasible problem and solution model","A cloud deployment","A mobile app"],1]
+];
+function renderQuiz(){
+ document.getElementById('questions').innerHTML=qs.map((q,i)=>`
+ <div class="question"><b>${i+1}. ${q[0]}</b>
+ ${q[1].map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join('')}
+ <div id="fb${i}" class="feedback"></div></div>`).join('');
+}
+function gradeQuiz(){
+ let score=0;
+ qs.forEach((q,i)=>{
+  const chosen=document.querySelector(`input[name=q${i}]:checked`);
+  const fb=document.getElementById('fb'+i);
+  if(chosen && Number(chosen.value)===q[2]){score++;fb.className='feedback good';fb.textContent='Correct';}
+  else{fb.className='feedback bad';fb.textContent='Review the concept and try again.';}
+ });
+ document.getElementById('quizResult').innerHTML=`<b>Score: ${score}/${qs.length}</b><br>${score>=7?'Excellent foundation.':'Review the learning tabs and retry the quiz.'}`;
+ state.done.add('quiz');updateProgress();
+}
+function generateProject(){
+ const ids=['ptitle','puser','pproblem','pobjective','pinputs','prules','poutputs','passumptions','pscope','pout','ptests','palgorithm'];
+ const labels=['Project Title','Target User','Problem Statement','Objective','Inputs','Processing / Rules','Outputs','Assumptions','In Scope','Out of Scope','Three Test Cases','Initial Algorithm'];
+ let html='<h3>'+((document.getElementById('ptitle').value||'Untitled Project'))+'</h3><table>';
+ ids.forEach((id,i)=>html+=`<tr><th>${labels[i]}</th><td>${(document.getElementById(id).value||'Not provided').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</td></tr>`);
+ html+='</table>';
+ document.getElementById('projectResult').innerHTML=html;
+ state.done.add('project');updateProgress();
+}
+function saveProject(){
+ const ids=['ptitle','puser','pproblem','pobjective','pinputs','prules','poutputs','passumptions','pscope','pout','ptests','palgorithm'];
+ const data={};ids.forEach(id=>data[id]=document.getElementById(id).value);
+ localStorage.setItem('bbaProblemProject',JSON.stringify(data));
+ document.getElementById('projectResult').innerHTML='<span class="good">Project saved in this browser.</span> You can return to this page later on the same browser/device.';
+}
+function loadProject(){
+ const data=JSON.parse(localStorage.getItem('bbaProblemProject')||'null');
+ if(data)Object.keys(data).forEach(id=>{if(document.getElementById(id))document.getElementById(id).value=data[id]});
+}
+renderQuiz();loadProject();
+</script>
+</body>
+</html>
