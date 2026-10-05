@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Implementations — Advanced Interactive Challenge</title>
+<style>
+:root{--navy:#0b1f33;--blue:#1769aa;--blue2:#eaf4fb;--text:#17202a;--muted:#64748b;--border:#d9e2ec;--bg:#f5f8fb;--white:#fff;--green:#16834a;--greenbg:#eaf8f0;--red:#b42318;--redbg:#fff1f0;--goldbg:#fff8df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+.app{max-width:1240px;margin:auto;padding:28px 22px 44px}.header{background:linear-gradient(135deg,#0b1f33,#164d73);color:#fff;border-radius:16px;padding:28px 30px;margin-bottom:20px}.kicker{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8}h1{margin:7px 0;font-size:29px}.header p{margin:0;max-width:1000px;color:#dbeafe;line-height:1.55}
+.grid{display:grid;grid-template-columns:390px 1fr;gap:20px}.panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px}.panel h2{font-size:17px;margin:0 0 7px}.help{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 15px}
+.scenario{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px}.scenario strong{display:block;font-size:13px;margin-bottom:5px}.scenario p{font-size:13px;line-height:1.5;margin:0;color:#475569}.badge{display:inline-block;margin-top:9px;padding:4px 8px;border-radius:99px;background:#e8eef5;color:var(--navy);font-size:11px;font-weight:700}
+.options{display:flex;flex-direction:column;gap:9px}.option{border:1px solid #cbd5e1;border-left:4px solid var(--blue);border-radius:10px;padding:11px 12px;background:#fff;cursor:grab;user-select:none}.option.dragging{opacity:.45}.option strong{display:block;font-size:13px}.option span{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.35}
+.dropzones{display:grid;grid-template-columns:1fr 1fr;gap:10px}.zone{min-height:100px;border:2px dashed #cbd5e1;border-radius:10px;background:#f8fafc;padding:9px}.zone.over{border-color:var(--blue);background:var(--blue2)}.zone-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:7px}.zone .option{cursor:grab}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button{border:0;border-radius:9px;padding:11px 17px;font-weight:700;cursor:pointer;min-height:44px}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f6;color:var(--navy)}
+.result{display:none;margin-top:18px;border-radius:12px;padding:17px;border:1px solid var(--border)}.result.show{display:block}.good{background:var(--greenbg);border-color:#a7e3bf}.bad{background:var(--redbg);border-color:#f2b8b3}.score{font-size:22px;font-weight:800}.feedback{font-size:13px;line-height:1.55;margin-top:5px}.answer{margin-top:14px;border-top:1px solid rgba(0,0,0,.12);padding-top:14px}.answer-row{display:grid;grid-template-columns:180px 1fr;gap:10px;margin:7px 0}.answer-label{font-weight:700;font-size:12px}.answer-text{font-size:12px}.tip{margin-top:14px;padding:11px 12px;background:var(--goldbg);border:1px solid #ead38a;border-radius:9px;font-size:12px;color:#5f4700}
+@media(max-width:950px){.grid{grid-template-columns:1fr}.dropzones{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="app">
+<section class="header">
+<div class="kicker">Core Python with AI-Integrated Development</div>
+<h1>Python Implementations — Advanced Runtime Selection Challenge</h1>
+<p>Analyze five enterprise scenarios and place the most appropriate Python implementation into each scenario. Then identify the strongest reason for the choice.</p>
+</section>
+
+<div class="grid">
+<section class="panel">
+<h2>Scenario Set</h2>
+<div class="scenario">
+<strong>Instructions</strong>
+<p>Drag each implementation exactly once into the scenario where it is the strongest fit. The objective is not to memorize labels; infer the runtime choice from integration, performance, compatibility, and concurrency requirements.</p>
+<span class="badge">Difficulty: Advanced</span>
+</div>
+
+<h2>Available Implementations</h2>
+<p class="help">Each implementation can be used once. Keyboard users can focus an option and press <b>1–5</b> to place it into the corresponding scenario.</p>
+<div class="options" id="bank"></div>
+<div class="tip"><b>Trainer tip:</b> Ask learners to defend their selection before clicking Submit. A correct choice without the correct rationale should not receive full conceptual credit.</div>
+</section>
+
+<section class="panel">
+<h2>Match the Runtime to the Enterprise Scenario</h2>
+<p class="help">Place one implementation in each scenario. Read the constraint carefully before deciding.</p>
+<div class="dropzones" id="zones"></div>
+<div class="actions">
+<button class="primary" id="submit">Submit &amp; Check</button>
+<button class="secondary" id="reset">Reset Activity</button>
+</div>
+<div class="result" id="result"></div>
+</section>
+</div>
+</main>
+
+<script>
+(function(){
+const bank=document.getElementById('bank'),zones=document.getElementById('zones'),result=document.getElementById('result');
+const implementations=[
+{id:'cpython',name:'CPython',desc:'Reference implementation and broad ecosystem compatibility.'},
+{id:'jython',name:'Jython',desc:'Python implementation designed for JVM/Java integration.'},
+{id:'ironpython',name:'IronPython',desc:'Python implementation designed for the .NET/CLR ecosystem.'},
+{id:'pypy',name:'PyPy',desc:'Alternative implementation emphasizing performance through a JIT approach.'},
+{id:'stackless',name:'Stackless Python',desc:'Python implementation focused on lightweight tasklets and microthreads.'}
+];
+
+const scenarios=[
+{id:'jvm',title:'Scenario 1 — Java/JVM Platform',text:'An enterprise application must integrate Python logic closely with an existing Java/JVM application and its Java ecosystem.',answer:'jython',reason:'Jython is the strongest fit because JVM/Java interoperability is the primary constraint.'},
+{id:'dotnet',title:'Scenario 2 — .NET Enterprise Platform',text:'A legacy enterprise solution is standardized on the .NET/CLR ecosystem and requires Python code to participate in that environment.',answer:'ironpython',reason:'IronPython is designed for Python integration with the .NET/CLR ecosystem.'},
+{id:'jit',title:'Scenario 3 — Performance Investigation',text:'A CPU-intensive Python workload is a candidate for runtime-level performance improvement. The team wants to evaluate a JIT-oriented implementation against representative benchmarks.',answer:'pypy',reason:'PyPy is the strongest candidate because its JIT-oriented runtime characteristics are the focus of the investigation.'},
+{id:'tasklets',title:'Scenario 4 — Lightweight Concurrency Model',text:'A specialized application needs a tasklet/microthread-style concurrency model and the team is explicitly evaluating a runtime built around that model.',answer:'stackless',reason:'Stackless Python is the strongest fit because specialized tasklet/microthread-style concurrency is the defining requirement.'},
+{id:'ecosystem',title:'Scenario 5 — Broad Compatibility',text:'A general enterprise application needs the broadest compatibility with standard Python packages and common Python tooling, with no special JVM, CLR, JIT, or tasklet requirement.',answer:'cpython',reason:'CPython is the strongest fit when broad compatibility with the mainstream Python ecosystem is the priority.'}
+];
+
+let dragged=null;
+
+function makeOption(item){
+const el=document.createElement('div');el.className='option';el.draggable=true;el.tabIndex=0;el.dataset.id=item.id;
+el.innerHTML='<strong>'+item.name+'</strong><span>'+item.desc+'</span>';
+el.addEventListener('dragstart',e=>{dragged=el;el.classList.add('dragging');e.dataTransfer.setData('text/plain',item.id)});
+el.addEventListener('dragend',()=>{el.classList.remove('dragging');dragged=null});
+el.addEventListener('keydown',e=>{const n=parseInt(e.key,10);if(n>=1&&n<=5)place(el,n-1)});
+return el;
+}
+function makeZone(s,i){
+const z=document.createElement('div');z.className='zone';z.dataset.index=i;
+z.innerHTML='<div class="zone-title">'+s.title+'</div><div class="scenario-text" style="font-size:12px;color:#64748b;line-height:1.4">'+s.text+'</div>';
+z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+z.addEventListener('dragleave',()=>z.classList.remove('over'));
+z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');const id=e.dataTransfer.getData('text/plain');const el=document.querySelector('.option[data-id="'+id+'"]');if(el)place(el,i)});
+return z;
+}
+function place(el,i){
+const z=zones.children[i];if(!z)return;
+const existing=z.querySelector('.option');
+const current=el.parentElement&&el.parentElement.classList.contains('zone')?el.parentElement:null;
+if(existing&&existing!==el){if(current)current.appendChild(existing);else bank.appendChild(existing)}
+z.appendChild(el);
+}
+function reset(){
+bank.innerHTML='';[...implementations].sort(()=>Math.random()-.5).forEach(x=>bank.appendChild(makeOption(x)));
+zones.innerHTML='';scenarios.forEach((s,i)=>zones.appendChild(makeZone(s,i)));
+result.className='result';result.innerHTML='';
+}
+function check(){
+const placed=[...zones.children].map(z=>z.querySelector('.option')?.dataset.id||null);
+if(placed.some(x=>!x)){result.className='result show bad';result.innerHTML='<div class="score">Incomplete</div><div class="feedback">Place all five implementations before submitting.</div>';return}
+let score=0;placed.forEach((id,i)=>{if(id===scenarios[i].answer)score++});
+const pct=Math.round(score/5*100);const good=score===5;
+result.className='result show '+(good?'good':'bad');
+let html='<div class="score">'+score+'/5 correct ('+pct+'%)</div><div class="feedback">'+(good?'Excellent. You matched each implementation to its strongest enterprise use case.':'Review the reasoning below. The key is to identify the primary architectural constraint, not simply compare general Python features.')+'</div><div class="answer"><b>Reference reasoning</b>';
+scenarios.forEach((s,i)=>{
+const chosen=placed[i];const name=implementations.find(x=>x.id===chosen).name;
+html+='<div class="answer-row"><div class="answer-label">'+s.title.replace(/Scenario \\d+ — /,'')+'</div><div class="answer-text"><b>Expected:</b> '+implementations.find(x=>x.id===s.answer).name+' &nbsp; | &nbsp; <b>Your choice:</b> '+name+'<br>'+s.reason+'</div></div>';
+});
+html+='</div>';
+result.innerHTML=html;result.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+document.getElementById('submit').addEventListener('click',check);
+document.getElementById('reset').addEventListener('click',reset);
+reset();
+})();
+</script>
+</body>
+</html>
