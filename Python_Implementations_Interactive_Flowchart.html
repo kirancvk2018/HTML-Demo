@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Implementations — Interactive Decision Flow</title>
+<style>
+:root{
+  --navy:#0b1f33; --blue:#1769aa; --blue2:#eaf4fb; --text:#17202a;
+  --muted:#64748b; --border:#d9e2ec; --bg:#f5f8fb; --white:#fff;
+  --green:#16834a; --greenbg:#eaf8f0; --red:#b42318; --redbg:#fff1f0;
+  --gold:#9a6700; --goldbg:#fff8df;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+.app{max-width:1180px;margin:0 auto;padding:28px 22px 44px}
+.header{background:linear-gradient(135deg,#0b1f33,#164d73);color:white;border-radius:16px;padding:28px 30px;margin-bottom:22px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+h1{margin:7px 0 8px;font-size:30px}
+.header p{margin:0;max-width:900px;color:#dbeafe;line-height:1.55}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:20px}
+.panel{background:white;border:1px solid var(--border);border-radius:14px;padding:20px}
+.panel h2{font-size:17px;margin:0 0 6px}
+.help{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 16px}
+.steps{display:flex;flex-direction:column;gap:10px}
+.step{
+  background:#fff;border:1px solid #cbd5e1;border-left:4px solid var(--blue);
+  border-radius:10px;padding:12px 13px;cursor:grab;user-select:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)
+}
+.step:active{cursor:grabbing}
+.step.dragging{opacity:.45}
+.step strong{display:block;font-size:13px;margin-bottom:3px}
+.step span{font-size:12px;color:var(--muted);line-height:1.35}
+.slots{display:flex;flex-direction:column;gap:9px}
+.slot{
+  min-height:66px;border:2px dashed #cbd5e1;border-radius:10px;background:#f8fafc;
+  display:flex;align-items:center;padding:8px 12px;gap:12px;transition:.15s
+}
+.slot.over{border-color:var(--blue);background:var(--blue2)}
+.slot-number{
+  width:30px;height:30px;border-radius:50%;background:#e8eef5;color:var(--navy);
+  display:grid;place-items:center;font-weight:700;font-size:12px;flex:none
+}
+.slot-label{font-size:12px;color:#94a3b8}
+.slot .step{width:100%;cursor:grab;background:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{
+  border:0;border-radius:9px;padding:11px 17px;font-weight:700;cursor:pointer;
+  font-size:13px;min-height:44px
+}
+.primary{background:var(--blue);color:white}.secondary{background:#eef2f6;color:var(--navy)}
+button:focus-visible,.step:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.result{margin-top:18px;border-radius:12px;padding:17px;border:1px solid var(--border);display:none}
+.result.show{display:block}
+.result.good{background:var(--greenbg);border-color:#a7e3bf}
+.result.bad{background:var(--redbg);border-color:#f2b8b3}
+.score{font-size:22px;font-weight:800;margin-bottom:4px}
+.feedback{font-size:13px;line-height:1.5}
+.correct-flow{margin-top:14px;padding-top:14px;border-top:1px solid rgba(0,0,0,.1)}
+.flow{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.flow-item{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
+.flow-num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:white;display:grid;place-items:center;font-size:11px;font-weight:700}
+.flow-card{background:white;border:1px solid var(--border);border-radius:9px;padding:9px 11px;font-size:12px}
+.flow-card strong{display:block;font-size:13px;margin-bottom:2px}
+.scenario{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px}
+.scenario strong{display:block;font-size:13px;margin-bottom:5px}
+.scenario p{font-size:13px;line-height:1.5;margin:0;color:#475569}
+.tip{margin-top:14px;padding:11px 12px;background:var(--goldbg);border:1px solid #ead38a;border-radius:9px;font-size:12px;color:#5f4700}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.app{padding:18px 12px}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<main class="app" id="app">
+  <section class="header">
+    <div class="kicker">Core Python with AI-Integrated Development</div>
+    <h1>Python Implementation Selection — Interactive Flow</h1>
+    <p>Drag the decision steps into the correct enterprise workflow. Submit to receive your score and reveal the reference workflow.</p>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Scenario</h2>
+      <div class="scenario">
+        <strong>Enterprise Python Runtime Decision</strong>
+        <p>
+          Your organization is selecting a Python implementation for a new solution.
+          The solution may need standard Python libraries, Java/JVM integration, .NET/CLR
+          integration, performance optimization, or specialized concurrency. Arrange the
+          decision process in the order an engineering team should follow.
+        </p>
+      </div>
+      <h2>Available Steps</h2>
+      <p class="help">Drag each card into a workflow slot. Keyboard users can focus a card and use <b>1–7</b> to place it into a slot.</p>
+      <div class="steps" id="bank" aria-label="Available workflow steps"></div>
+      <div class="tip"><b>Trainer tip:</b> Ask participants to explain why they placed each step where they did before revealing the answer.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Build the Workflow</h2>
+      <p class="help">Place one step in each position. The workflow should move from requirements to validation and final runtime selection.</p>
+      <div class="slots" id="slots"></div>
+      <div class="actions">
+        <button class="primary" id="submit" type="button">Submit &amp; Check</button>
+        <button class="secondary" id="reset" type="button">Reset Activity</button>
+      </div>
+      <div class="result" id="result" aria-live="polite"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  const root=document.getElementById('app');
+  const bank=document.getElementById('bank');
+  const slots=document.getElementById('slots');
+  const result=document.getElementById('result');
+  const submit=document.getElementById('submit');
+  const reset=document.getElementById('reset');
+
+  const data=[
+    {id:'requirements',title:'1. Identify application requirements',desc:'Clarify workload, libraries, operating environment, integration and deployment constraints.'},
+    {id:'ecosystem',title:'2. Check ecosystem compatibility',desc:'Confirm required Python packages, native extensions and tooling support.'},
+    {id:'integration',title:'3. Identify runtime integration needs',desc:'Determine whether JVM or .NET/CLR interoperability is a primary requirement.'},
+    {id:'performance',title:'4. Assess performance characteristics',desc:'Decide whether the workload may benefit from a JIT-oriented implementation or other runtime characteristics.'},
+    {id:'specialized',title:'5. Check specialized runtime needs',desc:'Determine whether a specialized concurrency/tasklet model is relevant.'},
+    {id:'benchmark',title:'6. Validate with representative tests',desc:'Prototype and benchmark the actual workload rather than assuming one implementation is always faster.'},
+    {id:'select',title:'7. Select and document the implementation',desc:'Choose the runtime that satisfies compatibility, integration, performance and deployment requirements.'}
+  ];
+
+  const correct=data.map(x=>x.id);
+  let dragged=null;
+
+  function makeStep(item){
+    const el=document.createElement('div');
+    el.className='step'; el.draggable=true; el.tabIndex=0;
+    el.dataset.id=item.id;
+    el.innerHTML='<strong>'+item.title+'</strong><span>'+item.desc+'</span>';
+    el.addEventListener('dragstart',e=>{dragged=el;el.classList.add('dragging');e.dataTransfer.setData('text/plain',item.id);});
+    el.addEventListener('dragend',()=>{el.classList.remove('dragging');dragged=null;});
+    el.addEventListener('keydown',e=>{
+      const n=parseInt(e.key,10);
+      if(n>=1 && n<=7){placeInSlot(el,n-1);}
+    });
+    return el;
+  }
+
+  function makeSlot(i){
+    const s=document.createElement('div');
+    s.className='slot'; s.dataset.index=i; s.setAttribute('aria-label','Workflow position '+(i+1));
+    s.innerHTML='<div class="slot-number">'+(i+1)+'</div><div class="slot-label">Drop a decision step here</div>';
+    s.addEventListener('dragover',e=>{e.preventDefault();s.classList.add('over');});
+    s.addEventListener('dragleave',()=>s.classList.remove('over'));
+    s.addEventListener('drop',e=>{
+      e.preventDefault();s.classList.remove('over');
+      const id=e.dataTransfer.getData('text/plain');
+      const el=document.querySelector('.step[data-id="'+id+'"]');
+      if(el) placeInSlot(el,i);
+    });
+    return s;
+  }
+
+  function placeInSlot(el,index){
+    const target=slots.children[index];
+    if(!target)return;
+    const existing=target.querySelector('.step');
+    const currentSlot=el.parentElement && el.parentElement.classList.contains('slot') ? el.parentElement : null;
+    if(existing && existing!==el){
+      if(currentSlot){ currentSlot.appendChild(existing); }
+      else { bank.appendChild(existing); }
+    }
+    target.querySelector('.slot-label')?.remove();
+    target.appendChild(el);
+    normalizeSlots();
+  }
+
+  function normalizeSlots(){
+    [...slots.children].forEach((s,i)=>{
+      if(!s.querySelector('.step') && !s.querySelector('.slot-label')){
+        const l=document.createElement('div');l.className='slot-label';l.textContent='Drop a decision step here';s.appendChild(l);
+      }
+    });
+  }
+
+  function resetActivity(){
+    bank.innerHTML='';
+    [...data].sort(()=>Math.random()-0.5).forEach(x=>bank.appendChild(makeStep(x)));
+    slots.innerHTML='';
+    for(let i=0;i<7;i++)slots.appendChild(makeSlot(i));
+    result.className='result';result.innerHTML='';
+  }
+
+  function check(){
+    const placed=[...slots.children].map(s=>s.querySelector('.step')?.dataset.id || null);
+    if(placed.some(x=>!x)){
+      result.className='result show bad';
+      result.innerHTML='<div class="score">Incomplete workflow</div><div class="feedback">Please place all 7 steps before submitting.</div>';
+      return;
+    }
+    let score=0;
+    placed.forEach((id,i)=>{if(id===correct[i])score++;});
+    const pct=Math.round(score/7*100);
+    const good=score===7;
+    result.className='result show '+(good?'good':'bad');
+    let msg=good
+      ? 'Excellent. The sequence follows a disciplined enterprise runtime-selection process.'
+      : 'Review the reference workflow below. Focus on requirements first, then compatibility and runtime-specific needs, followed by validation.';
+    let flow='<div class="correct-flow"><b>Reference workflow</b><div class="flow">';
+    data.forEach((x,i)=>{
+      flow+='<div class="flow-item"><div class="flow-num">'+(i+1)+'</div><div class="flow-card"><strong>'+x.title+'</strong>'+x.desc+'</div></div>';
+    });
+    flow+='</div></div>';
+    result.innerHTML='<div class="score">'+score+'/7 correct ('+pct+'%)</div><div class="feedback">'+msg+'</div>'+flow;
+    result.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  submit.addEventListener('click',check);
+  reset.addEventListener('click',resetActivity);
+  resetActivity();
+})();
+</script>
+</body>
+</html>
