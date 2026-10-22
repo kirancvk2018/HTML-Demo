@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Module 9 | Cursor for Device, Embedded and HAL Engineering Context</title>
+<style>
+:root{--bg:#f5f8fc;--panel:#fff;--line:#dbe4ee;--ink:#14263d;--muted:#5e7085;--blue:#1769aa;--pale:#eaf4ff;--teal:#087f8c;--green:#15803d;--greenbg:#ecfdf3;--red:#b42318;--redbg:#fff0ef;--amber:#a15c00;--amberbg:#fff7e6;--shadow:0 8px 24px #14263d0c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px "Segoe UI",Arial,sans-serif}button{font:inherit;cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:275px minmax(0,1fr);grid-template-rows:64px 1fr}.top{grid-column:1/-1;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:5}.brand{display:flex;gap:11px;align-items:center}.mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1769aa,#087f8c);display:grid;place-items:center;color:white;font-weight:800}.brand h1{font-size:14px;margin:0 0 3px}.brand small{font-size:10px;color:var(--blue);font-weight:800;letter-spacing:.11em;text-transform:uppercase}.pill,.tag,.count{border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;color:var(--muted);font-size:11px}.side{background:#fff;border-right:1px solid var(--line);padding:17px 0;min-height:calc(100vh - 64px)}.label{padding:10px 17px 8px;text-transform:uppercase;letter-spacing:.1em;font:700 10px Consolas,monospace;color:#8da0b4}.navbtn{width:100%;border:0;border-left:3px solid transparent;background:transparent;text-align:left;display:flex;gap:10px;padding:12px 15px;color:var(--muted);line-height:1.4}.navbtn:hover{background:#f6f9fc}.navbtn.active{background:var(--pale);border-left-color:var(--blue);color:var(--ink)}.num{font:700 10px Consolas,monospace;color:#8da0b4;padding-top:2px}.navfoot{margin:24px 15px 0;padding:12px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:11px;line-height:1.5}main{padding:27px clamp(14px,3vw,40px) 55px;min-width:0}.hero,.work,.reference{max-width:1060px;margin-left:auto;margin-right:auto}.eyebrow{font:700 10px Consolas,monospace;letter-spacing:.13em;color:var(--blue);text-transform:uppercase;margin-bottom:8px}.hero h2{font-size:clamp(24px,3vw,31px);letter-spacing:-.03em;margin:0 0 9px}.hero p{color:var(--muted);line-height:1.65;max-width:850px;margin:0 0 22px}.head,.panel,.reference{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}.head{padding:20px 22px;margin-bottom:17px}.headtop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.code{font:700 10px Consolas,monospace;letter-spacing:.08em;color:var(--blue)}.tags{display:flex;gap:6px;flex-wrap:wrap}.tag{border-radius:6px;padding:5px 8px;font-size:10px;font-weight:700}.head h3{font-size:20px;margin:12px 0 8px}.context{color:var(--muted);line-height:1.6;margin:0}.goal{display:flex;gap:10px;background:#f1f7ff;border:1px solid #d7e9fc;border-radius:9px;padding:11px 13px;margin-top:14px;line-height:1.5}.goal b{color:var(--blue);white-space:nowrap}.workgrid{display:grid;grid-template-columns:1fr 1fr;gap:17px;align-items:start}.panel{overflow:hidden}.ph{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}.ph h4{margin:0;font-size:13px}.ph p{margin:4px 0 0;font-size:11px;color:var(--muted);line-height:1.4}.count{font:700 10px Consolas,monospace;color:var(--blue);background:var(--pale);border:0;border-radius:6px;white-space:nowrap}.bank,.sequence{padding:12px;display:flex;flex-direction:column;gap:8px}.step{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:11px;background:#f8fafc;cursor:grab;line-height:1.4;transition:.15s}.step:hover{border-color:#9bc5ec;background:#f3f9ff}.step.dragging{opacity:.35}.grip{font:700 14px Consolas,monospace;color:#92a4b7}.stext{flex:1}.stext strong{display:block;font-size:12px;margin-bottom:3px}.stext span{display:block;color:var(--muted);font-size:11px}.sid{font:700 9px Consolas,monospace;color:#8da0b4}.hintline{font-size:11px;line-height:1.5;color:var(--muted);padding:0 15px 15px}.drop{min-height:72px;border:1.5px dashed #bdcbd9;border-radius:9px;background:#fbfdff;display:flex;gap:10px;align-items:flex-start;padding:10px}.drop.over{border-color:var(--blue);background:#eaf4ff}.drop.filled{border-style:solid;border-color:#a8c9e7;background:#f6fbff}.drop.correct{border-color:#6fc48b;background:var(--greenbg)}.drop.wrong{border-color:#e6a19b;background:var(--redbg)}.slotnum{width:24px;height:24px;display:grid;place-items:center;flex-shrink:0;border-radius:7px;background:#eaf0f6;color:#4d637a;font:700 10px Consolas,monospace}.dropbody{flex:1;min-width:0}.slotprompt{font-size:11px;font-weight:750;color:#5c6f83;margin:3px 0 5px}.placeholder{font-size:11px;color:#93a4b6;padding-top:2px}.drop .step{padding:7px 8px;background:#fff}.drop .stext strong{font-size:11px}.drop .stext span{font-size:10px}.drop .grip{font-size:12px}.controls{padding:14px 16px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:750;color:var(--ink)}.btn:hover{background:#f7fafc}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.feedback{display:none;margin-top:15px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;line-height:1.55}.feedback.show{display:block}.feedback.good{background:var(--greenbg);border-color:#b4e2c2}.feedback.partial{background:var(--amberbg);border-color:#f0d59b}.feedback.bad{background:var(--redbg);border-color:#efc1bc}.feedback h4{font-size:13px;margin:0 0 6px}.feedback p{font-size:12px;color:#4b5d70;margin:0}.progressrow{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;margin:14px 2px 7px}.track{height:6px;background:#e5edf5;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width .25s}.reference{margin-top:21px;padding:15px 18px;color:var(--muted);font-size:11px;line-height:1.6;box-shadow:none}.reference strong{color:var(--ink)}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.cursorlab{max-width:1060px;margin:18px auto 0;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+.cursorlab .clhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.cursorlab .clhead h3{font-size:15px;margin:0 0 4px}
+.cursorlab .clhead p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+.cursorlab .clbody{padding:16px 18px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.cursorlab .promptbox{width:100%;min-height:210px;resize:vertical;border:1px solid var(--line);border-radius:9px;padding:12px;font:12px/1.55 Consolas,monospace;color:var(--ink);background:#fbfdff}
+.cursorlab .taskbox{border:1px solid var(--line);border-radius:9px;padding:13px;background:#f8fafc}
+.cursorlab .taskbox h4,.cursorlab .promptcol h4{font-size:12px;margin:0 0 9px}
+.cursorlab .taskbox ul{padding-left:18px;margin:0 0 13px;color:var(--muted);font-size:11px;line-height:1.6}
+.cursorlab .taskbox .caution{padding:9px 10px;background:var(--amberbg);border:1px solid #f0d59b;border-radius:8px;font-size:11px;line-height:1.5;color:#754600}
+.cursorlab .clactions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.cursorlab .cllabel{font:700 10px Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.cursorlab .modepill{display:inline-block;background:var(--pale);border:1px solid #d7e9fc;color:var(--blue);border-radius:6px;padding:5px 8px;font-size:10px;font-weight:700;margin:0 4px 8px 0}
+@media(max-width:850px){.cursorlab .clbody{grid-template-columns:1fr}}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#14263d;color:#fff;border-radius:9px;padding:10px 14px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}.toast.show{opacity:1}
+@media(max-width:850px){.app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr}.side{min-height:0;max-height:235px;border-right:0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;align-content:start;padding:7px 0}.label{grid-column:1/-1}.navbtn{padding:9px 12px;font-size:11px}.navfoot{display:none}.workgrid{grid-template-columns:1fr}}@media(max-width:520px){.top{padding:0 11px}.top .pill{display:none}main{padding:19px 10px 35px}.head{padding:15px}.head h3{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="mark">HAL</div><div><h1>Cursor for Device, Embedded &amp; HAL Engineering</h1><small>Module 9 · Engineering Context Lab</small></div></div><div style="display:flex;gap:7px;align-items:center"><span class="pill">Interactive exercise</span><span class="pill" id="score">Score: 0 / 5</span></div></header>
+<aside class="side"><div class="label">Choose a scenario</div><div id="nav"></div><div class="navfoot"><b>Participant task</b><br>Drag each engineering activity into the best sequence. Think about interface contracts, hardware boundaries, fault handling, simulation, evidence and human review. This lab uses a fictional host-side example—not real device firmware.</div></aside>
+<main>
+<section class="hero"><div class="eyebrow">Module 9 · Hands-on assessment</div><h2>Reason across the hardware–software boundary</h2><p>Use Cursor IDE as the AI engineering tool: Ask mode for codebase exploration, Plan mode for bounded changes, Agent/Inline Edit for implementation, terminal/tests for validation, and diff review for human oversight. Arrange the steps for interface analysis, HAL changes, fault diagnosis, test strategy and integration readiness. Scenarios are inspired by publicly described embedded-software, connectivity, verification and quality work in medical technology.</p></section>
+<div class="work">
+<section class="head" id="scenarioHead"></section>
+<div class="workgrid">
+<section class="panel"><div class="ph"><div><h4>Available engineering activities</h4><p>Drag each activity to a numbered sequence slot.</p></div><span class="count" id="bankCount">5 steps</span></div><div class="bank" id="bank" aria-label="Available engineering activities"></div><div class="hintline">Tip: inspect the contract and constraints before changing code. Keep assumptions, fault paths and validation evidence visible.</div></section>
+<section class="panel"><div class="ph"><div><h4>Build the sequence</h4><p>Drop one activity into each slot, in order.</p></div><span class="count" id="slotCount">0 / 5 placed</span></div><div class="sequence" id="sequence" aria-label="Sequence drop zones"></div><div class="controls"><button class="btn primary" id="check">Check answer</button><button class="btn" id="hint">Show hint</button><button class="btn" id="reset">Reset scenario</button><button class="btn" id="next">Next scenario →</button></div></section>
+</div>
+
+<section class="cursorlab" aria-labelledby="cursorLabTitle">
+  <div class="clhead">
+    <div><h3 id="cursorLabTitle">Cursor hands-on task</h3><p>Run this scenario in Cursor using the prompt and acceptance checks below. The drag-and-drop activity tests workflow order; this section makes the lab tool-specific.</p></div>
+    <span class="count">Cursor AI workflow</span>
+  </div>
+  <div class="clbody">
+    <div class="promptcol">
+      <div class="cllabel">Suggested Cursor workflow</div>
+      <span class="modepill" id="cursorModes">Ask → Plan → Agent → Validate → Review</span>
+      <h4>Copy-ready prompt for Cursor</h4>
+      <textarea class="promptbox" id="cursorPrompt" readonly aria-label="Copy-ready Cursor prompt"></textarea>
+      <div class="clactions">
+        <button class="btn primary" id="copyPrompt">Copy prompt</button>
+        <button class="btn" id="copyChecklist">Copy acceptance checklist</button>
+      </div>
+    </div>
+    <div class="taskbox">
+      <h4>Practical task in Cursor</h4>
+      <ul id="cursorTasks"></ul>
+      <h4>Acceptance checks</h4>
+      <ul id="cursorChecks"></ul>
+      <div class="caution"><strong>Safety boundary:</strong> use only the fictional host-side examples in this lab. Do not connect these exercises to real medical devices or treat generated code, mock tests, or a successful compile as proof of device safety. Qualified engineering review and target-hardware verification remain separate requirements.</div>
+    </div>
+  </div>
+</section>
+
+<div class="feedback" id="feedback" role="status" aria-live="polite"></div><div class="progressrow"><span id="progressLabel">Scenario 1 of 5</span><span id="progressText">0 of 5 completed</span></div><div class="track"><div class="fill" id="fill"></div></div>
+</div>
+<section class="reference"><strong>Context and learning note</strong><br>These are fictional educational scenarios aligned to publicly described embedded software, device connectivity, hardware/software integration, verification and validation themes. They are not Stryker internal procedures, actual product designs, or instructions for modifying a clinical device. Use only approved source code, simulators and test hardware; do not infer hardware behavior from AI-generated code. Qualified engineers must review changes and follow the applicable quality system.<div style="margin-top:7px">Public references: <a href="https://careers.stryker.com/software-engineer/job/AC212D9444D23AF0A322F90D188AD5CE" target="_blank" rel="noopener">Stryker Software Engineer — embedded development</a> · <a href="https://careers.stryker.com/senior-staff-engineer-software/job/80D0B2C1C24B0B68689C955FE0ED21BB" target="_blank" rel="noopener">Stryker Senior Staff Engineer — embedded platforms and HAL</a> · <a href="https://careers.stryker.com/manager-embedded-systems/job/EB119B536D413379516A9ACB11A2C33F" target="_blank" rel="noopener">Stryker Manager, Embedded Systems — verification and integration</a></div></section>
+</main></div><div class="toast" id="toast" aria-live="polite"></div>
+<script>
+const scenarios=[
+{id:"HAL",title:"Scenario 1 · Add a HAL wrapper for a sensor",tags:["HAL boundary","Interface contract"],context:"A fictional embedded platform reads a sensor through a hardware abstraction layer. A developer asks Cursor to add a wrapper that returns a measurement and status code. The existing codebase has conventions for units, error codes, initialization and ownership, but these are not yet documented in the prompt.",goal:"Establish the contract and constraints before implementation, then verify behavior without assuming the physical sensor is available.",hint:"Do not ask the agent to code first. Inspect existing abstractions and define success, units, failure behavior and test seams.",steps:[
+{id:"A",title:"Implement the smallest bounded change",desc:"Ask Cursor to modify only the agreed interface and implementation files; avoid unrelated refactoring."},
+{id:"B",title:"Inspect existing HAL patterns and callers",desc:"Trace initialization, return codes, units, ownership, timing assumptions and call sites."},
+{id:"C",title:"Run host-side tests and review the diff",desc:"Exercise valid values, unavailable sensor, invalid status and boundary behavior; inspect all changes."},
+{id:"D",title:"Write the interface contract and acceptance criteria",desc:"Specify input/output types, units, errors, initialization assumptions and expected behavior."},
+{id:"E",title:"Review evidence and approve integration",desc:"Confirm tests match the contract and obtain qualified review before hardware integration."}],order:["B","D","A","C","E"],explain:"Understand local conventions and dependencies, define the contract, make a bounded implementation, test behavior and inspect the diff, then review evidence before integration."},
+{id:"FAULT",title:"Scenario 2 · Intermittent sensor read failure",tags:["Fault handling","Root cause"],context:"A telemetry task occasionally receives a timeout from a sensor interface. A quick AI suggestion proposes retrying indefinitely. The system has timing constraints, and the fault may be caused by bus contention, initialization order or a genuine sensor problem.",goal:"Diagnose the failure systematically and avoid introducing unbounded retries or hiding a fault.",hint:"Start with reproducible evidence and constraints. Never accept an infinite retry loop without proving its timing and safety implications.",steps:[
+{id:"A",title:"Validate the fix against fault and timing tests",desc:"Test timeout, recovery, repeated failure and maximum retry behavior; check bounded execution."},
+{id:"B",title:"Capture logs and reproduce the failure",desc:"Record sequence, timestamps, status codes, initialization state and relevant bus observations."},
+{id:"C",title:"Review root cause and change evidence",desc:"Compare the proposed fix to evidence, inspect the diff and document remaining uncertainty."},
+{id:"D",title:"Check interface contract and timing constraints",desc:"Review timeout semantics, retry limits, task deadlines, bus ownership and fault-state expectations."},
+{id:"E",title:"Form and test bounded root-cause hypotheses",desc:"Investigate initialization order, contention and sensor availability; use controlled experiments."}],order:["B","D","E","A","C"],explain:"Reproduce and capture evidence, review interface and timing constraints, test root-cause hypotheses, validate a bounded fix under faults, then review evidence and uncertainty."},
+{id:"STATE",title:"Scenario 3 · Telemetry state-machine change",tags:["State machine","Regression"],context:"A host-side telemetry component has states such as UNINITIALIZED, READY, READING and FAULT. A requested change adds recovery after a temporary read error. Cursor can edit multiple files, but invalid transitions and repeated recovery attempts could create regressions.",goal:"Make state transitions explicit and verify normal, boundary and fault paths before accepting the change.",hint:"Write down allowed transitions and invariants before code changes. Test invalid transitions as well as the happy path.",steps:[
+{id:"A",title:"Review the transition table and diff",desc:"Confirm implementation matches approved transitions, invariants and error reporting."},
+{id:"B",title:"Map current states, callers and invariants",desc:"Inspect state definitions, entry/exit actions, reset behavior and dependencies."},
+{id:"C",title:"Create transition and fault-path tests",desc:"Cover normal flow, invalid transitions, recovery success, repeated failure and reset."},
+{id:"D",title:"Specify the proposed recovery transition",desc:"Define trigger, retry limit, timeout, recovery destination and behavior when recovery fails."},
+{id:"E",title:"Implement a bounded change and run regression",desc:"Use Cursor to implement only the agreed change; execute new and existing tests."}],order:["B","D","E","C","A"],explain:"Map the existing state model, specify the recovery contract, implement a bounded change, test transition and fault paths, then review code against the approved model."},
+{id:"MOCK",title:"Scenario 4 · No hardware available for the lab",tags:["Simulation","Test seam"],context:"The training environment has no evaluation board connected. The team still wants to demonstrate a driver-facing component, including timeout and error behavior, using host-side tests. The mock must not be mistaken for proof of real hardware behavior.",goal:"Separate software-logic verification from hardware-dependent validation and label the limits of simulation.",hint:"Define the seam between logic and hardware. A passing mock test proves only the behavior represented by the mock.",steps:[
+{id:"A",title:"Run host-side tests against the fake interface",desc:"Verify deterministic logic, return-code handling, boundaries and error paths in the simulator."},
+{id:"B",title:"Identify hardware-dependent assumptions",desc:"List electrical, timing, bus, interrupt, DMA and device-specific behavior not proven on host."},
+{id:"C",title:"Define a narrow interface and mock contract",desc:"Specify which calls are replaced, what the fake returns and which behaviors it models."},
+{id:"D",title:"Design the hardware-integration validation plan",desc:"Define required board tests, instrumentation, expected observations and pass/fail criteria."},
+{id:"E",title:"Record evidence scope and limitations",desc:"Document host-test results separately from pending target-hardware verification."}],order:["B","C","A","D","E"],explain:"Identify what depends on real hardware, define the interface and mock contract, test host-side logic, plan target validation, and clearly record what remains unverified."},
+{id:"CHANGE",title:"Scenario 5 · Review a Cursor-generated driver change",tags:["AI-assisted change","Human review"],context:"Cursor generates a driver change that compiles in a local build. The diff also changes a timeout constant, alters an error return and modifies a shared helper used by another component. There is no evidence yet from target hardware.",goal:"Review scope, impact and evidence before deciding whether the change is ready for integration.",hint:"A successful compile is only one signal. Inspect every changed line, shared dependency, error path and missing target evidence.",steps:[
+{id:"A",title:"Decide readiness with explicit evidence limits",desc:"Record approval, required follow-up and any target-hardware checks that remain outstanding."},
+{id:"B",title:"Inspect the full diff and shared dependencies",desc:"Identify scope creep, changed constants, error semantics, callers and possible side effects."},
+{id:"C",title:"Run static checks and relevant host tests",desc:"Check warnings, boundary cases, error handling and regression behavior in the available environment."},
+{id:"D",title:"Compare changes to requirements and interface contracts",desc:"Confirm timeout values, return codes and behavior are justified by approved specifications."},
+{id:"E",title:"Plan and review target-hardware verification",desc:"Define board-level checks for timing, bus behavior, error recovery and integration before release."}],order:["B","D","C","E","A"],explain:"Inspect the complete diff and dependencies, compare behavior with approved contracts, run available checks, plan target verification, then make a documented readiness decision that states evidence limits."}
+];
+
+const cursorLab = {
+HAL: {
+modes:"Ask → Plan → Agent → Test → Review",
+prompt:`You are assisting with a fictional host-side embedded software training project. Do not assume access to hardware or invent device specifications.
+
+First, in Ask mode, inspect the existing files and report: the HAL interface, call sites, return-code conventions, units, initialization assumptions, ownership, and existing tests. Do not edit yet.
+Then propose a short plan that names the exact files to change, the interface contract, failure behavior, and tests. Wait for approval before implementation.
+After approval, make the smallest bounded change to add a sensor-reading wrapper. Preserve existing conventions; do not perform unrelated refactoring. Add or update host-side tests for a valid reading, unavailable sensor, invalid status, and boundary values.
+Run the available tests and report the exact commands and results. Summarize the diff, assumptions, untested hardware behavior, and remaining risks. If project details are missing, ask questions rather than inventing them.`,
+tasks:[
+"Open a small fictional C/C++ project in Cursor (or create a training folder with a HAL interface, implementation, and host-side test).",
+"Use Ask mode to map the interface, callers, error codes, units, and test framework before editing.",
+"Use Plan mode to agree the smallest file-level change and acceptance criteria.",
+"Use Agent mode or Inline Edit to implement the wrapper and tests; inspect every changed file."
+],
+checks:[
+"Return values and units match the written contract; failures are explicit.",
+"Tests cover valid, unavailable, invalid-status, and boundary cases.",
+"Diff contains no unrelated edits; test command and result are recorded.",
+"Report explicitly distinguishes host-side evidence from real-hardware validation."
+]},
+FAULT: {
+modes:"Ask → Reproduce → Plan → Test → Review",
+prompt:`Act as a cautious coding assistant for a fictional host-side embedded software lab. A sensor read intermittently times out. Do not recommend an unbounded retry loop, and do not claim root cause without evidence.
+
+In Ask mode, inspect the relevant code, logs, timeout semantics, initialization sequence, bus ownership, task deadlines, and existing tests. List evidence separately from hypotheses.
+Propose bounded hypotheses for initialization order, contention, and sensor availability. Suggest a reproducible host-side test or instrumentation plan for each hypothesis.
+Before editing, propose a minimal fix with a finite retry limit or explicit failure path, explain timing implications, and identify affected files. After approval, implement only the agreed change and add tests for timeout, successful recovery, repeated failure, and retry-limit behavior.
+Run available tests, show commands/results, inspect the diff, and state what remains uncertain or requires target-hardware testing.`,
+tasks:[
+"Ask Cursor to inspect the timeout path and separate observed evidence from possible causes.",
+"Request a reproducible diagnostic plan before asking Cursor to change code.",
+"Use Plan mode to define a bounded retry/failure strategy with timing constraints.",
+"Implement the approved change and add tests for first-timeout recovery, repeated timeout, and retry exhaustion."
+],
+checks:[
+"No infinite retry or swallowed error is introduced.",
+"Tests prove retry limits and expected behavior after recovery fails.",
+"Root-cause claims are tied to evidence; unresolved hypotheses remain labelled.",
+"Target timing, bus behavior, and sensor behavior are marked as requiring hardware validation."
+]},
+STATE: {
+modes:"Ask → Model → Plan → Agent → Regression",
+prompt:`You are working in a fictional host-side telemetry component with states UNINITIALIZED, READY, READING, and FAULT. A requirement asks for recovery after a temporary read error.
+
+In Ask mode, locate state definitions, transitions, entry/exit actions, callers, reset behavior, and existing tests. Do not edit yet.
+Create a transition table showing current state, event, guard, next state, action, and error behavior. Identify invariants and invalid transitions.
+Propose a plan for the smallest multi-file change and tests. Wait for approval. Then implement the approved transition and add tests for normal flow, recovery success, repeated recovery failure, reset, and invalid transitions.
+Run regression tests, review the full diff, and report whether implementation matches the transition table. Do not invent timing or safety requirements; list missing requirements as questions.`,
+tasks:[
+"Use Ask mode to trace state definitions and all transition-related call sites.",
+"Ask Cursor to draft a transition table and invariants in Markdown before code changes.",
+"Use Plan mode for the multi-file change and test coverage.",
+"Use Agent mode to implement the approved transition and add regression/fault-path tests."
+],
+checks:[
+"Every state transition is represented in the table and justified by the requirement.",
+"Tests cover happy path, invalid transitions, reset, recovery success, and repeated failure.",
+"Implementation and transition table agree; diff has no unrelated changes.",
+"Unknown timing or safety requirements are surfaced as questions, not fabricated."
+]},
+MOCK: {
+modes:"Ask → Define seam → Implement mock → Test → Record limits",
+prompt:`This is a fictional host-side embedded lab with no evaluation board attached. Help create a testable software seam without pretending that simulation proves hardware behavior.
+
+In Ask mode, identify hardware-dependent calls and the pure logic that can be tested on a host. List assumptions involving electrical behavior, bus timing, interrupts, DMA, and device-specific responses that a mock cannot validate.
+Propose a narrow interface and a fake/mock contract: inputs, outputs, errors, timeouts, and which behaviors are represented. After approval, implement only the mock/test seam and host-side tests for normal responses, timeout, error return, and boundary conditions.
+Run the tests and document exactly what they prove and do not prove. Create a separate target-hardware validation checklist with observable pass/fail criteria. Do not label host tests as hardware verification.`,
+tasks:[
+"Use Ask mode to locate hardware-facing calls and isolate logic suitable for host-side tests.",
+"Define a narrow interface and state what the mock simulates and omits.",
+"Use Cursor to add a fake implementation and deterministic host tests.",
+"Ask Cursor to draft a separate target-hardware verification checklist."
+],
+checks:[
+"Mock contract clearly states modeled behavior and limitations.",
+"Host tests cover normal, timeout, error, and boundary paths.",
+"Results are labelled as host-side tests—not target-hardware verification.",
+"Hardware checklist includes observable criteria and pending evidence."
+]},
+CHANGE: {
+modes:"Ask → Diff review → Plan checks → Validate → Human decision",
+prompt:`Cursor has generated a fictional driver change that compiles, but it also changes a timeout constant, alters an error return, and modifies a shared helper. There is no target-hardware evidence.
+
+Do not approve the change based on compilation alone. In Ask mode, inspect the complete diff and trace the shared helper's callers. Compare timeout values and error semantics against available requirements and interface contracts; flag anything unsupported rather than guessing.
+Build a review checklist and propose relevant static checks, host tests, regression tests, and target-hardware checks. If requirements are missing, list precise questions. Do not modify the code unless explicitly asked.
+Summarize findings by severity, cite changed files/lines where possible, distinguish confirmed defects from risks/questions, and provide a release-readiness recommendation with evidence limitations. A qualified human remains accountable for the decision.`,
+tasks:[
+"Open the generated diff in Cursor and use Ask mode to inspect every changed file and shared-helper caller.",
+"Ask Cursor to compare each behavior change against requirements; record unknowns as questions.",
+"Use Cursor to propose and run available static checks and relevant host regression tests.",
+"Prepare a review summary separating confirmed findings, risks, missing evidence, and target-hardware checks."
+],
+checks:[
+"Timeout and return-code changes have traceable requirements or are flagged as unresolved.",
+"Shared-helper impact and regression scope are examined.",
+"Compilation is not treated as sufficient evidence; hardware-dependent behavior is listed separately.",
+"Final recommendation explains evidence limits and leaves approval to qualified human reviewers."
+]}
+};
+function renderCursorLab(){
+  const s=scenarios[current], c=cursorLab[s.id];
+  if(!c)return;
+  $("cursorModes").textContent=c.modes;
+  $("cursorPrompt").value=c.prompt;
+  $("cursorTasks").innerHTML=c.tasks.map(x=>`<li>${esc(x)}</li>`).join("");
+  $("cursorChecks").innerHTML=c.checks.map(x=>`<li>${esc(x)}</li>`).join("");
+}
+function copyText(value){
+  if(navigator.clipboard && window.isSecureContext){navigator.clipboard.writeText(value).then(()=>toast("Copied to clipboard."),()=>fallbackCopy(value));}
+  else fallbackCopy(value);
+}
+function fallbackCopy(value){
+  const box=document.createElement("textarea");box.value=value;box.style.position="fixed";box.style.opacity="0";document.body.appendChild(box);box.select();
+  try{document.execCommand("copy");toast("Copied to clipboard.");}catch(e){toast("Select and copy the text manually.");}
+  box.remove();
+}
+
+let current=0,placed={},completed=new Set(),selected=null,dragged=null;
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(s){let t=$("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1700)}
+function shuffled(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+scenarios.forEach(s=>placed[s.id]=Array(s.order.length).fill(null));
+function nav(){$("nav").innerHTML=scenarios.map((s,i)=>`<button class="navbtn ${i===current?'active':''}" data-i="${i}"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(s.title.replace(/^Scenario \d+ · /,''))}<br><small style="font-size:10px;color:#8da0b4">${completed.has(s.id)?'✓ Completed':esc(s.tags.join(' · '))}</small></span></button>`).join("");$("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{current=+b.dataset.i;selected=null;render()})}
+function stepHTML(st){return `<div class="step" draggable="true" tabindex="0" role="button" aria-label="Select or drag ${esc(st.title)}" data-step="${st.id}"><span class="grip">⠿</span><div class="stext"><strong>${esc(st.title)}</strong><span>${esc(st.desc)}</span></div><span class="sid">${st.id}</span></div>`}
+function render(){let s=scenarios[current],arr=placed[s.id],used=new Set(arr.filter(Boolean));
+$("scenarioHead").innerHTML=`<div class="headtop"><span class="code">${s.id} · EMBEDDED ENGINEERING SCENARIO</span><div class="tags">${s.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}<span class="tag">Scenario ${current+1} / ${scenarios.length}</span></div></div><h3>${esc(s.title)}</h3><p class="context">${esc(s.context)}</p><div class="goal"><b>Challenge</b><span>${esc(s.goal)}</span></div>`;
+$("bank").innerHTML=shuffled(s.steps.filter(x=>!used.has(x.id))).map(stepHTML).join("");
+$("sequence").innerHTML=arr.map((id,i)=>{let st=id?s.steps.find(x=>x.id===id):null;return `<div class="drop ${st?'filled':''}" data-slot="${i}" tabindex="0" role="button" aria-label="Sequence slot ${i+1}${st?', '+esc(st.title):', empty'}"><span class="slotnum">${i+1}</span><div class="dropbody">${st?stepHTML(st):`<div class="slotprompt">STEP ${i+1}</div><div class="placeholder">Drop an activity here</div>`}</div></div>`}).join("");
+$("bankCount").textContent=`${s.steps.length-used.size} steps left`;$("slotCount").textContent=`${used.size} / ${arr.length} placed`;$("feedback").className="feedback";$("feedback").innerHTML="";$("check").disabled=completed.has(s.id);$("progressLabel").textContent=`Scenario ${current+1} of ${scenarios.length}`;$("progressText").textContent=`${completed.size} of ${scenarios.length} completed`;$("fill").style.width=`${completed.size/scenarios.length*100}%`;nav();bind();renderCursorLab()}
+function bind(){document.querySelectorAll(".step").forEach(c=>{c.ondragstart=e=>{dragged=c.dataset.step;c.classList.add("dragging");e.dataTransfer.setData("text/plain",dragged);e.dataTransfer.effectAllowed="move"};c.ondragend=()=>{dragged=null;c.classList.remove("dragging");document.querySelectorAll(".drop").forEach(z=>z.classList.remove("over"))};c.onclick=()=>{selected=c.dataset.step;toast("Activity selected. Choose a numbered slot.");document.querySelectorAll(".step").forEach(x=>x.style.outline=x.dataset.step===selected?"2px solid #1769aa":"")};c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selected=c.dataset.step;toast("Activity selected. Choose a numbered slot.")}}});document.querySelectorAll(".drop").forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add("over");e.dataTransfer.dropEffect="move"};z.ondragleave=()=>z.classList.remove("over");z.ondrop=e=>{e.preventDefault();z.classList.remove("over");let id=e.dataTransfer.getData("text/plain")||dragged;if(id)put(id,+z.dataset.slot)};z.onclick=()=>{if(selected){put(selected,+z.dataset.slot);selected=null}};z.onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&selected){e.preventDefault();put(selected,+z.dataset.slot);selected=null}}})}
+function put(id,i){let a=placed[scenarios[current].id],old=a.indexOf(id);if(old>=0)a[old]=null;a[i]=id;render()}
+function feedback(type,title,msg){let f=$("feedback");f.className=`feedback show ${type}`;f.innerHTML=`<h4>${esc(title)}</h4><p>${esc(msg)}</p>`}
+function check(){let s=scenarios[current],a=placed[s.id];if(a.some(x=>!x)){feedback("partial","Complete the sequence first","Place an activity in every slot before checking your answer.");return}let n=a.reduce((v,id,i)=>v+(id===s.order[i]?1:0),0);if(n===a.length){completed.add(s.id);$("check").disabled=true;feedback("good",`Correct sequence · ${n}/${a.length}`,s.explain+" Engineering principle: AI-generated code is a proposal; hardware assumptions, target behavior and release decisions require qualified human review.");}else{feedback("partial",`${n}/${a.length} positions correct`,`Review the order and try again. Revisit positions: ${a.map((id,i)=>id===s.order[i]?null:i+1).filter(Boolean).join(", ")}. Use Show hint for another clue.`);a.forEach((id,i)=>{let z=document.querySelector(`.drop[data-slot="${i}"]`);if(z)z.classList.add(id===s.order[i]?"correct":"wrong")})}$("score").textContent=`Score: ${completed.size} / ${scenarios.length}`;$("progressText").textContent=`${completed.size} of ${scenarios.length} completed`;$("fill").style.width=`${completed.size/scenarios.length*100}%`;nav()}
+$("copyPrompt").onclick=() => copyText($("cursorPrompt").value);$("copyChecklist").onclick=() => {const s=cursorLab[scenarios[current].id];copyText("Practical task:\n- "+s.tasks.join("\n- ")+"\n\nAcceptance checks:\n- "+s.checks.join("\n- "));};$("check").onclick=check;$("hint").onclick=()=>feedback("partial","Hint",scenarios[current].hint);$("reset").onclick=()=>{let s=scenarios[current];placed[s.id]=Array(s.order.length).fill(null);completed.delete(s.id);selected=null;render();$("score").textContent=`Score: ${completed.size} / ${scenarios.length}`;toast("Scenario reset.")};$("next").onclick=()=>{current=(current+1)%scenarios.length;selected=null;render();toast(`Opened scenario ${current+1}.`)};render();
+</script>
+</body></html>
