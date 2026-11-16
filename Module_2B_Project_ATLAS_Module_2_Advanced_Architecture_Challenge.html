@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project ATLAS | Module 2 Advanced Architecture Challenge</title>
+<style>
+:root{--navy:#14243a;--blue:#2457a7;--cyan:#dceeff;--ink:#1e293b;--muted:#64748b;--line:#d8e0ea;--bg:#f3f6fa;--green:#137547;--red:#b42318;--amber:#9a6700}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.55 "Segoe UI",Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#14243a,#2457a7);color:white;padding:28px max(22px,calc((100% - 1120px)/2))}
+header .eyebrow{font-size:12px;letter-spacing:1.8px;text-transform:uppercase;opacity:.8}h1{margin:6px 0;font-size:28px}header p{margin:5px 0 0;max-width:850px;color:#e5efff}
+main{max-width:1120px;margin:22px auto;padding:0 18px 50px}.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:20px;margin:16px 0;box-shadow:0 3px 12px #1e293b0a}
+h2{font-size:20px;margin:0 0 12px;color:var(--navy)}h3{font-size:16px;margin:0 0 8px;color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.fact{background:#f7f9fc;border:1px solid var(--line);border-radius:9px;padding:13px}
+.tag{display:inline-block;background:#e8f0ff;color:#214b8d;border-radius:30px;padding:3px 9px;font-size:12px;font-weight:700;margin:2px}
+.callout{border-left:4px solid var(--blue);background:#f1f6ff;padding:12px 15px;border-radius:5px}
+.metric{font-size:22px;font-weight:750;color:var(--blue)}.muted{color:var(--muted);font-size:13px}
+.progress{height:8px;background:#e7edf5;border-radius:8px;overflow:hidden;margin:10px 0}.bar{height:100%;background:#3676c8;width:0;transition:.25s}
+.question{padding:17px 0;border-top:1px solid var(--line)}.question:first-child{border-top:0}
+.qhead{display:flex;gap:10px;align-items:flex-start}.qnum{background:#e8f0ff;color:#214b8d;border-radius:7px;padding:2px 8px;font-weight:700}
+.options{display:grid;gap:8px;margin:12px 0 0 34px}.option{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:8px;cursor:pointer}.option:hover{background:#f7faff;border-color:#8eadd9}.option input{margin-top:4px;accent-color:var(--blue)}
+textarea{width:100%;min-height:88px;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font:inherit;resize:vertical}
+button{border:0;border-radius:8px;padding:11px 17px;font-weight:700;cursor:pointer;background:var(--blue);color:white}button.secondary{background:#e8eef7;color:#24364e}button:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.feedback{margin:10px 0 0 34px;padding:10px 12px;border-radius:8px;display:none}.correct{background:#eaf7ef;color:#145c36}.incorrect{background:#fff0ef;color:#8d211b}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:10px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f1f5f9}
+select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;width:100%;font:inherit;background:white}
+.result{display:none}.score{font-size:34px;font-weight:800;color:var(--blue)}.pill{font-size:12px;padding:3px 8px;border-radius:20px;background:#edf2f8}
+@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:23px}.panel{padding:15px}}
+@media print{body{background:white}.panel{box-shadow:none;break-inside:avoid}button,.actions{display:none!important}}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow">Ness Digital Engineering · Claude Certified Architect – Foundations</div>
+ <h1>Project ATLAS: Advanced Enterprise Architecture Challenge</h1>
+ <p>Module 2 · Scenario-based architecture assessment · Higher difficulty than the foundation quiz</p>
+</header>
+<main>
+<section class="panel">
+ <h2>Challenge brief</h2>
+ <p>GlobalTech Manufacturing wants to extend Project ATLAS from a pilot used by two engineering teams to a shared service for <b>8,000 engineers across 12 countries</b>. ATLAS helps engineers understand legacy code, assess change impact, draft tests and retrieve engineering knowledge.</p>
+ <div class="grid">
+  <div class="fact"><h3>Current estate</h3><ul><li>GitHub Enterprise for source code</li><li>Jira for work items and incidents</li><li>Confluence for architecture and runbooks</li><li>Three internal systems expose APIs; two have inconsistent schemas</li></ul></div>
+  <div class="fact"><h3>Business constraints</h3><ul><li>Some engineering data must remain in its designated region</li><li>Peak demand is 1,200 concurrent users</li><li>Critical change recommendations require engineer approval</li><li>Initial rollout must integrate with existing identity and audit services</li></ul></div>
+  <div class="fact"><h3>Quality targets</h3><ul><li>95% of standard requests should return within 12 seconds</li><li>Availability target: 99.9% monthly</li><li>Every answer must identify its evidence sources</li><li>Untrusted repository content must not override system policy</li></ul></div>
+  <div class="fact"><h3>Architecture budget</h3><ul><li>Use managed services where they reduce operational burden</li><li>Avoid duplicating enterprise capabilities without a clear reason</li><li>Support phased delivery and measurable acceptance criteria</li></ul></div>
+ </div>
+ <div class="callout"><b>Your role:</b> You are the solution architect. Choose an architecture that satisfies the constraints, explain the trade-offs, and identify what must be validated before production. There may be more than one defensible design, but some options violate explicit requirements.</div>
+</section>
+
+<section class="panel">
+ <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+  <div><h2>Part A — Architecture judgement</h2><div class="muted">10 questions · Select the strongest answer, not merely a technically possible one.</div></div>
+  <div><span class="pill">Advanced · 10 points</span></div>
+ </div>
+ <div class="progress"><div class="bar" id="progress"></div></div>
+ <div id="quiz"></div>
+ <div class="actions"><button onclick="gradeQuiz()">Submit Part A</button><button class="secondary" onclick="resetQuiz()">Reset answers</button></div>
+ <div id="quizResult" class="callout" style="display:none;margin-top:16px"></div>
+</section>
+
+<section class="panel">
+ <h2>Part B — Choose an architecture pattern</h2>
+ <p class="muted">For each requirement, select the most appropriate primary pattern. Consider determinism, variability, governance and operational complexity.</p>
+ <div id="patternQuestions"></div>
+ <div class="actions"><button onclick="gradePatterns()">Submit Part B</button></div>
+ <div id="patternResult" class="callout" style="display:none;margin-top:16px"></div>
+</section>
+
+<section class="panel">
+ <h2>Part C — Design decisions and trade-offs</h2>
+ <p>Write concise architect-level responses. These are assessed with a review checklist rather than an automated score.</p>
+ <h3>1. Define the system boundary</h3>
+ <p class="muted">Identify what ATLAS owns, what remains in enterprise systems, and where trust/security boundaries sit.</p>
+ <textarea id="a1" placeholder="Your architecture response..."></textarea>
+ <h3 style="margin-top:15px">2. Recommend a Claude integration and orchestration approach</h3>
+ <p class="muted">Explain how the application invokes the model, coordinates specialist capabilities and handles tools. Avoid treating every task as an autonomous agent task.</p>
+ <textarea id="a2" placeholder="Your architecture response..."></textarea>
+ <h3 style="margin-top:15px">3. Write one Architecture Decision Record (ADR)</h3>
+ <p class="muted">State the decision, context, alternatives considered, rationale, consequences and validation required.</p>
+ <textarea id="a3" placeholder="ADR title and content..."></textarea>
+ <h3 style="margin-top:15px">4. Define measurable acceptance criteria</h3>
+ <p class="muted">Provide at least four testable criteria covering response time, availability, evidence traceability, security or human approval.</p>
+ <textarea id="a4" placeholder="Given / When / Then or measurable acceptance criteria..."></textarea>
+ <div class="actions"><button onclick="showReview()">Show self-review checklist</button><button class="secondary" onclick="window.print()">Print challenge</button></div>
+ <div id="review" style="display:none;margin-top:15px" class="callout">
+  <b>Architect review checklist</b>
+  <ul>
+   <li>Boundaries and ownership are explicit; GitHub/Jira/Confluence remain systems of record.</li>
+   <li>Functional and non-functional requirements are distinguished and measurable.</li>
+   <li>Pattern selection is justified per use case; deterministic flows are preferred where steps are known.</li>
+   <li>Claude is accessed through a controlled integration layer; model choice is not confused with orchestration.</li>
+   <li>Tool access is least-privilege, scoped and auditable; retrieved content is treated as untrusted data.</li>
+   <li>Regional data constraints, identity, audit and human approval are represented in the design.</li>
+   <li>Trade-offs, failure modes, assumptions and unresolved validation items are documented in ADRs.</li>
+  </ul>
+ </div>
+</section>
+
+<section class="panel result" id="finalResult">
+ <h2>Challenge result</h2><div class="score" id="totalScore"></div><p id="resultText"></p>
+ <div id="breakdown"></div>
+ <div class="actions"><button onclick="window.print()">Print results</button><button class="secondary" onclick="location.reload()">Restart challenge</button></div>
+</section>
+<footer class="muted" style="text-align:center;padding:10px">Training simulation only. Project ATLAS and GlobalTech are fictional. This exercise is not an official certification exam or a statement of Anthropic/Ness reference architecture.</footer>
+</main>
+<script>
+const questions=[
+{q:"A team proposes one autonomous multi-agent workflow for every request, including simple documentation lookup. What is the strongest architecture response?",o:["Approve it because one architecture is easier to operate","Use the simplest pattern that meets each use case; reserve agentic orchestration for tasks needing dynamic decisions","Replace all existing APIs with agents","Let the model decide the architecture at runtime"],a:1,e:"Pattern selection should follow requirements. Predictable retrieval or fixed sequences often suit deterministic application/workflow patterns; dynamic decomposition may justify agentic orchestration."},
+{q:"A regional policy states that repository content for Region A must not leave that region. Which design best addresses this?",o:["Send all content to one central model gateway and mask project names","Keep regional data access and processing within the approved boundary, and validate the model endpoint/data path against policy","Store a copy in a global cache for faster retrieval","Ask users to confirm they are comfortable sharing data"],a:1,e:"The data path—not just storage location—must respect the regional boundary. Validate prompts, retrieval, logs, caches and model processing locations."},
+{q:"ATLAS must return source evidence for every generated recommendation. Which requirement is most testable?",o:["Answers should be trustworthy","The interface should feel transparent","For each recommendation, return source identifiers and locations; reject or label responses when evidence is absent","The model should use its best judgement"],a:2,e:"This converts a general quality goal into an observable acceptance criterion with explicit behaviour when evidence is missing."},
+{q:"The workflow for drafting a test from an approved change request has fixed steps and mandatory sign-offs. Which primary design is strongest?",o:["An unconstrained autonomous agent","A deterministic workflow with model assistance at bounded steps and explicit approval gates","A multi-agent debate for every action","A single prompt that asks Claude to do everything"],a:1,e:"Known steps and mandatory gates favour deterministic orchestration. The model can assist with bounded reasoning without owning the process control."},
+{q:"A specialist agent needs to read a Jira issue and inspect a repository. What is the most appropriate integration principle?",o:["Give it a shared administrator credential","Expose narrowly scoped tools/APIs with identity-aware authorization, input validation and audit","Allow arbitrary shell commands so it can adapt","Put all credentials in the system prompt"],a:1,e:"Use controlled tool interfaces and least privilege. Tool calls need authorization, validation and traceability."},
+{q:"The architecture team is debating whether to build a new enterprise identity service inside ATLAS. What should the ADR recommend?",o:["Build it to keep the architecture self-contained","Integrate with the existing identity capability unless a documented gap justifies building","Skip identity in the pilot","Allow each agent to manage its own user accounts"],a:1,e:"Avoid duplicating mature enterprise capabilities. Document the gap, options, rationale and consequences if integration is insufficient."},
+{q:"The 12-second response target is missed because agents repeatedly fetch the same Confluence pages. What is the best first architecture-level response?",o:["Increase model temperature","Measure the end-to-end latency and retrieval pattern; introduce governed reuse/caching and reduce redundant calls","Remove evidence citations","Run every agent in parallel regardless of dependency"],a:1,e:"Diagnose first, then reduce repeated retrieval with appropriate freshness, authorization and regional controls. Parallelism alone can increase load."},
+{q:"The system must preserve accountability for production-impacting code changes. Which control is strongest?",o:["Ask Claude to promise not to merge code","Require an authenticated human approval before any merge/deployment action, enforced outside the model","Hide the merge button from the prompt","Use a more capable model"],a:1,e:"A safety requirement must be enforced by application/tool permissions and workflow gates, not merely by prompt wording."},
+{q:"A model response is fast but sometimes omits evidence. Which acceptance approach is best?",o:["Measure only average latency","Set separate measurable quality and performance criteria, including evidence completeness and behaviour on missing evidence","Accept the result if users like it","Increase token limits for every request"],a:1,e:"Non-functional requirements can conflict. Define and test both response-time and evidence-quality targets, including failure behaviour."},
+{q:"A third-party API is unavailable. Which architecture behaviour is most appropriate?",o:["Allow the agent to retry indefinitely","Use bounded retries/timeouts, surface partial/unavailable status, and provide a safe fallback or stop path","Invent missing data from model knowledge","Silently return an empty success response"],a:1,e:"Resilience needs explicit timeout, retry, fallback and user-visible failure semantics. Never fabricate unavailable enterprise data."}
+];
+const patterns=[
+{q:"A user asks for the owner and status of a known Jira ticket.",opts:["API-based application integration","Fixed workflow","Agentic orchestration"],ans:0,why:"A direct, well-defined lookup is best served by a controlled API integration."},
+{q:"A release-readiness process must run the same six checks in order and collect two approvals.",opts:["API-based application integration","Fixed workflow","Agentic orchestration"],ans:1,why:"The sequence and gates are known; deterministic workflow control is appropriate."},
+{q:"A vague request asks ATLAS to investigate an unfamiliar legacy subsystem, identify likely dependencies, compare evidence and propose next steps.",opts:["API-based application integration","Fixed workflow","Agentic orchestration"],ans:2,why:"The task requires dynamic decomposition and selection of investigative steps, so bounded agentic orchestration may be justified."},
+{q:"A user needs to create a standard incident record using a known schema.",opts:["API-based application integration","Fixed workflow","Agentic orchestration"],ans:0,why:"A schema-driven create operation should use a validated API/tool rather than autonomous reasoning."}
+];
+function render(){
+ const q=document.getElementById('quiz');
+ q.innerHTML=questions.map((x,i)=>`<div class="question"><div class="qhead"><span class="qnum">${i+1}</span><b>${x.q}</b></div><div class="options">${x.o.map((v,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}" onchange="updateProgress()"><span>${String.fromCharCode(65+j)}. ${v}</span></label>`).join('')}</div><div class="feedback" id="f${i}"></div></div>`).join('');
+ document.getElementById('patternQuestions').innerHTML=patterns.map((x,i)=>`<div class="question"><b>${i+1}. ${x.q}</b><div style="margin-top:9px"><select id="p${i}"><option value="">Choose a pattern…</option>${x.opts.map((v,j)=>`<option value="${j}">${v}</option>`).join('')}</select></div><div class="feedback" id="pf${i}"></div></div>`).join('');
+}
+function updateProgress(){let n=questions.filter((q,i)=>document.querySelector(`input[name=q${i}]:checked`)).length;document.getElementById('progress').style.width=(n/questions.length*100)+'%'}
+let qScore=null,pScore=null;
+function gradeQuiz(){let score=0;questions.forEach((x,i)=>{let s=document.querySelector(`input[name=q${i}]:checked`),f=document.getElementById('f'+i);f.style.display='block';if(s&&+s.value===x.a){score++;f.className='feedback correct';f.textContent='Correct. '+x.e}else{f.className='feedback incorrect';f.textContent='Best answer: '+String.fromCharCode(65+x.a)+'. '+x.e}});qScore=score;document.getElementById('quizResult').style.display='block';document.getElementById('quizResult').innerHTML=`<b>Part A score: ${score}/10</b> — ${score>=8?'Strong architecture judgement.':score>=6?'Good foundation; revisit the explanations.':'Review the scenario constraints and pattern-selection principles.'}`;updateFinal()}
+function gradePatterns(){let score=0;patterns.forEach((x,i)=>{let v=document.getElementById('p'+i).value,f=document.getElementById('pf'+i);f.style.display='block';if(v!==''&&+v===x.ans){score++;f.className='feedback correct';f.textContent='Correct. '+x.why}else{f.className='feedback incorrect';f.textContent='Recommended: '+x.opts[x.ans]+'. '+x.why}});pScore=score;document.getElementById('patternResult').style.display='block';document.getElementById('patternResult').innerHTML=`<b>Part B score: ${score}/4</b>`;updateFinal()}
+function updateFinal(){if(qScore===null||pScore===null)return;let total=qScore+pScore;document.getElementById('finalResult').style.display='block';document.getElementById('totalScore').textContent=total+'/14';document.getElementById('resultText').textContent=total>=12?'Excellent: your selections show strong architecture judgement.':total>=9?'Developing: review the explanations and strengthen trade-off reasoning.':'Revisit requirements, system boundaries and pattern selection before attempting again.';document.getElementById('breakdown').innerHTML=`<p>Part A: ${qScore}/10 · Part B: ${pScore}/4</p><p><b>Part C:</b> Self-reviewed using the checklist above; written responses are not included in the numeric score.</p>`}
+function resetQuiz(){document.querySelectorAll('input[type=radio]').forEach(x=>x.checked=false);document.querySelectorAll('.feedback').forEach(x=>x.style.display='none');document.getElementById('quizResult').style.display='none';qScore=null;updateProgress()}
+function showReview(){document.getElementById('review').style.display='block'}
+render();
+</script>
+</body></html>

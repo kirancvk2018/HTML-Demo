@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project ATLAS – Module 2 Architecture Quest</title>
+<style>
+:root{--navy:#14213d;--ink:#18243a;--muted:#65728a;--line:#dbe2ee;--bg:#f2f5fb;--blue:#2767cf;--violet:#7654c8;--teal:#078e91;--orange:#dc8524;--green:#16845e;--red:#c44747}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(115deg,#13213c,#245b91 55%,#6948a7);color:#fff;padding:27px max(18px,calc((100% - 1120px)/2))}
+.eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:11px;font-weight:800;color:#c6dcff}h1{font-size:30px;line-height:1.15;margin:7px 0}header p{color:#e4edff;max-width:880px;margin:0}
+main{max-width:1120px;margin:22px auto;padding:0 16px 45px}.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:19px;margin-bottom:16px;box-shadow:0 4px 18px #18243a0a}
+h2{font-size:20px;margin:0 0 10px}h3{font-size:16px;margin:0 0 7px}.muted{color:var(--muted)}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:#edf2fc;color:#405274;border-radius:99px;padding:5px 10px;font-size:11px;font-weight:750}
+.hero-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px}.hero-grid ul{padding-left:20px;margin:6px 0}.hero-grid li{margin:5px 0}.brief{background:#f1f6ff;border-left:4px solid var(--blue);border-radius:8px;padding:12px;margin-top:10px}
+.progress{display:flex;align-items:center;gap:12px;margin:12px 0}.track{height:9px;background:#e8edf6;border-radius:99px;flex:1;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#2773d2,#7a56c7);border-radius:99px;transition:width .25s}.progress b{font-size:12px;white-space:nowrap}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stage{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fbfcff}.stage.active{border:2px solid var(--blue);background:#f0f5ff}.stage.done{border-color:#9bd3b9;background:#effaf4}.stage .num{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--muted)}.stage strong{display:block;margin:4px 0}.stage small{color:var(--muted)}
+.levelhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.leveltag{font-size:11px;font-weight:800;border-radius:99px;padding:5px 10px;background:#eee9ff;color:#6244ae}
+.story{background:linear-gradient(120deg,#f5f7ff,#f4fbfb);border:1px solid #dce5f4;border-radius:11px;padding:14px;margin:12px 0}.story .update{font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:#6a55a8}.story p{margin:6px 0}
+.question{border:1px solid var(--line);border-radius:11px;padding:14px;margin:12px 0;background:white}.qtop{display:flex;justify-content:space-between;gap:8px;align-items:center}.qnum{font-size:11px;font-weight:800;color:#6b7890}.qtype{font-size:10px;border-radius:99px;padding:4px 8px;background:#edf2fc;color:#52617c;font-weight:750}.question h3{font-size:15px;margin:9px 0}
+.options{display:grid;gap:7px}.option{display:flex;gap:9px;align-items:flex-start;border:1px solid #dce3ef;border-radius:8px;padding:9px 10px;cursor:pointer;transition:.12s}.option:hover{border-color:#8aa9e3;background:#f7f9ff}.option input{margin-top:4px;accent-color:var(--blue)}.option.selected{border-color:#7197e0;background:#f1f5ff}.option span{font-size:13px}
+.hint{margin-top:9px}.hint summary{cursor:pointer;color:#5e56a1;font-size:12px;font-weight:750}.hint p{font-size:12px;color:var(--muted);margin:6px 0 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:9px;padding:10px 15px;font-weight:800;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:#e9eef7;color:#33425e}.outline{background:white;border:1px solid var(--line);color:#34445f}button:disabled{opacity:.45;cursor:not-allowed}
+.feedback{display:none;border-radius:9px;padding:11px 12px;margin-top:10px;font-size:13px}.feedback.show{display:block}.feedback.correct{background:#eaf8f1;border:1px solid #b9e3cd}.feedback.incorrect{background:#fff2f0;border:1px solid #efc4bd}.explanation{font-size:12px;color:#4f5e75;margin-top:6px}
+.results{display:none}.results.show{display:block}.scorebig{font-size:32px;font-weight:900;color:#2767cf}.answerrow{border-top:1px solid var(--line);padding:10px 0}.answerrow b{display:block}.right{color:var(--green);font-weight:800}.wrong{color:var(--red);font-weight:800}
+.concept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.concept{border:1px solid var(--line);border-radius:9px;padding:11px}.concept b{font-size:12px}.concept p{font-size:11px;color:var(--muted);margin:4px 0 0}
+.certificate{background:#14213d;color:white;border-radius:12px;padding:16px}.certificate p{color:#dce7fa;margin:5px 0}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:8px}
+@media(max-width:760px){.hero-grid{grid-template-columns:1fr}.stages{grid-template-columns:1fr}.concept-grid{grid-template-columns:1fr}h1{font-size:24px}}
+</style></head>
+<body>
+<header><div class="eyebrow">Claude Certified Architect – Foundations · Module 2</div><h1>Project ATLAS: The Enterprise Architecture Quest</h1><p>A client has asked Ness to turn a promising agentic prototype into an enterprise solution. Your decisions will shape the architecture. Each round adds new information, raises the difficulty and tests whether you can think like an enterprise architect.</p></header>
+<main>
+<section class="panel">
+<h2>Your mission</h2><div class="hero-grid">
+<div><h3>GlobalTech Manufacturing</h3><p>GlobalTech has approximately 8,000 software engineers. Its engineering knowledge is spread across repositories, tickets, documents and specialist systems. The company wants Project ATLAS to help engineers analyse change requests, understand code impact, propose tests, review risks and produce a recommendation for human review.</p><p>Your role is to advise GlobalTech on the enterprise solution architecture—not just the agent design.</p></div>
+<div><h3>What the client expects</h3><ul><li>Translate business needs into architecture requirements.</li><li>Position Claude and agents within existing systems.</li><li>Define layers, boundaries, dependencies and data flows.</li><li>Choose suitable architecture patterns.</li><li>Defend build-versus-integrate decisions and trade-offs.</li></ul><div class="brief"><b>Important:</b> The case gives no numeric availability, latency or cost targets. A good architect records unknowns instead of inventing targets.</div></div></div>
+<div class="chips"><span class="chip">3 learning levels</span><span class="chip">12 scenario-based MCQs</span><span class="chip">Hints and explanations</span><span class="chip">Correct answers revealed on submission</span></div>
+</section>
+<section class="panel">
+<h2>Your learning path</h2><div class="progress"><div class="track"><div class="bar" id="progressbar"></div></div><b id="progresslabel">0 / 12 answered correctly</b></div>
+<div class="stages">
+<div class="stage active" id="stagecard0"><div class="num">Level 1 · Foundation</div><strong>Discover the real requirement</strong><small>Business objectives, functional and non-functional requirements, acceptance criteria.</small></div>
+<div class="stage" id="stagecard1"><div class="num">Level 2 · Architecture</div><strong>Place the building blocks</strong><small>Claude, application, agent, tool, data layers, boundaries and integration patterns.</small></div>
+<div class="stage" id="stagecard2"><div class="num">Level 3 · Architect's judgement</div><strong>Defend the design</strong><small>Build versus integrate, decision records and operational trade-offs.</small></div>
+</div></section>
+
+<section class="panel" id="quizpanel">
+<div class="levelhead"><div><div class="leveltag" id="leveltag">LEVEL 1 · FOUNDATION</div><h2 id="leveltitle">Round 1: The discovery meeting</h2><p class="muted" id="leveldesc">The client describes what it wants. Your first job is to separate outcomes from solution assumptions.</p></div><span class="chip" id="roundcount">4 questions</span></div>
+<div class="story" id="story"><div class="update">Client update 01 · Discovery</div><p>“We want engineers to submit a change request and receive a useful analysis. It should be secure, dependable and easy to maintain. We expect the system to be available when our teams need it, but we have not yet agreed service-level targets.”</p><p><b>Architect's dilemma:</b> What do you clarify before drawing the architecture?</p></div>
+<form id="quizform"></form>
+<div class="actions"><button class="primary" id="submit">Submit this level</button><button class="secondary" id="resetlevel" type="button">Clear my answers</button></div>
+<div id="levelresult" class="feedback"></div>
+<div class="actions"><button class="primary" id="next" type="button" disabled>Continue to next level</button></div>
+</section>
+<section class="panel results" id="finalresults"></section>
+<section class="panel">
+<h2>What this quest teaches</h2><div class="concept-grid">
+<div class="concept"><b>2.1 Business requirements</b><p>Functional versus non-functional requirements, quality attributes, assumptions, constraints and acceptance criteria.</p></div>
+<div class="concept"><b>2.2 Enterprise patterns</b><p>Claude's position, application/model/agent/tool/data responsibilities, boundaries, dependencies and data flows.</p></div>
+<div class="concept"><b>2.3 Architecture decisions</b><p>Pattern selection, build-versus-integrate, architecture decision records and technical/operational trade-offs.</p></div>
+</div></section>
+<footer>Project ATLAS is a fictional learning scenario based on Module 2 of the supplied curriculum. This is a learning activity, not an official certification mock exam.</footer>
+</main>
+<script>
+const levels=[
+{
+tag:"LEVEL 1 · FOUNDATION",title:"Round 1: The discovery meeting",desc:"The client describes what it wants. Your first job is to separate outcomes from solution assumptions.",
+story:"<div class='update'>Client update 01 · Discovery</div><p>“We want engineers to submit a change request and receive a useful analysis. It should be secure, dependable and easy to maintain. We expect the system to be available when our teams need it, but we have not yet agreed service-level targets.”</p><p><b>Architect's dilemma:</b> What do you clarify before drawing the architecture?</p>",
+questions:[
+{q:"The client says, “An engineer must be able to submit a change request through the engineering portal.” How should this be classified?",opts:["Non-functional requirement: usability","Functional requirement: a capability the system must provide","Architecture assumption","Operational constraint"],a:1,why:"This describes a behaviour the system must provide, so it is a functional requirement.",hint:"Ask whether the statement describes what the system does or a quality it must exhibit."},
+{q:"The client says, “The solution must protect confidential source-code context and enforce least-privilege access.” This is primarily:",opts:["A functional requirement","A non-functional security requirement","A build-versus-integrate decision","A data-flow diagram"],a:1,why:"Security is a quality attribute and constraint on how the solution operates. It is a non-functional requirement.",hint:"Security, reliability, latency and maintainability are quality attributes."},
+{q:"The client asks for high availability but has not supplied a target. What is the strongest architecture response?",opts:["Assume 99.99% availability to make progress","Ignore availability until implementation","Record the requirement, ask for a measurable target and document interim assumptions","Promise that Claude itself guarantees availability"],a:2,why:"The scenario explicitly leaves numeric targets unspecified. Record the requirement and obtain a client-approved target rather than inventing one.",hint:"An architect distinguishes a stated quality goal from a measurable service-level objective."},
+{q:"Which is the best example of an acceptance criterion for the request-submission requirement?",opts:["The system should be modern","The portal should look attractive","An authenticated engineer can submit a request and receives a request identifier or clear validation feedback","The system uses the newest model"],a:2,why:"Acceptance criteria should be observable and testable. The selected option states a verifiable outcome without inventing an unsupported performance target.",hint:"A tester should be able to determine whether the criterion passed."}
+]},
+{
+tag:"LEVEL 2 · ARCHITECTURE",title:"Round 2: The architecture war room",desc:"The client reveals its existing technology landscape. Your challenge is to place Claude correctly and define the boundaries.",
+story:"<div class='update'>Client update 02 · Existing landscape</div><p>GlobalTech already uses GitHub Enterprise, Jira, Confluence, an enterprise identity platform, a regional policy service and a CI/CD platform. The engineering portal will be the user entry point. The client asks: “Can we simply put Claude in the middle and connect everything to it?”</p><p><b>Architect's dilemma:</b> Separate responsibilities. The model is one part of the solution, not the whole enterprise application.</p>",
+questions:[
+{q:"Where should Claude normally sit in the Project ATLAS architecture?",opts:["As the enterprise identity provider","As a model capability accessed through a controlled application/model-integration boundary","As the system of record for Jira and GitHub","As the complete application, database and monitoring platform"],a:1,why:"Claude provides model capabilities. The application and integration architecture remains responsible for requests, orchestration, access, tools, data and operations.",hint:"A model is not the same thing as an application, agent orchestrator or enterprise data store."},
+{q:"Which responsibility belongs most naturally to the orchestration layer?",opts:["Store all source-code repositories","Coordinate workflow state, agent tasks, dependencies and result consolidation","Replace the enterprise identity platform","Own the business policy records"],a:1,why:"The orchestration layer coordinates execution and state. Repositories, identity and policy remain in their respective enterprise systems.",hint:"Think about who manages the sequence and status of work, rather than who owns the underlying data."},
+{q:"Project ATLAS needs to retrieve an approved Jira issue and relevant Confluence documentation. Which architecture description is most appropriate?",opts:["The model directly owns Jira and Confluence data","The agent layer becomes the system of record for both platforms","The tool/integration layer provides controlled access to external systems, with permissions and data contracts","Copy every Jira and Confluence record into each agent prompt"],a:2,why:"A controlled integration layer separates agent reasoning from external service access and supports reusable interfaces, validation and permission enforcement.",hint:"Separate the reasoning component from the mechanism that accesses enterprise services."},
+{q:"The engineering portal sends a request to ATLAS. Which sequence best describes a high-level data flow?",opts:["Claude → GitHub → engineer → identity","Engineer/portal → authenticated application → orchestration → model/agents and controlled tools → consolidated result → engineer review","Jira → CI/CD → Claude → automatic deployment","Confluence → model → unrestricted access to all systems"],a:1,why:"The flow begins with an authenticated user request, passes through application and orchestration boundaries, accesses model and enterprise capabilities through controlled interfaces, then returns a result for human review.",hint:"Follow the request from the user to the system and back. Include identity and controlled integrations."}
+]},
+{
+tag:"LEVEL 3 · ARCHITECT'S JUDGEMENT",title:"Round 3: The architecture review board",desc:"The CTO, CISO and Engineering Head challenge your design. You must defend the pattern and record trade-offs.",
+story:"<div class='update'>Client update 03 · Review board challenge</div><p>The CTO wants flexibility for unfamiliar engineering tasks. The CISO wants predictable controls. The Engineering Head wants to reuse GitHub, Jira and Confluence rather than replace them. Finance asks why the team needs several agents and extra services.</p><p><b>Architect's dilemma:</b> There is no universally best pattern. Recommend the simplest design that satisfies the requirements and explain its consequences.</p>",
+questions:[
+{q:"Which situation most strongly justifies an agentic approach rather than only a fixed workflow?",opts:["A repeatable task with exactly the same steps and deterministic rules","A simple lookup that can be handled by one API call","An unfamiliar task requiring flexible investigation, tool selection and adaptation based on findings","A task that must never vary and has no reasoning requirement"],a:2,why:"Agentic approaches can be useful when tasks require adaptive reasoning and tool selection. Fixed workflows or direct APIs are often simpler for predictable tasks.",hint:"Agentic does not mean automatically better. Look for uncertainty, adaptation and dynamic task selection."},
+{q:"GlobalTech already has a mature identity platform. What is the strongest build-versus-integrate recommendation?",opts:["Build a new identity provider inside ATLAS","Integrate with the existing identity platform, subject to validating capabilities and access requirements","Let each agent invent its own user permissions","Store user passwords in the prompt"],a:1,why:"Reusing a mature enterprise capability usually avoids duplicating sensitive identity functions. The architect must still validate that the existing service meets requirements.",hint:"Do not rebuild a capability that already exists unless there is a clear requirement or gap."},
+{q:"Why create an Architecture Decision Record (ADR) when choosing a separate model integration adapter?",opts:["To record only the final technology name","To document context, options, decision rationale and consequences so the trade-off can be reviewed","To replace all requirements and architecture diagrams","To guarantee that the chosen design never changes"],a:1,why:"An ADR captures why a significant choice was made, alternatives considered and consequences. It supports transparency and future review.",hint:"An ADR is about the reasoning and consequences behind a decision."},
+{q:"The Finance Head says, “More agents must make the solution better.” What is the best response?",opts:["Agree: every enterprise solution should use as many agents as possible","Reject all agents because they always increase risk","Evaluate whether specialisation adds value against added coordination, latency, cost and failure complexity; use the simplest sufficient pattern","Hide the extra agents in the architecture diagram"],a:2,why:"Architecture is a trade-off. Multi-agent designs may improve specialisation but also introduce coordination overhead, latency, cost and additional failure modes.",hint:"Think in terms of benefits and consequences, not technology enthusiasm."}
+]}
+];
+let current=0,answers={},levelScores=[null,null,null],levelPassed=[false,false,false],locked=false;
+const form=document.getElementById("quizform");
+function renderLevel(){
+ locked=false;document.getElementById("leveltag").textContent=levels[current].tag;document.getElementById("leveltitle").textContent=levels[current].title;document.getElementById("leveldesc").textContent=levels[current].desc;document.getElementById("story").innerHTML=levels[current].story;document.getElementById("roundcount").textContent=levels[current].questions.length+" questions";
+ form.innerHTML="";
+ levels[current].questions.forEach((q,i)=>{
+  const key=current+"-"+i;const box=document.createElement("div");box.className="question";
+  box.innerHTML='<div class="qtop"><span class="qnum">QUESTION '+(i+1)+' OF '+levels[current].questions.length+'</span><span class="qtype">'+(i<2?"Concept check":i===2?"Scenario judgement":"Architect decision")+'</span></div><h3>'+q.q+'</h3><div class="options">'+q.opts.map((o,j)=>'<label class="option"><input type="radio" name="'+key+'" value="'+j+'"><span>'+String.fromCharCode(65+j)+'. '+o+'</span></label>').join("")+'</div><details class="hint"><summary>Need a thinking hint?</summary><p>'+q.hint+'</p></details><div class="feedback" id="fb-'+key+'"></div>';
+  form.append(box);
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{box.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));inp.closest(".option").classList.add("selected");}));
+ });
+ document.getElementById("levelresult").className="feedback";document.getElementById("levelresult").innerHTML="";
+ document.getElementById("next").disabled=true;document.getElementById("next").textContent=current===2?"View final learning report":"Unlock next level";
+ document.getElementById("submit").disabled=false;
+ document.querySelectorAll(".stage").forEach((s,i)=>{s.classList.toggle("active",i===current);s.classList.toggle("done",levelPassed[i]);});
+ document.getElementById("progressbar").style.width=(Object.values(levelScores).filter(x=>x!==null).reduce((a,b)=>a+b,0)/12*100)+"%";
+ document.getElementById("progresslabel").textContent=Object.values(levelScores).filter(x=>x!==null).reduce((a,b)=>a+b,0)+" / 12 answered correctly";
+}
+document.getElementById("submit").onclick=()=>{
+ if(locked)return;
+ let score=0,answered=0;const qs=levels[current].questions;
+ qs.forEach((q,i)=>{
+  const key=current+"-"+i;const chosen=form.querySelector('input[name="'+key+'"]:checked');const fb=document.getElementById("fb-"+key);
+  if(chosen)answered++;
+  const correct=chosen&&Number(chosen.value)===q.a;if(correct)score++;
+  fb.className="feedback show "+(correct?"correct":"incorrect");
+  fb.innerHTML=(correct?'<b>Correct.</b> ':'<b>Not quite.</b> Correct answer: <b>'+String.fromCharCode(65+q.a)+'. '+q.opts[q.a]+'</b>.')+'<div class="explanation">'+q.why+'</div>';
+ });
+ if(answered<qs.length){const r=document.getElementById("levelresult");r.className="feedback show incorrect";r.textContent="You answered "+answered+" of "+qs.length+" questions. Review the unanswered questions, then submit again.";return;}
+ locked=true;levelScores[current]=score;levelPassed[current]=true;
+ const r=document.getElementById("levelresult");r.className="feedback show correct";r.innerHTML='<b>Level submitted: '+score+'/'+qs.length+' correct.</b> The correct answers and explanations are now displayed under every question. Read the explanations before moving on.';
+ document.getElementById("submit").disabled=true;document.getElementById("next").disabled=false;
+ document.getElementById("progressbar").style.width=(levelScores.filter(x=>x!==null).reduce((a,b)=>a+b,0)/12*100)+"%";
+ document.getElementById("progresslabel").textContent=levelScores.filter(x=>x!==null).reduce((a,b)=>a+b,0)+" / 12 answered correctly";
+ document.querySelectorAll(".stage")[current].classList.add("done");
+};
+document.getElementById("resetlevel").onclick=()=>{if(locked)return;form.querySelectorAll("input").forEach(x=>x.checked=false);form.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));};
+document.getElementById("next").onclick=()=>{
+ if(current<2){current++;renderLevel();document.getElementById("quizpanel").scrollIntoView({behavior:"smooth"});}
+ else showFinal();
+};
+function showFinal(){
+ const total=levelScores.reduce((a,b)=>a+(b||0),0),pct=Math.round(total/12*100),f=document.getElementById("finalresults");f.classList.add("show");
+ let band=pct>=90?"Architecture thinker":pct>=75?"Strong foundation":pct>=50?"Developing architect":"Keep practising";
+ f.innerHTML='<h2>Project ATLAS · Your learning report</h2><div class="scorebig">'+total+'/12</div><b>'+band+' · '+pct+'%</b><p class="muted">Level scores: Foundation '+levelScores[0]+'/4 · Architecture '+levelScores[1]+'/4 · Architect judgement '+levelScores[2]+'/4</p><div class="brief"><b>What your result means</b><br>'+(pct>=90?"You are connecting business requirements, architecture boundaries and decision trade-offs effectively. Practise explaining your rationale in unfamiliar scenarios.":pct>=75?"You have a good grasp of the Module 2 concepts. Revisit any incorrect explanations and practise drawing the architecture from a fresh business case.":pct>=50?"You are building the right foundations. Focus on separating requirements, layers and system boundaries before attempting complex design decisions.":"Revisit the explanations in each level. Start with functional versus non-functional requirements, then work through architecture layers and build-versus-integrate decisions.")+'</div><h3 style="margin-top:14px">Module 2 knowledge checklist</h3><ul><li>Translate business objectives into functional and non-functional requirements.</li><li>Explain availability, reliability, latency, security and maintainability.</li><li>State assumptions, constraints and acceptance criteria.</li><li>Position Claude within existing enterprise systems.</li><li>Separate application, model, agent, tool and data responsibilities.</li><li>Identify system boundaries, dependencies and data flows.</li><li>Compare API-based, workflow-based and agentic solutions.</li><li>Make build-versus-integrate decisions and document ADRs.</li><li>Evaluate technical and operational trade-offs.</li></ul><div class="actions"><button class="primary" onclick="restartQuest()">Restart the quest</button><button class="secondary" onclick="window.print()">Print learning report</button></div>';
+ f.scrollIntoView({behavior:"smooth"});
+}
+function restartQuest(){current=0;answers={};levelScores=[null,null,null];levelPassed=[false,false,false];document.getElementById("finalresults").classList.remove("show");renderLevel();document.getElementById("quizpanel").scrollIntoView({behavior:"smooth"});}
+renderLevel();
+</script></body></html>
