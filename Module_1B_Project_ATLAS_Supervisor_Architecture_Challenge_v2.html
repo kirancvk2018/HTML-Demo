@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project ATLAS – Advanced Multi-Agent Architecture Challenge (v2)</title>
+<style>
+:root{--navy:#14213d;--ink:#17233b;--muted:#5b6880;--line:#d9e1ef;--bg:#f1f4fb;--blue:#2878d0;--purple:#7654c8;--teal:#079b9a;--orange:#e88b28;--pink:#d85888;--green:#16865e;--red:#c44747}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.48 "Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(115deg,#14213d,#254d85 58%,#6049a5);color:white;padding:25px max(18px,calc((100% - 1240px)/2))}
+header .tag{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#c9ddff}h1{font-size:29px;line-height:1.15;margin:7px 0}header p{margin:0;color:#e0eaff;max-width:900px}
+main{max-width:1240px;margin:22px auto;padding:0 16px 42px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:19px;margin-bottom:17px;box-shadow:0 5px 20px #1c31500c}
+h2{font-size:20px;margin:0 0 10px}h3{font-size:15px;margin:0 0 7px}.scenario{display:grid;grid-template-columns:1.35fr 1fr;gap:18px}.scenario p{margin:7px 0}.scenario ul{padding-left:20px;margin:7px 0}.scenario li{margin:4px 0}.brief{background:#f2f6ff;border-left:4px solid #477de0;border-radius:8px;padding:12px 14px;margin-top:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.chip{font-size:11px;font-weight:750;border-radius:99px;padding:5px 10px;background:#edf1fb;color:#415274}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 14px}.howto div{background:#f7f8fc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;color:#3c4a63}.howto b{display:block;font-size:12px;color:var(--ink);margin-bottom:2px}
+.workspace{display:grid;grid-template-columns:265px 1fr;gap:15px}.palette{background:#f7f8fc;border:1px solid var(--line);border-radius:12px;padding:13px}.palette .intro{font-size:12px;color:var(--muted);margin:4px 0 10px}
+.group{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:#75819a;margin:13px 0 5px}
+.tile{background:white;border:1px solid #cbd5e5;border-left:5px solid var(--blue);border-radius:9px;padding:9px 10px;margin:7px 0;cursor:grab;box-shadow:0 2px 5px #1c31500a;user-select:none}
+.tile:focus-visible,.slot:focus-visible,button:focus-visible,textarea:focus-visible{outline:3px solid #426fe0;outline-offset:2px}
+.tile[data-kind="supervisor"]{border-left-color:var(--purple)}.tile[data-kind="specialist"]{border-left-color:var(--teal)}.tile[data-kind="environment"]{border-left-color:var(--orange)}.tile[data-kind="governance"]{border-left-color:var(--pink)}
+.tile strong{display:block;font-size:12px}.tile small{display:block;color:var(--muted);font-size:10px}.tile.selected{outline:2px solid #426fe0;background:#eef4ff}.tile.used{opacity:.35;cursor:not-allowed}
+.status{font-size:12px;color:#30415e;background:#eef3fc;border-radius:8px;padding:7px 10px;margin:0 0 9px;min-height:32px}
+.diagram-wrap{min-width:0}.diagram-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 9px}.diagram-head span{font-size:11px;color:var(--muted)}
+.map{position:relative;background:radial-gradient(circle at 50% 40%,#f5f8ff,#fff 70%);border:1px solid #dbe3f1;border-radius:13px;padding:15px}
+.map-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.map-content{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:44px 10px;align-items:stretch}
+.slot{position:relative;border:2px dashed #bdc9dd;background:#ffffffe6;border-radius:11px;min-height:96px;padding:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;transition:.15s;cursor:pointer}
+.slot.over{background:#e9f1ff;border-color:#3978dc;transform:scale(1.015)}
+.slot.armed{border-color:#3978dc}
+.slot .slotlabel{font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:#75819a;margin-bottom:5px}
+.slot .placeholder{font-size:11px;color:#9aa5b7}.slot.filled{border-style:solid;border-color:#9bb7ec;background:#f0f5ff}
+.placed{position:relative;display:inline-flex;flex-direction:column;align-items:center;padding:4px 22px 4px 8px}
+.placed .placed-name{font-size:12px;font-weight:800}.placed .placed-desc{font-size:10px;color:#53627b;margin-top:3px}
+.placed .x{border:0;background:transparent;color:#78859a;cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;position:absolute;right:0;top:0}
+.controls-list{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
+.controls-list .placed{background:#fff0f5;border:1px solid #e8b0c5;border-radius:8px;padding:6px 24px 6px 8px}
+.controls-list .placed-name{font-size:11px}.controls-list .placed-desc{font-size:9px}
+#sup{grid-column:2/4;grid-row:1;background:#f8f4ff;border-color:#b8a5ec}
+#data{grid-column:1;grid-row:2}#ml{grid-column:2;grid-row:2}#ui{grid-column:3;grid-row:2}#exec{grid-column:4;grid-row:2}
+#env{grid-column:2/4;grid-row:3;background:#fff8ef;border-color:#efc58e}
+#controls{grid-column:1/5;grid-row:4;background:#fff5f8;border-color:#e8b0c5;min-height:80px}
+.instructions{font-size:12px;color:var(--muted);margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}button.action{border:0;border-radius:9px;padding:10px 15px;font-weight:800;cursor:pointer;font:inherit;font-weight:800}.primary{background:#245fc6;color:white}.secondary{background:#e9eef7;color:#30415e}.ghost{background:white;border:1px solid var(--line)!important;color:#34445f}
+.feedback{display:none;margin-top:15px}.feedback.show{display:block}.scoreline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.score{font-size:22px;font-weight:900;color:#245fc6}.good{background:#eaf8f1;border:1px solid #bce5d0;border-radius:10px;padding:13px;margin:12px 0}
+.fb-list li{margin:6px 0}.ok{color:#16865e;font-weight:800}.bad{color:#b33b3b;font-weight:800}.warn{color:#a8661a;font-weight:800}
+.reference{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}.refnode{border-radius:9px;padding:10px;color:white;font-size:11px;font-weight:800;text-align:center}.refnode small{display:block;font-weight:500;opacity:.92;margin-top:3px}.refsup{grid-column:2/4;background:#7051bd}.refagent{background:#078b8b}.refenv{grid-column:2/4;background:#d47b1f}.refgov{grid-column:1/5;background:#c24d7c}
+.learning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.learn{border:1px solid var(--line);border-radius:9px;padding:11px}.learn b{font-size:13px}.learn p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.question{background:#f6f8fc;border-radius:10px;padding:13px;margin-top:12px}
+.q{border:1px solid var(--line);border-radius:11px;padding:13px;margin:10px 0;background:white}
+.q textarea{width:100%;min-height:78px;margin-top:8px;border:1px solid #cbd5e5;border-radius:8px;padding:8px;font:13px/1.45 inherit;font-family:inherit;resize:vertical}
+.q .count{font-size:11px;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:9px;background:#fbfcfe}summary{font-weight:750;cursor:pointer}
+details.model[data-locked="true"] summary{color:#8a95a8}
+.model-body{font-size:13px;color:#2c3a54}.model-body ul{padding-left:20px;margin:6px 0}.model-body li{margin:4px 0}
+.small{font-size:11px;color:var(--muted)}.footer{text-align:center;color:var(--muted);font-size:11px;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#14213d;color:white;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:900px){.workspace{grid-template-columns:1fr}.palette{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.palette h3,.palette .intro,.group{grid-column:1/-1}.scenario{grid-template-columns:1fr}.howto{grid-template-columns:1fr}}
+@media(max-width:650px){.map{padding:10px}.map-content{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.map-lines{display:none}#sup,#env,#controls,#data,#ml,#ui,#exec{grid-column:auto;grid-row:auto}#sup,#env,#controls{grid-column:1/-1}.learning{grid-template-columns:1fr}.reference{grid-template-columns:repeat(2,1fr)}.refsup,.refenv,.refgov{grid-column:1/-1}}
+</style></head>
+<body>
+<header><div class="tag">Claude Certified Architect – Foundations · Module 1 · Advanced challenge (practice)</div>
+<h1>Project ATLAS: Design the Supervisor-Coordinated Agent System</h1>
+<p>This time, you are not simply choosing components. You must assign the right responsibilities, position the agents in a supervisor-coordinated architecture, account for enterprise data sources, and defend your execution strategy.</p></header>
+<main>
+<section class="card"><h2>1 · The client brief: GlobalTech's high-risk change request</h2>
+<div class="scenario"><div><h3>The situation</h3>
+<p>GlobalTech Manufacturing is preparing a major change to its global order-management platform. A new regional validation rule must be introduced. The rule depends on regional policy data, legacy application logic, machine-learning risk scores and the order-management user interface.</p>
+<p>The existing engineering team cannot quickly establish which services, data pipelines, model features and user journeys may be affected. The client wants a Claude-powered multi-agent solution that can investigate the change, coordinate specialist analysis and recommend a safe implementation plan.</p>
+<h3>What the solution must achieve</h3><ul><li>Understand the request and break it into bounded specialist tasks.</li><li>Retrieve relevant code, regional policy data, model information and interface specifications.</li><li>Run independent reviews concurrently, but respect task dependencies.</li><li>Combine findings into one traceable recommendation with unresolved questions clearly identified.</li><li>Escalate decisions that require human judgement; never autonomously merge or deploy code.</li></ul></div>
+<div><h3>New information from the client</h3><ul><li>Regional policy data is owned by a separate business system and may be stale.</li><li>The machine-learning risk score is advisory, not the final decision.</li><li>The UI team needs a clear explanation of any new validation outcome.</li><li>One specialist may fail or return incomplete results during peak periods.</li><li>Repeated calls to external systems increase latency and cost.</li></ul>
+<div class="brief"><b>Your architecture challenge</b><br>Design a supervisor-coordinated system with four specialist agents and an external environment/data layer. Decide what each specialist owns, how it communicates with the supervisor, what context it needs, and where control and approval belong.</div></div></div>
+<div class="chips"><span class="chip">Role: Ness Enterprise Architect</span><span class="chip">Difficulty: Intermediate+</span><span class="chip">Time: 20–25 minutes</span><span class="chip">Deliverable: Architecture + rationale</span></div>
+<p class="small" style="margin-top:10px"><b>Terminology note:</b> Anthropic's own agent-design writing often calls this pattern <i>orchestrator-workers</i>. "Supervisor" and "orchestrator" mean the same role here. Expect either term in study material.</p></section>
+
+<section class="card"><h2>2 · Build your architecture using the process map</h2>
+<div class="howto">
+<div><b>1 · Pick a component</b>Drag a card, or tap/click it (keyboard: Tab to it, press Enter).</div>
+<div><b>2 · Place it</b>Drop it on a slot, or tap/click the slot (keyboard: Tab to the slot, press Enter). Any card fits any slot, so wrong choices are possible.</div>
+<div><b>3 · Review</b>Press <b>Submit</b> for a score and an explanation of every placement. Press × on a placed card to return it. Esc cancels a selection.</div>
+</div>
+<div class="workspace"><aside class="palette" aria-label="Architecture component library"><h3>Architecture component library</h3><p class="intro">Some cards are deliberate distractors mixed into every group. Read the responsibility on each slot before placing anything. Not every card belongs on the map.</p>
+<div class="group">Orchestration</div>
+<div class="tile" data-id="sup"><strong>Supervisor Agent</strong><small>Decomposes, delegates, tracks completion, consolidates results</small></div>
+<div class="tile" data-id="mesh"><strong>Peer-to-Peer Agent Mesh</strong><small>Agents freely call and reassign work to one another</small></div>
+<div class="group">Specialist agents</div>
+<div class="tile" data-id="ui"><strong>UX / Interface Impact Agent</strong><small>Maps validation outcomes to user journeys and UI behaviour</small></div>
+<div class="tile" data-id="oneagent"><strong>General-Purpose Agent</strong><small>One agent owns every specialist responsibility</small></div>
+<div class="tile" data-id="data"><strong>Regional Data &amp; Policy Agent</strong><small>Retrieves and validates regional rules and source freshness</small></div>
+<div class="tile" data-id="exec"><strong>Engineering Task Agent</strong><small>Analyses code impact and prepares bounded implementation tasks</small></div>
+<div class="tile" data-id="ml"><strong>ML Risk Analysis Agent</strong><small>Interprets advisory model scores and feature implications</small></div>
+<div class="group">External environment / data</div>
+<div class="tile" data-id="env"><strong>Enterprise Systems &amp; Data Sources</strong><small>Policy service, repositories, model registry, API specs, Jira/Confluence</small></div>
+<div class="group">Cross-cutting controls</div>
+<div class="tile" data-id="guard"><strong>Execution Guardrails</strong><small>Least privilege, iteration/time limits, stop conditions</small></div>
+<div class="tile" data-id="deploy"><strong>Auto-Merge &amp; Deploy Pipeline</strong><small>Agent merges and deploys once its own checks pass</small></div>
+<div class="tile" data-id="state"><strong>Shared Task State &amp; Context</strong><small>Task status, findings, provenance, dependencies and hand-offs</small></div>
+<div class="tile" data-id="recover"><strong>Failure &amp; Recovery Controller</strong><small>Bounded retries, timeout handling, fallback and escalation</small></div>
+<div class="tile" data-id="human"><strong>Human Approval Gate</strong><small>Engineering owner validates recommendation before code changes</small></div>
+</aside>
+<div class="diagram-wrap"><div class="diagram-head"><b>Supervisor coordination process map</b><span>Slots describe a responsibility, not a card name</span></div>
+<div id="status" class="status" aria-live="polite">Select a component to begin.</div>
+<div class="map" id="map">
+<svg class="map-lines" id="lines" aria-hidden="true"></svg>
+<div class="map-content">
+<div class="slot" id="sup" data-label="Orchestration layer · breaks down the request, delegates, consolidates"></div>
+<div class="slot" id="data" data-label="Specialist 1 · authoritative rules and how current they are"></div>
+<div class="slot" id="ml" data-label="Specialist 2 · advisory scoring signals"></div>
+<div class="slot" id="ui" data-label="Specialist 3 · what users see when validation fires"></div>
+<div class="slot" id="exec" data-label="Specialist 4 · code impact and bounded work items"></div>
+<div class="slot" id="env" data-label="External layer · systems reached through controlled tools"></div>
+<div class="slot" id="controls" data-multi="true" data-label="Cross-cutting band · state, approval, limits and recovery (holds several cards)"></div>
+</div></div>
+<div class="controls"><button class="action primary" id="submit">Submit my architecture</button><button class="action secondary" id="reset">Reset design</button><button class="action ghost" id="hint">Give me a thinking nudge</button></div>
+<div id="nudge" class="brief" hidden aria-live="polite"></div>
+<div id="feedback" class="feedback card" aria-live="polite"></div>
+</div></div></section>
+
+<section class="card"><h2>3 · Architect's decision room</h2><p>Do not stop at placing boxes. Write your answer to each question as if you were presenting to GlobalTech's architecture review board, then compare it with the model answer. Model answers unlock once you've written something (or press "Show anyway").</p>
+<div id="questions"></div>
+</section>
+<div class="footer">Fictional Project ATLAS teaching scenario. The reference solution and model answers are one defensible design for this exercise, not an official Anthropic or Ness reference design or exam content.</div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const catalog={
+sup:{name:"Supervisor Agent",desc:"Central coordinator and decision point",kind:"core"},
+data:{name:"Regional Data & Policy Agent",desc:"Retrieves and validates policy data and freshness",kind:"core"},
+ml:{name:"ML Risk Analysis Agent",desc:"Interprets advisory risk scores and model implications",kind:"core"},
+ui:{name:"UX / Interface Impact Agent",desc:"Maps outcomes to user journeys and UI behaviour",kind:"core"},
+exec:{name:"Engineering Task Agent",desc:"Analyses code impact and prepares bounded engineering tasks",kind:"core"},
+env:{name:"Enterprise Systems & Data Sources",desc:"Policy service, repositories, model registry, API specs and knowledge systems",kind:"core"},
+state:{name:"Shared Task State & Context",desc:"Progress, findings, provenance, dependencies and hand-offs",kind:"control"},
+human:{name:"Human Approval Gate",desc:"Engineering owner reviews before consequential changes",kind:"control"},
+guard:{name:"Execution Guardrails",desc:"Least privilege, iteration/time limits and stop conditions",kind:"control"},
+recover:{name:"Failure & Recovery Controller",desc:"Bounded retries, timeouts, fallback and escalation",kind:"control"},
+mesh:{name:"Peer-to-Peer Agent Mesh",desc:"Unbounded agent-to-agent delegation",kind:"distractor"},
+deploy:{name:"Auto-Merge & Deploy Pipeline",desc:"Merges and deploys without human review",kind:"distractor"},
+oneagent:{name:"General-Purpose Agent",desc:"Collapses every specialist role into one",kind:"distractor"}
+};
+// visual colour per card (distractors look like their group, so colour is not a giveaway)
+const tileKind={sup:"supervisor",mesh:"supervisor",ui:"specialist",oneagent:"specialist",data:"specialist",exec:"specialist",ml:"specialist",env:"environment",guard:"governance",deploy:"governance",state:"governance",recover:"governance",human:"governance"};
+const why={
+sup:"owns decomposition, delegation, progress tracking and final synthesis. Without it, specialists each redefine the task and nobody consolidates.",
+data:"owns the authoritative regional rule and, critically, whether that source is current. Freshness is a first-class output because the client warned the data may be stale.",
+ml:"interprets the risk score as an advisory signal. It informs the recommendation; it never decides the outcome on its own.",
+ui:"translates validation outcomes into user journeys and the explanation the UI team asked for.",
+exec:"assesses code and pipeline impact and turns it into bounded tasks. It proposes work; it does not merge or deploy.",
+env:"is not an agent. These are systems the agents reach through controlled, least-privilege tools, with responses cached to cut repeat calls.",
+state:"lets the supervisor see which tasks are complete, failed, timed out or inconclusive, with provenance for every finding.",
+human:"keeps the accountable engineering owner in charge of any code change, as the brief requires.",
+guard:"limits permissions, iterations, time and cost, and defines when to stop.",
+recover:"handles the specialist that fails at peak: bounded retries, timeouts, fallback and escalation."
+};
+const distractorWhy={
+mesh:"An unmanaged mesh removes central coordination: agents can reassign work freely, so no one owns dependencies, state or the final recommendation. The brief explicitly asks for supervisor coordination.",
+deploy:"The brief says never autonomously merge or deploy code. Any pipeline that merges on the agent's own checks bypasses the human approval gate.",
+oneagent:"One agent holding every responsibility loses specialist boundaries, can't run reviews in parallel, and overloads a single context window. It can be a valid simpler design for small tasks, but it doesn't meet this brief."
+};
+const slotIds=["sup","data","ml","ui","exec","env","controls"];
+const expected={sup:"sup",data:"data",ml:"ml",ui:"ui",exec:"exec",env:"env"};
+const controlIds=["state","human","guard","recover"];
+const slotName={sup:"Orchestration slot",data:"Specialist 1 (rules & freshness)",ml:"Specialist 2 (advisory scoring)",ui:"Specialist 3 (user-facing outcomes)",exec:"Specialist 4 (code impact)",env:"External layer",controls:"Cross-cutting band"};
+let state={sup:null,data:null,ml:null,ui:null,exec:null,env:null,controls:[]};
+let selected=null;
+
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2200);}
+function setStatus(msg){$("#status").textContent=msg;}
+function locate(id){for(const k of slotIds){if(k==="controls"?state.controls.includes(id):state[k]===id)return k;}return null;}
+
+function place(id,slot){
+ if(!catalog[id]||!slotIds.includes(slot))return;
+ if(locate(id)){toast(catalog[id].name+" is already on the map. Remove it first to move it.");return;}
+ if(slot==="controls"){state.controls.push(id);}
+ else{
+  const old=state[slot];
+  state[slot]=id;
+  if(old)toast("Replaced "+catalog[old].name+". It's back in the library.");
+ }
+ if(!state._quiet)toast(catalog[id].name+" → "+slotName[slot]);
+ clearSelection();render();
+}
+function removeItem(id){
+ const k=locate(id);if(!k)return;
+ if(k==="controls")state.controls=state.controls.filter(x=>x!==id);else state[k]=null;
+ toast(catalog[id].name+" returned to the library.");render();
+}
+function clearSelection(){selected=null;document.querySelectorAll(".tile").forEach(x=>{x.classList.remove("selected");x.setAttribute("aria-pressed","false")});document.querySelectorAll(".slot").forEach(s=>s.classList.remove("armed"));setStatus("Select a component to begin.");}
+function selectTile(t){
+ if(t.classList.contains("used"))return;
+ if(selected===t.dataset.id){clearSelection();return;}
+ selected=t.dataset.id;
+ document.querySelectorAll(".tile").forEach(x=>{const on=x===t;x.classList.toggle("selected",on);x.setAttribute("aria-pressed",on?"true":"false")});
+ document.querySelectorAll(".slot").forEach(s=>s.classList.add("armed"));
+ setStatus("Selected: "+catalog[selected].name+". Now click or tap a slot (or Tab to it and press Enter). Esc to cancel.");
+}
+function placedEl(id){
+ const w=document.createElement("div");w.className="placed";w.dataset.id=id;
+ const n=document.createElement("div");n.className="placed-name";n.textContent=catalog[id].name;
+ const d=document.createElement("div");d.className="placed-desc";d.textContent=catalog[id].desc;
+ const x=document.createElement("button");x.className="x";x.type="button";x.textContent="×";x.title="Remove";x.setAttribute("aria-label","Remove "+catalog[id].name);
+ x.addEventListener("click",e=>{e.stopPropagation();removeItem(id);});
+ w.append(n,d,x);return w;
+}
+function render(){
+ slotIds.forEach(k=>{
+  const s=document.getElementById(k);s.innerHTML="";
+  const l=document.createElement("div");l.className="slotlabel";l.textContent=s.dataset.label;s.append(l);
+  const items=k==="controls"?state.controls:(state[k]?[state[k]]:[]);
+  s.classList.toggle("filled",items.length>0);
+  if(!items.length){const p=document.createElement("div");p.className="placeholder";p.textContent=k==="controls"?"Drop one or more control cards here":"Drop a component here";s.append(p);}
+  else if(k==="controls"){const list=document.createElement("div");list.className="controls-list";items.forEach(i=>list.append(placedEl(i)));s.append(list);}
+  else s.append(placedEl(items[0]));
+  s.setAttribute("aria-label",slotName[k]+": "+(items.length?items.map(i=>catalog[i].name).join(", "):"empty")+". Press Enter to place the selected card.");
+ });
+ document.querySelectorAll(".tile").forEach(t=>{const used=!!locate(t.dataset.id);t.classList.toggle("used",used);t.draggable=!used;t.setAttribute("aria-disabled",used?"true":"false");});
+ drawLines();
+}
+
+// lines drawn from real element positions so they always line up
+function drawLines(){
+ const svg=$("#lines"),map=$("#map");svg.innerHTML="";
+ if(window.innerWidth<=650)return;
+ const mr=map.getBoundingClientRect();svg.setAttribute("viewBox","0 0 "+mr.width+" "+mr.height);
+ const r=id=>{const b=document.getElementById(id).getBoundingClientRect();return{l:b.left-mr.left,t:b.top-mr.top,w:b.width,h:b.height};};
+ const ns="http://www.w3.org/2000/svg";
+ svg.innerHTML='<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#d79a4b"/></marker><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#9b83d7"/></marker></defs>';
+ const line=(x1,y1,x2,y2,color,dash,marker)=>{const p=document.createElementNS(ns,"path");p.setAttribute("d","M"+x1+" "+y1+" L"+x2+" "+y2);p.setAttribute("stroke",color);p.setAttribute("stroke-width","2");p.setAttribute("fill","none");if(dash)p.setAttribute("stroke-dasharray",dash);p.setAttribute("marker-end","url(#"+marker+")");svg.append(p);};
+ const s=r("sup"),e=r("env");
+ ["data","ml","ui","exec"].forEach(a=>{const b=r(a);
+  line(s.l+s.w/2,s.t+s.h,b.l+b.w/2,b.t-2,"#9b83d7","","arr2");
+  line(b.l+b.w/2,b.t+b.h,e.l+e.w/2,e.t-2,"#d79a4b","5 5","arr");
+ });
+}
+
+// tiles: drag, click, keyboard
+document.querySelectorAll(".tile").forEach(t=>{
+ t.dataset.kind=tileKind[t.dataset.id];
+ t.tabIndex=0;t.setAttribute("role","button");t.setAttribute("aria-pressed","false");t.draggable=true;
+ t.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",t.dataset.id);});
+ t.addEventListener("click",()=>selectTile(t));
+ t.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectTile(t);}});
+});
+// slots: drop, click, keyboard
+slotIds.forEach(k=>{const s=document.getElementById(k);
+ s.tabIndex=0;s.setAttribute("role","button");
+ s.addEventListener("dragover",e=>{e.preventDefault();s.classList.add("over")});
+ s.addEventListener("dragleave",()=>s.classList.remove("over"));
+ s.addEventListener("drop",e=>{e.preventDefault();s.classList.remove("over");place(e.dataTransfer.getData("text/plain"),k)});
+ s.addEventListener("click",e=>{if(e.target.closest(".x"))return;if(selected)place(selected,k);else setStatus("Select a component from the library first, then choose this slot.");});
+ s.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===s){e.preventDefault();if(selected)place(selected,k);else setStatus("Select a component from the library first.");}});
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&selected)clearSelection();});
+window.addEventListener("resize",drawLines);
+
+$("#reset").onclick=()=>{state={sup:null,data:null,ml:null,ui:null,exec:null,env:null,controls:[]};clearSelection();$("#feedback").classList.remove("show");$("#feedback").innerHTML="";$("#nudge").hidden=true;render();toast("Design reset.");};
+
+const nudges=["Who owns decomposition and final synthesis? Specialist agents should not all independently redefine the task.","The four specialists represent different knowledge domains. Give each a narrow responsibility and a clear output.","External systems are not agents. They are sources or services the agents access through controlled tools.","The engineering agent should not make an implementation decision using an unverified regional policy or advisory ML score.","A robust design needs shared task state, human approval, execution limits and bounded recovery—not just agent boxes.","Re-read the brief's last bullet under 'What the solution must achieve' before choosing any control card."];
+let n=0;$("#hint").onclick=()=>{const box=$("#nudge");box.hidden=false;box.textContent="Nudge "+(n%nudges.length+1)+"/"+nudges.length+": "+nudges[n%nudges.length];n++;};
+
+$("#submit").onclick=()=>{
+ let score=0;const total=10,lines=[];let penalties=0;
+ Object.entries(expected).forEach(([slot,id])=>{
+  const actual=state[slot];
+  if(actual===id){score++;lines.push('<li><span class="ok">✓ '+slotName[slot]+'</span>: '+catalog[id].name+' '+why[id]+'</li>');}
+  else if(!actual){lines.push('<li><span class="warn">○ '+slotName[slot]+'</span>: still empty. This slot needs the component that '+why[id]+'</li>');}
+  else if(catalog[actual].kind==="distractor"){lines.push('<li><span class="bad">✗ '+slotName[slot]+'</span>: you placed <b>'+catalog[actual].name+'</b>. '+distractorWhy[actual]+' The right card here is <b>'+catalog[id].name+'</b>, which '+why[id]+'</li>');}
+  else{lines.push('<li><span class="bad">✗ '+slotName[slot]+'</span>: you placed <b>'+catalog[actual].name+'</b>, which '+(why[actual]||"belongs elsewhere.")+' This slot needs <b>'+catalog[id].name+'</b>, which '+why[id]+'</li>');}
+ });
+ controlIds.forEach(id=>{
+  if(state.controls.includes(id)){score++;lines.push('<li><span class="ok">✓ '+catalog[id].name+'</span> in the cross-cutting band: '+why[id]+'</li>');}
+  else{const where=locate(id);lines.push('<li><span class="warn">○ '+catalog[id].name+'</span>: '+(where?'placed in the '+slotName[where]+', but it is a cross-cutting control, not a role-specific component.':'missing.')+' It '+why[id]+'</li>');}
+ });
+ state.controls.filter(id=>!controlIds.includes(id)).forEach(id=>{
+  if(catalog[id].kind==="distractor")lines.push('<li><span class="bad">✗ '+catalog[id].name+'</span> in the cross-cutting band: '+distractorWhy[id]+'</li>');
+  else lines.push('<li><span class="bad">✗ '+catalog[id].name+'</span> in the cross-cutting band: this is a role-specific component, not a control. It '+why[id]+'</li>');
+ });
+ const bad=["mesh","deploy","oneagent"].filter(id=>locate(id));
+ penalties=bad.length;
+ const final=Math.max(0,score-penalties),pct=Math.round(final/total*100);
+ const fb=$("#feedback");fb.classList.add("show");
+ fb.innerHTML='<div class="scoreline"><h2 style="margin:0">Your architecture review</h2><span class="score">'+final+'/'+total+' · '+pct+'%</span></div>'+
+ '<p class="small">'+score+' correct checks'+(penalties?' − '+penalties+' for distractor'+(penalties>1?'s':'')+' on the map':'')+'.</p>'+
+ '<p>'+(pct>=90?"Strong architecture foundation. Now defend your sequencing, state and control decisions in section 3.":pct>=70?"Good structure. Review the flagged placements below, then work through section 3.":"Keep iterating. Start with the supervisor, four distinct specialists and the external data layer, then add the controls.")+'</p>'+
+ (bad.length?'<p style="color:#b33b3b"><b>Risk flags:</b> '+bad.map(id=>catalog[id].name).join(", ")+'. These conflict with the stated client constraints (see below).</p>':'<p style="color:#16865e"><b>No distractor on the map.</b> Continue by defending the architecture trade-offs.</p>')+
+ '<h3>Placement feedback</h3><ul class="fb-list">'+lines.join("")+'</ul>'+
+ '<details><summary>Show the reference process map</summary><div class="good"><div class="reference"><div class="refnode refsup">SUPERVISOR AGENT<small>Decompose · delegate · monitor · consolidate</small></div><div class="refnode refagent">SPECIALIST 1<small>Regional Data &amp; Policy</small></div><div class="refnode refagent">SPECIALIST 2<small>ML Risk Analysis</small></div><div class="refnode refagent">SPECIALIST 3<small>UX / Interface Impact</small></div><div class="refnode refagent">SPECIALIST 4<small>Engineering Task Analysis</small></div><div class="refnode refenv">EXTERNAL ENVIRONMENT / DATA SOURCES<small>Policy service · repositories · model registry · API specs · enterprise knowledge</small></div><div class="refnode refgov">CROSS-CUTTING CONTROLS<small>Shared state · human approval · guardrails · bounded retry and escalation</small></div></div></div></details>'+
+ '<div class="question"><h3>Certification concepts this design is intended to teach</h3><div class="learning">'+
+ '<div class="learn"><b>Supervisor orchestration</b><p>A central coordinator decomposes the task, delegates work, monitors progress and consolidates specialist outputs.</p></div>'+
+ '<div class="learn"><b>Specialist boundaries</b><p>Each agent has a bounded domain, purpose, input context and expected output. Avoid overlapping authority.</p></div>'+
+ '<div class="learn"><b>Sequential vs parallel execution</b><p>Policy retrieval and independent impact reviews may begin concurrently. Engineering recommendations should wait for critical policy and impact findings.</p></div>'+
+ '<div class="learn"><b>External environment and tools</b><p>Enterprise systems are accessed through controlled integrations; data sources are not autonomous agents.</p></div>'+
+ '<div class="learn"><b>State and context sharing</b><p>Track task status, provenance, dependencies, partial results and completion. Pass only relevant context to each specialist.</p></div>'+
+ '<div class="learn"><b>Human-in-the-loop and guardrails</b><p>Keep implementation approval with an accountable engineer. Define permissions, stop conditions and execution limits.</p></div>'+
+ '<div class="learn"><b>Failure recovery</b><p>Use bounded retries for transient faults, mark uncertain outputs, preserve partial state and escalate when confidence or source freshness is insufficient.</p></div>'+
+ '<div class="learn"><b>Architecture trade-offs</b><p>More agents can improve specialisation but add coordination, latency, cost and failure surfaces. Use the simplest pattern that meets requirements.</p></div></div></div>'+
+ '<div class="question"><h3>Suggested execution logic</h3><ol><li>Supervisor validates the request and creates four bounded subtasks.</li><li>Regional Data &amp; Policy Agent retrieves the rule and verifies freshness. ML Risk, UX and code discovery can perform independent initial analysis in parallel where inputs permit.</li><li>Supervisor tracks dependencies in shared state. Engineering Task Agent finalises its impact and implementation recommendation only after critical policy and dependency facts are available.</li><li>Supervisor checks missing or conflicting evidence. It retries transient failures within limits, but escalates stale or unavailable authoritative policy data rather than inventing an answer.</li><li>Consolidated recommendation goes to the engineering owner. No merge or production deployment occurs without the required human approval.</li></ol></div>'+
+ '<p class="small"><b>Scoring note:</b> The score checks components and placement, minus one per distractor on the map. Architecture quality also depends on the reasoning in section 3: there can be multiple valid designs if the trade-offs are justified.</p>';
+ fb.scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+// ---- Decision room with model answers ----
+const questions=[
+{t:"Task decomposition",q:"What exact subtask should the supervisor assign to each specialist? What is the expected input and output contract?",
+a:`<p>Every specialist returns the same envelope: <b>status</b>, <b>findings</b>, <b>evidence/provenance</b> (source, version, timestamp), <b>confidence</b> and <b>open questions</b>. The domain content differs:</p><ul>
+<li><b>Regional Data &amp; Policy.</b> In: the change request and the list of affected regions. Out: the rule text per region, source system, version, last-updated time, a freshness verdict (fresh / stale / unverifiable) and any gaps or conflicts between regions.</li>
+<li><b>ML Risk Analysis.</b> In: a summary of the rule and the model identifier. Out: which features and scores interact with the rule, how the score is currently consumed, where an advisory score could conflict with the rule, and a reminder that the score is advisory.</li>
+<li><b>UX / Interface Impact.</b> In: the proposed validation outcomes. Out: affected screens and journeys, required user-facing explanations, edge cases (e.g. rule fires mid-checkout) and questions for the UI team.</li>
+<li><b>Engineering Task.</b> In: repository access plus the policy, ML and UX findings. Out: affected services, pipelines and tests, a list of bounded tasks with acceptance criteria, a test plan and risks. It produces a proposal only. Nothing is merged.</li></ul>
+<p>A structured contract lets the supervisor check outputs mechanically. A missing freshness field, for example, means the result is incomplete.</p>`},
+{t:"Parallel or sequential?",q:"Which specialists can start together? Does the engineering task agent need the regional policy and impact findings first?",
+a:`<ul><li><b>Start in parallel:</b> Data &amp; Policy, ML Risk, UX, and the <i>discovery</i> half of Engineering (finding where the validation logic lives, mapping services). None of these depends on another's output to begin.</li>
+<li><b>Sequential dependency:</b> Engineering's <i>final</i> recommendation waits for (a) a policy rule with a confirmed freshness verdict and (b) the ML and UX findings, because those change what must be built and tested.</li>
+<li><b>Last:</b> the supervisor consolidates once all four are in a terminal state, then hands off to the human approval gate.</li></ul>
+<p>So it's a fan-out, then a join, then synthesis. Running everything sequentially wastes time. Running everything in parallel risks an engineering plan built on unverified policy.</p>`},
+{t:"Context strategy",q:"What information should be shared with all agents, and what should remain specialist-specific?",
+a:`<ul><li><b>Shared with all:</b> a short summary of the change request, scope and region list, task IDs, key constraints (ML is advisory, no merge or deploy, escalate on stale policy), a shared glossary and the output contract.</li>
+<li><b>Specialist-specific:</b> raw policy records (Data), model registry entries and feature docs (ML), UI specs and journey maps (UX), source code and pipeline configs (Engineering).</li>
+<li><b>Between agents:</b> pass <i>summarised findings with provenance</i>, not raw dumps. Engineering needs "Rule R-12, v3, verified fresh at time T", not the whole policy database.</li></ul>
+<p>Keeping context narrow cuts cost and latency (a stated client concern) and reduces the chance that an agent gets distracted by, or acts on, information outside its domain.</p>`},
+{t:"State management",q:"How will the supervisor know whether an agent has completed, failed, timed out or returned an inconclusive result?",
+a:`<p>Every subtask has a record in shared task state:</p><ul>
+<li><b>status</b>: pending → running → one of <i>complete / partial / inconclusive / failed / timed_out</i>.</li>
+<li><b>deadline</b> and <b>attempt count</b>. The recovery controller marks a task timed_out when it passes its deadline. The agent doesn't have to report that it is stuck.</li>
+<li><b>Output validation</b>: the supervisor checks each return against its contract. A missing required field or low confidence makes it <i>inconclusive</i> even if the agent said "done".</li>
+<li><b>provenance</b> and <b>dependencies</b>, so the supervisor knows which downstream tasks are blocked by a failed or inconclusive one.</li></ul>
+<p>Partial results are kept, not thrown away, so a retry only redoes the missing part.</p>`},
+{t:"Control",q:"What must trigger a stop, a bounded retry or escalation to a human?",
+a:`<ul><li><b>Bounded retry</b> (e.g. 2–3 attempts with backoff): transient faults such as timeouts, rate limits and 5xx errors from a tool or specialist. Cache successful external responses so retries don't repeat costly calls.</li>
+<li><b>Stop:</b> iteration, time or cost budget exhausted; any attempt to act outside granted permissions (write to a repo, merge, deploy, change policy data); repeated identical tool calls (looping).</li>
+<li><b>Escalate to a human:</b> authoritative policy is stale or unverifiable; the ML score conflicts with the policy rule; retries are exhausted on a critical-path task; specialists disagree and the evidence can't settle it; and always before any code change (approval gate).</li></ul>
+<p>Rule of thumb: retry what's transient, stop what's unsafe, escalate what needs judgement.</p>`},
+{t:"Trade-off",q:"Would a workflow with a few agent steps be safer or cheaper than a fully autonomous multi-agent system for this use case? Explain.",
+a:`<p>For most of this problem, <b>yes</b>. The steps are known in advance: gather policy, assess ML, assess UX, assess code, synthesise, get approval. A largely fixed workflow (parallel fan-out, join, synthesis, human gate) is cheaper, more predictable, easier to test and easier to audit, all of which matter for a high-risk change.</p>
+<p>Agentic autonomy earns its place only where the path can't be predicted, mainly code discovery across a legacy codebase, where the agent has to decide what to search next. So a defensible answer is a <b>hybrid</b>: a workflow skeleton with a supervisor, where only the open-ended specialist steps are agentic, and all of it bounded by guardrails.</p>
+<p>A fully autonomous system adds coordination overhead, latency, cost and more failure surfaces without adding much value here. Anthropic's guidance on building agents makes the same point: start with the simplest pattern that works and add autonomy only when it measurably helps.</p>`},
+{t:"Late-breaking complication",q:"A regional policy API becomes unavailable while the analysis is running. The ML Risk Analysis Agent has returned a score, but the policy source freshness cannot be confirmed. Should the supervisor continue, retry, use cached data, mark the result inconclusive or escalate? Explain the safety and reliability trade-off.",
+a:`<p>A combination, in order:</p><ol>
+<li><b>Bounded retry</b> first, because the outage may be transient.</li>
+<li>If it is still down, <b>continue the independent work</b>. ML, UX and code discovery don't need the live API, so there's no reason to stall them.</li>
+<li><b>Cached policy may be used for provisional analysis only</b>, explicitly labelled "freshness unverified, cached at time T". It can't support a final recommendation, because the client said this data may be stale.</li>
+<li><b>Don't let the ML score fill the gap.</b> It's advisory and can't stand in for the authoritative rule.</li>
+<li><b>Mark the policy task inconclusive</b> and the Engineering recommendation <i>blocked on policy verification</i>.</li>
+<li><b>Escalate</b> to the policy owner and engineering owner with what is known, what isn't, and what's needed to proceed.</li></ol>
+<p><b>Trade-off:</b> carrying on with cached data improves availability and speed but risks shipping a rule based on outdated policy. For a high-risk change, correctness wins. Deliver a transparent, partial result and a clear escalation, not a confident answer built on unverified data.</p>`}
+];
+const qc=$("#questions");
+questions.forEach((x,i)=>{
+ const d=document.createElement("div");d.className="q";
+ d.innerHTML='<b>'+(i<6?(i+1)+'. ':'⚡ ')+x.t+':</b> '+x.q+
+ '<label class="small" style="display:block;margin-top:6px" for="ans'+i+'">Your answer</label><textarea id="ans'+i+'" placeholder="Write your answer before checking the model answer…"></textarea>'+
+ '<div class="count" id="cnt'+i+'">0 words</div>'+
+ '<details class="model" data-locked="true" id="det'+i+'"><summary>Compare with a model answer</summary><div class="model-body" id="mb'+i+'"></div></details>';
+ qc.append(d);
+ const ta=d.querySelector("textarea"),det=d.querySelector("details"),mb=d.querySelector(".model-body");
+ const unlock=()=>{det.dataset.locked="false";mb.innerHTML=x.a;};
+ ta.addEventListener("input",()=>{const w=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;d.querySelector(".count").textContent=w+" word"+(w===1?"":"s");if(w>=15&&det.dataset.locked==="true")unlock();});
+ det.addEventListener("toggle",()=>{
+  if(det.open&&det.dataset.locked==="true"){
+   mb.innerHTML='<p>Write at least 15 words first. Retrieval practice beats re-reading.</p><button type="button" class="action ghost">Show anyway</button>';
+   mb.querySelector("button").onclick=unlock;
+  }
+ });
+});
+
+render();
+</script></body></html>

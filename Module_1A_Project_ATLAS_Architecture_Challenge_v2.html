@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project ATLAS – Architecture Design Challenge (v2)</title>
+<style>
+:root{--ink:#172033;--muted:#5e6b80;--line:#d9e0ea;--blue:#2457c5;--pale:#edf3ff;--green:#e9f7f0;--red:#b33b3b;--amber:#a8661a}
+*{box-sizing:border-box}body{margin:0;background:#eef2f7;color:var(--ink);font:15px/1.5 "Segoe UI",Arial,sans-serif}
+header{background:#14213d;color:white;padding:25px max(20px,calc((100% - 1160px)/2))}header small{color:#b9ccff;letter-spacing:.12em;text-transform:uppercase;font-weight:bold}h1{margin:6px 0;font-size:29px}header p{color:#dce5f7;margin:0;max-width:850px}
+main{max-width:1160px;margin:22px auto;padding:0 16px 40px}.card{background:white;border:1px solid var(--line);border-radius:13px;padding:19px;margin-bottom:17px;box-shadow:0 3px 14px #1720330a}h2{font-size:20px;margin:0 0 12px}h3{font-size:15px;margin:0 0 7px}
+.story{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}.story ul{padding-left:20px;margin:7px 0}.story li{margin:5px 0}.callout{background:#f0f5ff;border-left:4px solid var(--blue);padding:11px 13px;border-radius:7px;margin-top:12px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{background:#e9eef8;border-radius:30px;padding:4px 10px;font-size:12px;font-weight:650}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 12px}.howto div{background:#f7f9fc;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;color:#3c4a63}.howto b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+.status{font-size:12px;color:#30415e;background:#eef3fc;border-radius:8px;padding:7px 10px;margin:0 0 10px;min-height:30px}
+.workspace{display:grid;grid-template-columns:275px 1fr;gap:15px}.palette{background:#f5f7fb;border:1px solid var(--line);border-radius:10px;padding:13px}.hint{font-size:12px;color:var(--muted)}
+.tile{background:white;border:1px solid #c5d0e2;border-radius:8px;padding:9px 10px;margin:7px 0;cursor:grab;user-select:none}.tile strong{display:block;font-size:13px}.tile small{color:var(--muted);font-size:11px}
+.tile.selected{outline:2px solid var(--blue);background:#f1f6ff}.tile.used{opacity:.35;cursor:not-allowed}
+:focus-visible{outline:3px solid #426fe0;outline-offset:2px}
+.board{background:#fbfcff;border:2px dashed #bdc9dc;border-radius:11px;padding:13px}.boardtop{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap}.boardtop span{font-size:12px;color:var(--muted)}
+.lane{background:white;border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin:9px 0;min-height:72px;transition:.12s}.lane.armed{border-color:#7fa2e6}.lane.over{background:#edf3ff;border-color:var(--blue)}
+.lane h3{font-size:12px;color:#45536b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}.lane .sub{font-size:11px;color:var(--muted);margin-bottom:6px}
+.dropzone{min-height:36px;display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
+.empty{font-size:12px;color:#8995a8;padding:6px}
+.placed{background:#eaf0ff;border:1px solid #b8caff;border-radius:7px;padding:6px 8px;font-size:12px;display:flex;gap:7px;align-items:center}
+.placed.trap{background:#fff1f1;border-color:#e8b3b3}
+.placed button{border:0;background:none;padding:0 2px;cursor:pointer;color:#52617a;font-size:16px;line-height:1}
+.dep-tag{display:inline-block;font-size:10px;font-weight:800;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--blue);color:white}.secondary{background:#e9eef6;color:#293750}.ghost{background:white;border:1px solid var(--line);color:#34445f}
+.feedback{display:none;margin-top:15px}.feedback.show{display:block}.score{font-size:18px;font-weight:800}.good{background:var(--green);border:1px solid #b7e2ce;border-radius:9px;padding:12px;margin:10px 0}
+.flow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:8px}.node{background:white;border:1px solid #a9c0ef;border-radius:7px;padding:8px 9px;font-size:12px;font-weight:650}.arrow{color:#73819a}
+.ok{color:#16865e;font-weight:800}.bad{color:var(--red);font-weight:800}.warn{color:var(--amber);font-weight:800}
+.fb-list li{margin:6px 0}
+.concepts{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.concept{border:1px solid var(--line);border-radius:8px;padding:10px}.concept b{font-size:13px}.concept p{margin:3px 0 0;font-size:12px;color:var(--muted)}.explain{background:#f7f9fc;border-radius:9px;padding:12px;margin-top:12px}
+.q{border:1px solid var(--line);border-radius:10px;padding:13px;margin:10px 0;background:white}
+.q textarea{width:100%;min-height:76px;margin-top:8px;border:1px solid #cbd5e5;border-radius:8px;padding:8px;font:inherit;font-size:13px;resize:vertical}
+.count{font-size:11px;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-top:8px;background:#fbfcfe}summary{font-weight:700;cursor:pointer}
+.model-body{font-size:13px;color:#2c3a54}.model-body ul,.model-body ol{padding-left:20px;margin:6px 0}.model-body li{margin:4px 0}
+.small{font-size:12px;color:var(--muted)}.footer{text-align:center;color:var(--muted);font-size:12px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#14213d;color:white;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:780px){.story,.workspace{grid-template-columns:1fr}.concepts{grid-template-columns:1fr}.howto{grid-template-columns:1fr}h1{font-size:24px}}
+</style></head><body>
+<header><small>Claude Certified Architect – Foundations · Module 1 · practice</small><h1>Project ATLAS – Architecture Design Challenge</h1><p>You are the Ness architecture team. Read the client scenario, assemble an agentic solution on the canvas, submit it for feedback, then answer the reasoning questions and compare with the model answers.</p></header>
+<main>
+<section class="card"><h2>1. Client scenario</h2><div class="story">
+<div><h3>GlobalTech Manufacturing</h3><p>GlobalTech is a multinational manufacturer with approximately 8,000 software engineers. Its legacy applications have incomplete documentation, complex dependencies and uneven test coverage. Engineers spend significant time understanding unfamiliar code, assessing change impact and preparing regression tests.</p><p>The client asks Ness to design an AI-assisted engineering solution using Claude. For a change request in its order-management application, the solution should:</p><ul><li>Understand relevant code and identify impacted components.</li><li>Propose test cases and assess security risks.</li><li>Coordinate specialist work and produce one consolidated recommendation.</li><li>Keep engineers accountable and require approval before consequential actions.</li></ul></div>
+<div><h3>Client constraints</h3><ul><li>Some tasks depend on earlier findings; others can run independently.</li><li>Agents need clearly bounded responsibilities.</li><li>Execution must stop when information is insufficient or a defined limit is reached.</li><li>Failures must be visible and recoverable; no uncontrolled retry loops.</li><li>No agent may directly merge code or deploy to production.</li></ul><div class="callout"><b>Your assignment:</b> Design the architecture and explain why the selected coordination pattern fits this business problem.</div></div></div>
+<div class="pills"><span class="pill">Role: Ness Solution Architect</span><span class="pill">Challenge: Module 1</span><span class="pill">20–25 minutes</span><span class="pill">Individual or team</span></div></section>
+
+<section class="card"><h2>2. Build your architecture</h2>
+<div class="howto">
+<div><b>1 · Pick a component</b>Drag it, click it, or Tab to it and press Enter. Some cards are traps: read them against the constraints.</div>
+<div><b>2 · Place it</b>Drop it in a lane, click the lane, or Tab to the lane and press Enter. Lanes C1 and C2 differ: one runs in parallel, one depends on earlier work.</div>
+<div><b>3 · Submit</b>Each correct placement scores +1. Each trap card on the canvas scores −1. Wrong-lane cards score 0. Esc cancels a selection.</div>
+</div>
+<div class="status" id="status" aria-live="polite">Select a component to begin.</div>
+<div class="workspace"><aside class="palette" aria-label="Component palette"><h3>Architecture component palette</h3><p class="hint">Select the components that satisfy the client constraints. Not every option is appropriate.</p>
+<div class="tile" draggable="true" data-id="request"><strong>Engineering request</strong><small>Change request and business context</small></div>
+<div class="tile" draggable="true" data-id="supervisor"><strong>Supervisor / Orchestrator</strong><small>Decomposes, delegates and consolidates</small></div>
+<div class="tile" draggable="true" data-id="code"><strong>Code Analysis Agent</strong><small>Analyses code and dependencies</small></div>
+<div class="tile" draggable="true" data-id="tests"><strong>Test Design Agent</strong><small>Proposes test scenarios and coverage</small></div>
+<div class="tile" draggable="true" data-id="security"><strong>Security Review Agent</strong><small>Reviews security implications</small></div>
+<div class="tile" draggable="true" data-id="impact"><strong>Impact Analysis Agent</strong><small>Identifies affected components and risks</small></div>
+<div class="tile" draggable="true" data-id="state"><strong>Shared task state / context</strong><small>Tracks progress and shares findings</small></div>
+<div class="tile" draggable="true" data-id="human"><strong>Human engineering approval</strong><small>Engineer reviews before any consequential action</small></div>
+<div class="tile" draggable="true" data-id="limits"><strong>Execution guardrails</strong><small>Iteration limits, timeouts and stop conditions</small></div>
+<div class="tile" draggable="true" data-id="retry"><strong>Retry / failure handling</strong><small>Bounded retry, escalation and recovery</small></div>
+<div class="tile" draggable="true" data-id="mesh"><strong>Peer agent mesh</strong><small>Agents call and reassign work to each other as they see fit</small></div>
+<div class="tile" draggable="true" data-id="autoapprove"><strong>Auto-approve when tests pass</strong><small>Pipeline approves and applies changes once automated checks are green</small></div>
+<div class="tile" draggable="true" data-id="deploy"><strong>Automatic production deployment</strong><small>Deploys without a human gate</small></div>
+<div class="tile" draggable="true" data-id="free"><strong>Unrestricted autonomous agent</strong><small>Can choose any action without boundaries</small></div>
+</aside>
+<div><div class="board"><div class="boardtop"><b>Solution design canvas</b><span>Lanes show when work happens, not just what it is</span></div>
+<div class="lane" data-zone="entry"><h3>A. Request / entry point</h3><div class="sub">Where work starts.</div><div class="dropzone"></div></div>
+<div class="lane" data-zone="orch"><h3>B. Orchestration and shared context</h3><div class="sub">Who decomposes, tracks and consolidates.</div><div class="dropzone"></div></div>
+<div class="lane" data-zone="par"><h3>C1. Specialists that can start in parallel</h3><div class="sub">Each needs only the request and its own scope.</div><div class="dropzone"></div></div>
+<div class="lane" data-zone="dep"><h3>C2. Specialists that wait for earlier findings</h3><div class="sub">Starts only after the upstream finding it needs is recorded.</div><div class="dropzone"></div></div>
+<div class="lane" data-zone="ctl"><h3>D. Control, review and recovery</h3><div class="sub">What limits, approves and recovers.</div><div class="dropzone"></div></div>
+</div>
+<div class="controls"><button class="primary" id="submit">Submit architecture</button><button class="secondary" id="reset">Reset canvas</button><button class="ghost" id="showHint" aria-expanded="false">Show a design hint</button></div>
+<div id="hint" class="callout" hidden>Consider a supervisor pattern: who receives the request, assigns specialist tasks and consolidates results? Where is shared state maintained? Which actions require human approval? Which specialist needs another specialist's output first?</div>
+<div id="feedback" class="feedback card" aria-live="polite"></div></div></div></section>
+
+<section class="card"><h2>3. Architecture reasoning questions</h2><p class="small">Write your answer first. The model answer unlocks after 15 words, or press "Show anyway". Compare, then revise your answer.</p>
+<div id="questions"></div></section>
+<div class="footer">Project ATLAS is a fictional learning scenario. The reference design and model answers are instructional examples, not a prescribed Anthropic or Ness production architecture, and not official exam content.</div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const catalog={
+ request:{name:"Engineering request",zone:"entry",why:"is the entry point: the change request and business context start here, before any agent is involved."},
+ supervisor:{name:"Supervisor / Orchestrator",zone:"orch",why:"receives the request, decides whether it's defined enough, decomposes it, delegates, and consolidates. Without a single owner, specialists duplicate work and nobody reconciles conflicts."},
+ state:{name:"Shared task state / context",zone:"orch",why:"records each task's status, findings with provenance, dependencies and open questions, so the supervisor knows what is complete, blocked or inconclusive."},
+ code:{name:"Code Analysis Agent",zone:"par",why:"needs only the request and repository access to map relevant code, so it can start immediately, in parallel with others."},
+ tests:{name:"Test Design Agent",zone:"par",why:"can propose scenarios from the request and existing test coverage without waiting for impact results. Its output may later be refined, but it doesn't need to wait."},
+ security:{name:"Security Review Agent",zone:"par",why:"reviews the change surface described in the request independently; its scope is security, not dependency tracing."},
+ impact:{name:"Impact Analysis Agent",zone:"dep",why:"needs Code Analysis's output to know which components and dependencies are affected. Running it first would produce a guess rather than a finding."},
+ human:{name:"Human engineering approval",zone:"ctl",why:"keeps an accountable engineer in charge of anything consequential, before code is merged or deployed."},
+ limits:{name:"Execution guardrails",zone:"ctl",why:"set iteration, time and cost limits, least-privilege permissions, and stop conditions, so the system halts when information is insufficient rather than looping."},
+ retry:{name:"Retry / failure handling",zone:"ctl",why:"gives bounded retries for transient faults, records partial results, and escalates when a task stays incomplete."}
+};
+const traps={
+ mesh:{name:"Peer agent mesh",why:"removes central ownership. Agents reassigning work to each other with no supervisor means no one tracks dependencies, and the client asked for bounded responsibilities."},
+ autoapprove:{name:"Auto-approve when tests pass",why:"looks like an efficient control, but it removes the human gate. Passing tests doesn't show that the change is safe, and the client said no agent may apply changes directly."},
+ deploy:{name:"Automatic production deployment",why:"directly violates the constraint that no agent may deploy to production."},
+ free:{name:"Unrestricted autonomous agent",why:"has no boundaries, limits or stop conditions, which the constraints explicitly prohibit. It also gives no way to see which step failed."}
+};
+const zoneNames={entry:"A. Request / entry point",orch:"B. Orchestration and shared context",par:"C1. Parallel specialists",dep:"C2. Dependent specialists",ctl:"D. Control, review and recovery"};
+const laneEls=[...document.querySelectorAll(".lane")];
+let placed={};let selected=null;
+const $=s=>document.querySelector(s);
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2000);}
+function setStatus(m){$("#status").textContent=m;}
+function allName(id){return (catalog[id]||traps[id]).name;}
+
+function place(id,zone){
+ if(!(catalog[id]||traps[id]))return;
+ if(placed[id]){toast(allName(id)+" is already on the canvas. Remove it first to move it.");return;}
+ placed[id]=zone;toast(allName(id)+" → "+zoneNames[zone]);
+ clearSelection();render();
+}
+function removeItem(id){delete placed[id];toast(allName(id)+" returned to the palette.");render();}
+function clearSelection(){selected=null;document.querySelectorAll(".tile").forEach(t=>{t.classList.remove("selected");t.setAttribute("aria-pressed","false")});laneEls.forEach(l=>l.classList.remove("armed"));setStatus("Select a component to begin.");}
+function selectTile(t){
+ if(t.classList.contains("used"))return;
+ if(selected===t.dataset.id){clearSelection();return;}
+ selected=t.dataset.id;
+ document.querySelectorAll(".tile").forEach(x=>{const on=x===t;x.classList.toggle("selected",on);x.setAttribute("aria-pressed",on?"true":"false")});
+ laneEls.forEach(l=>l.classList.add("armed"));
+ setStatus("Selected: "+allName(selected)+". Now click a lane, or Tab to one and press Enter. Esc cancels.");
+}
+function render(){
+ laneEls.forEach(l=>{
+  const z=l.dataset.zone,dz=l.querySelector(".dropzone");dz.innerHTML="";
+  const items=Object.keys(placed).filter(id=>placed[id]===z);
+  if(!items.length){const e=document.createElement("span");e.className="empty";e.textContent="Drop components here";dz.append(e);}
+  items.forEach(id=>{
+   const el=document.createElement("span");el.className="placed"+(traps[id]?" trap":"");el.dataset.id=id;
+   const s=document.createElement("span");s.textContent=allName(id);el.append(s);
+   if(z==="dep"){const t=document.createElement("span");t.className="dep-tag";t.textContent="after C1";el.append(t);}
+   const b=document.createElement("button");b.type="button";b.textContent="×";b.title="Remove";b.setAttribute("aria-label","Remove "+allName(id));
+   b.addEventListener("click",e=>{e.stopPropagation();removeItem(id);});el.append(b);
+   dz.append(el);
+  });
+ });
+ document.querySelectorAll(".tile").forEach(t=>{const used=!!placed[t.dataset.id];t.classList.toggle("used",used);t.draggable=!used;t.setAttribute("aria-disabled",used?"true":"false");});
+}
+
+document.querySelectorAll(".tile").forEach(t=>{
+ t.tabIndex=0;t.setAttribute("role","button");t.setAttribute("aria-pressed","false");
+ t.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",t.dataset.id));
+ t.addEventListener("click",()=>selectTile(t));
+ t.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectTile(t);}});
+});
+laneEls.forEach(l=>{
+ const z=l.dataset.zone;l.tabIndex=0;l.setAttribute("role","button");l.setAttribute("aria-label",zoneNames[z]+". Press Enter to place the selected component.");
+ l.addEventListener("dragover",e=>{e.preventDefault();l.classList.add("over")});
+ l.addEventListener("dragleave",()=>l.classList.remove("over"));
+ l.addEventListener("drop",e=>{e.preventDefault();l.classList.remove("over");place(e.dataTransfer.getData("text/plain"),z)});
+ l.addEventListener("click",e=>{if(e.target.closest(".placed"))return;if(selected)place(selected,z);else setStatus("Select a component from the palette first, then choose this lane.");});
+ l.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===l){e.preventDefault();if(selected)place(selected,z);else setStatus("Select a component from the palette first.");}});
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&selected)clearSelection();});
+
+$("#reset").onclick=()=>{placed={};clearSelection();$("#feedback").classList.remove("show");$("#feedback").innerHTML="";render();toast("Canvas reset.");};
+$("#showHint").onclick=()=>{const h=$("#hint");h.hidden=!h.hidden;$("#showHint").setAttribute("aria-expanded",String(!h.hidden));};
+
+$("#submit").onclick=()=>{
+ const ids=Object.keys(catalog);let correct=0;const lines=[];
+ ids.forEach(id=>{
+  const c=catalog[id],at=placed[id];
+  if(at===c.zone){correct++;lines.push('<li><span class="ok">✓ '+c.name+'</span> in '+zoneNames[c.zone]+': it '+c.why+'</li>');}
+  else if(!at){lines.push('<li><span class="warn">○ '+c.name+'</span>: missing. It '+c.why+'</li>');}
+  else{lines.push('<li><span class="bad">✗ '+c.name+'</span>: placed in '+zoneNames[at]+', but it belongs in '+zoneNames[c.zone]+'. It '+c.why+'</li>');}
+ });
+ const trapsOn=Object.keys(traps).filter(id=>placed[id]);
+ trapsOn.forEach(id=>lines.push('<li><span class="bad">✗ Trap: '+traps[id].name+'</span> on the canvas (−1). '+traps[id].why+'</li>'));
+ const total=ids.length,score=Math.max(0,correct-trapsOn.length),pct=Math.round(score/total*100);
+ const fb=$("#feedback");fb.classList.add("show");
+ let verdict=pct>=90&&!trapsOn.length?"Strong design: every core component is present and in the right lane, with no traps.":pct>=70?"Good foundation. Review the flagged lines below; a trap or a misplaced dependency costs more than a missing component.":"Keep iterating: start from the supervisor and the lanes, then add controls.";
+ fb.innerHTML='<h2>Architecture feedback</h2><div class="score">'+score+'/'+total+' · '+pct+'%</div><p class="small">'+correct+' correct placement'+(correct===1?'':'s')+(trapsOn.length?' − '+trapsOn.length+' trap'+(trapsOn.length>1?'s':''):'')+'.</p><p>'+verdict+'</p>'+
+ '<div class="good"><b>Reference architecture</b><div class="flow"><span class="node">Engineering request</span><span class="arrow">→</span><span class="node">Supervisor / Orchestrator</span><span class="arrow">→</span><span class="node">Parallel specialists (C1)</span><span class="arrow">→</span><span class="node">Dependent specialist (C2)</span><span class="arrow">→</span><span class="node">Consolidated findings</span><span class="arrow">→</span><span class="node">Human review</span></div><div class="flow"><span class="node">Shared task state</span><span class="node">Execution guardrails</span><span class="node">Retry / failure handling</span></div></div>'+
+ '<h3>Placement feedback</h3><ul class="fb-list">'+lines.join("")+'</ul>'+
+ '<div class="explain"><h3>Certification concepts demonstrated</h3><div class="concepts">'+
+ '<div class="concept"><b>Pattern selection</b><p>A supervisor-based pattern suits complex work with distinct specialist responsibilities and consolidated outcomes.</p></div>'+
+ '<div class="concept"><b>Task decomposition and delegation</b><p>The supervisor breaks the request into bounded subtasks and assigns them by capability.</p></div>'+
+ '<div class="concept"><b>Parallel vs dependent execution</b><p>Independent reviews run in parallel. A dependent analysis waits for the upstream finding it needs.</p></div>'+
+ '<div class="concept"><b>State and context sharing</b><p>Shared state tracks progress and intermediate results. Each agent receives only the context it needs.</p></div>'+
+ '<div class="concept"><b>Human-in-the-loop</b><p>Consequential actions require approval. Auto-approval and autonomous deployment both remove that accountability.</p></div>'+
+ '<div class="concept"><b>Execution control and recovery</b><p>Limits and stop conditions prevent uncontrolled loops. Bounded retries and escalation handle failures.</p></div></div>'+
+ '<h3 style="margin-top:14px">Suggested execution sequence</h3><ol><li>Supervisor receives the request, checks it is defined enough, and decomposes it.</li><li>Code Analysis, Test Design and Security Review start in parallel (C1).</li><li>Impact Analysis starts once Code Analysis has recorded its findings (C2).</li><li>Specialists record status and findings in shared task state; the supervisor checks completion and consolidates.</li><li>On failure: bounded retry for transient faults, otherwise record the gap and escalate. Stop on missing critical information or a limit.</li><li>Recommendation goes to the engineer. Nothing is merged or deployed without approval.</li></ol></div>'+
+ '<p class="small"><b>Note:</b> More than one architecture can be valid. This score checks placement and traps; the reasoning questions test whether you can justify the trade-offs.</p>';
+ fb.scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+// ---- Reasoning questions with model answers ----
+const questions=[
+{t:"Why a supervisor over one unrestricted agent?",q:"Why might a supervisor-based multi-agent design be more suitable than one unrestricted agent?",
+a:`<p>Four reasons tied to the constraints:</p><ul>
+<li><b>Bounded responsibility.</b> Each specialist has one scope, input and output, so its work can be checked against that contract. An unrestricted agent can choose any action, which the client prohibits.</li>
+<li><b>Visible control.</b> The supervisor tracks every task's state, so stops, retries and escalations are possible. A single agent making many internal decisions gives no equivalent checkpoint.</li>
+<li><b>Parallelism with a single owner.</b> Independent specialists run concurrently, and the supervisor reconciles conflicting findings. One agent does everything serially and mixes its reasoning into one context.</li>
+<li><b>Auditability.</b> Each finding carries provenance, so the engineer can see which evidence led to the recommendation.</li></ul>
+<p>The trade-off is coordination overhead. That's why the simplest pattern that meets the constraints is preferred.</p>`},
+{t:"Parallel and dependent work",q:"Which specialist activities could run in parallel, and which might depend on earlier findings?",
+a:`<ul><li><b>Parallel (C1):</b> Code Analysis, Test Design and Security Review. Each works from the request and its own scope. Test Design can use existing coverage data, and Security Review can use the change description.</li>
+<li><b>Dependent (C2):</b> Impact Analysis needs Code Analysis's findings on which components and dependencies are touched. Running it first would produce a guess.</li>
+<li><b>Joined at the end:</b> the supervisor consolidates once all tasks are complete, inconclusive or failed, not only the ones it expected to finish.</li></ul>
+<p>Test Design could be refined once Impact Analysis reports. That's a justified second pass, not a reason to delay the first draft. Accept any design that explains which outputs each task truly needs.</p>`},
+{t:"Shared state and context",q:"What belongs in shared task state, and what context should each specialist receive?",
+a:`<p><b>Shared state</b> holds what the supervisor and other tasks need to coordinate:</p><ul>
+<li>Task status (pending, running, complete, partial, inconclusive, failed, timed out) and deadlines.</li>
+<li>Findings with provenance, such as source, version and time.</li>
+<li>Dependencies and which tasks are blocked by which.</li>
+<li>Open questions and decisions awaiting approval.</li></ul>
+<p><b>Specialist context</b> is narrow: the request summary, its own scope, and only the upstream findings it depends on. Impact Analysis gets Code Analysis's component map, not the entire repository. Narrow context cuts cost and latency and keeps agents from acting outside their domain.</p>`},
+{t:"Where human approval goes",q:"Where should a human approval checkpoint be placed?",
+a:`<ul><li><b>Before any merge, deployment or change to shared systems.</b> This is a hard requirement, not a suggestion.</li>
+<li><b>On the consolidated recommendation,</b> so the engineer reviews the test plan, the impact list and the security concerns together, with their provenance.</li>
+<li><b>Earlier, when a finding is high-risk or contested.</b> For example, if Security Review flags a serious issue, pausing before further work is cheaper than unwinding it later.</li></ul>
+<p>Approval has to be informed. A checkpoint that just stamps a finished report, with no way to see the evidence behind it, adds little accountability. Auto-approval that depends only on passing tests removes the checkpoint entirely.</p>`},
+{t:"Failure, incomplete results and limits",q:"What should happen if an agent fails, returns incomplete information or reaches its execution limit?",
+a:`<ol><li><b>Classify the failure.</b> Transient errors (timeouts, rate limits) get a bounded retry with backoff. Repeated identical failures are not retried further.</li>
+<li><b>Keep partial results.</b> Record what was found and mark the task partial. The next attempt redoes only the missing part.</li>
+<li><b>Don't invent the missing piece.</b> If Code Analysis is incomplete, Impact Analysis is marked blocked or limited to the components already confirmed. It does not guess the rest.</li>
+<li><b>Stop at limits.</b> When an iteration, time or cost limit is reached, halt the task and report the state. Don't keep looping.</li>
+<li><b>Escalate.</b> Give the engineer what is known, what is not, and what is needed to proceed.</li></ol>
+<p>The principle: retry what's transient, record what's partial, stop what's unbounded, and escalate what needs judgement.</p>`}
+];
+const qc=$("#questions");
+questions.forEach((x,i)=>{
+ const d=document.createElement("div");d.className="q";
+ d.innerHTML='<b>'+(i+1)+'. '+x.t+'</b><p class="small" style="margin:4px 0 0">'+x.q+'</p>'+
+ '<label for="ans'+i+'" class="small" style="display:block;margin-top:6px">Your answer</label><textarea id="ans'+i+'" placeholder="Write your answer before checking the model answer…"></textarea>'+
+ '<div class="count" id="cnt'+i+'">0 words</div>'+
+ '<details data-locked="true"><summary>Compare with a model answer</summary><div class="model-body"></div></details>';
+ qc.append(d);
+ const ta=d.querySelector("textarea"),det=d.querySelector("details"),mb=d.querySelector(".model-body");
+ const unlock=()=>{det.dataset.locked="false";mb.innerHTML=x.a;};
+ ta.addEventListener("input",()=>{const w=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;d.querySelector(".count").textContent=w+" word"+(w===1?"":"s");if(w>=15&&det.dataset.locked==="true")unlock();});
+ det.addEventListener("toggle",()=>{
+  if(det.open&&det.dataset.locked==="true"){
+   mb.innerHTML='<p>Write at least 15 words first. Retrieval practice works better than re-reading.</p><button type="button" class="ghost">Show anyway</button>';
+   mb.querySelector("button").onclick=unlock;
+  }
+ });
+});
+render();
+</script></body></html>
