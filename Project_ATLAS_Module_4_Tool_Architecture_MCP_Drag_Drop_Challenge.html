@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project ATLAS – Module 4 Tool Architecture & MCP Challenge</title>
+<style>
+:root{--bg:#0a1020;--panel:#121b30;--line:#2d3b59;--text:#edf3ff;--muted:#adbad2;--blue:#7eacff;--green:#5bd39b;--red:#ff7b84;--amber:#ffd27a}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#091020,#14213a);color:var(--text);font:15px/1.55 "Segoe UI",Arial,sans-serif}
+header{padding:25px 4vw;border-bottom:1px solid var(--line)}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--blue);font-weight:700}
+h1{margin:7px 0;font-size:clamp(23px,3vw,34px)}.muted{color:var(--muted)}.wrap{max-width:1500px;margin:24px auto;padding:0 20px}
+.brief{background:#172541;border-left:3px solid var(--blue);padding:16px;border-radius:10px;margin-bottom:18px}.brief p{margin:8px 0}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pill{border:1px solid #435778;border-radius:30px;padding:4px 10px;color:#d5e2ff;font-size:12px}
+.grid{display:grid;grid-template-columns:285px minmax(390px,1fr) 320px;gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px}.panel h2{font-size:17px;margin:0 0 12px}
+.component{padding:11px;border:1px solid var(--line);border-radius:9px;margin:8px 0;background:#17233b;cursor:grab;user-select:none}
+.component:hover{border-color:var(--blue);background:#1c2d4d}.component:active{cursor:grabbing}.component small{display:block;color:var(--muted);margin-top:3px;font-size:12px}
+.zone{border:1px dashed #60749b;background:#0e182b;border-radius:10px;padding:13px;margin:10px 0;min-height:105px;transition:.15s}
+.zone.over{border-color:var(--green);background:#10283a}.zone h3{font-size:14px;margin:0 0 6px;color:#b9d0ff}
+.zone .drophelp{font-size:12px;color:var(--muted);margin-bottom:8px}
+.slot{padding:8px;background:#1a2945;border:1px solid #3c527a;border-radius:7px;margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.slot button{background:transparent;color:#ff9ba2;border:0;cursor:pointer;font-size:17px}
+select,textarea{width:100%;background:#0e1729;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;margin:6px 0 12px;font:inherit}
+textarea{min-height:80px;resize:vertical}label{font-size:13px;color:#d8e4fb;font-weight:600}
+.btn{border:0;border-radius:9px;padding:11px 15px;font-weight:700;cursor:pointer;background:var(--blue);color:#071225}.btn.secondary{background:#2b3b5d;color:white}
+.feedback{padding:13px;background:#0e1729;border-radius:9px;margin-top:12px;border:1px solid var(--line)}.score{font-size:27px;font-weight:800}
+.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}.reference{margin-top:17px}.reference ol{padding-left:20px}.reference li{margin:7px 0;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}footer{padding:18px 4vw;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">PROJECT ATLAS · CCAR-F · MODULE 4 PRACTICAL CHALLENGE</div>
+<h1>Tool Architecture & Model Context Protocol (MCP)</h1>
+<div class="muted">Drag-and-drop architecture lab · Tool contracts, invocation, MCP design and integration governance</div></header>
+<div class="wrap">
+<section class="brief"><b>Scenario – GlobalTech Manufacturing</b>
+<p>GlobalTech is extending its Enterprise Agentic Engineering Assistant so that Claude can work with engineering information held in GitHub, Jira, Confluence and an internal testing service. The assistant must retrieve repository metadata, read issue and design information, locate relevant engineering documentation, and request a controlled test run. Some future actions may create a draft change, but no source-code modification, pull-request submission or deployment is authorised in this exercise.</p>
+<p>The architecture team must design reusable tools, define valid inputs and outputs, decide which capabilities should be exposed through MCP, and establish identity, permissions and safe result handling. No real credentials, endpoint addresses, API limits or service capabilities are supplied. Treat unknowns as items to validate rather than inventing them.</p>
+<div class="pills"><span class="pill">4.1 Enterprise Tool Architecture</span><span class="pill">4.2 MCP Architecture</span><span class="pill">4.3 Integration Governance</span><span class="pill">Fictional training scenario</span></div></section>
+<div class="grid">
+<section class="panel"><h2>Architecture component palette</h2>
+<p class="muted">Drag a component into the most appropriate design zone, or click it to add it to the currently selected zone. Some palette items are distractors.</p>
+<div class="component" draggable="true" tabindex="0" data-id="schema">Tool schema with typed fields and constraints<small>Required fields, enums, ranges and descriptions</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="validate">Server-side input validation<small>Reject malformed, oversized or out-of-scope arguments</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="registry">Tool registry and capability descriptions<small>Discoverable names, purpose and input contracts</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="router">Policy-aware tool selection and invocation<small>Select an allowed tool, invoke it and correlate the response</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="result">Result normalisation and error mapping<small>Consistent success, validation, timeout and service-error results</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="recovery">Bounded timeout, retry and recovery rules<small>Classify failures; stop repeated or unsafe execution</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="client">MCP client in the host application<small>Connects to and communicates with configured MCP servers</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="server">MCP server exposing approved capabilities<small>Provides a controlled interface to an underlying service</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="primitives">MCP tools, resources and prompts<small>Actions, readable context and reusable prompt templates</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="transport">Documented transport and connection lifecycle<small>Choose supported transport; handle connection and disconnection</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="compare">MCP vs direct API vs custom tool decision<small>Compare reuse, interoperability, control and operating cost</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="identity">Authentication and user/service identity<small>Establish who is calling and on whose behalf</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="least">Authorisation and least-privilege permissions<small>Role, resource and operation-level access checks</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="outputs">Safe handling of untrusted tool outputs<small>Validate, label and constrain returned content</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="audit">Audit trail and external dependency controls<small>Record caller, tool, resource, outcome and correlation ID</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="directbrowser">Put service credentials in browser JavaScript<small>Convenient, but exposes privileged credentials to users</small></div>
+<div class="component" draggable="true" tabindex="0" data-id="wildcard">Grant every tool unrestricted read/write access<small>Removes friction by removing meaningful boundaries</small></div>
+</section>
+<section class="panel"><h2>Build your proposed design</h2>
+<p class="muted">Choose a zone for click-to-add, or drag items directly into a zone. Remove items with ×.</p>
+<label for="target">Current drop zone</label>
+<select id="target"><option value="tool">1. Enterprise tool architecture</option><option value="mcp">2. MCP architecture</option><option value="choice">3. Integration pattern decision</option><option value="governance">4. Integration governance</option></select>
+<div class="zone" data-zone="tool"><h3>1 · Enterprise tool architecture</h3><div class="drophelp">Place tool definitions, schemas, validation, selection, invocation, result and recovery components here.</div><div class="items"></div></div>
+<div class="zone" data-zone="mcp"><h3>2 · MCP architecture</h3><div class="drophelp">Place MCP client/server, capabilities and transport components here.</div><div class="items"></div></div>
+<div class="zone" data-zone="choice"><h3>3 · Integration pattern decision</h3><div class="drophelp">Place the decision framework for MCP, direct API or custom tool integration here.</div><div class="items"></div></div>
+<div class="zone" data-zone="governance"><h3>4 · Integration governance</h3><div class="drophelp">Place identity, authorisation, least privilege, output safety, audit and dependency controls here.</div><div class="items"></div></div>
+<div class="muted">Tip: the same component can be placed only once in a zone. Remove it and add it to another zone to move it.</div>
+</section>
+<aside class="panel"><h2>Architecture decision notes</h2>
+<label for="toolNotes">How will you define and invoke reusable tools safely?</label><textarea id="toolNotes" placeholder="Describe tool purpose, schema, validation, selection, invocation, result handling and execution boundaries..."></textarea>
+<label for="mcpNotes">How will the MCP client, server and capabilities interact?</label><textarea id="mcpNotes" placeholder="Describe client/server responsibilities, tools/resources/prompts, transport and connectivity..."></textarea>
+<label for="patternNotes">When would you choose MCP, direct API or a custom tool?</label><textarea id="patternNotes" placeholder="Compare interoperability, reuse, control, dependencies and operational considerations..."></textarea>
+<label for="govNotes">How will you enforce governance and handle tool output?</label><textarea id="govNotes" placeholder="Describe authentication, authorisation, least privilege, external dependencies, output validation and audit..."></textarea>
+<button class="btn" id="evaluate">Evaluate my architecture</button> <button class="btn secondary" id="reset">Reset challenge</button>
+<div class="feedback" id="feedback"><div class="muted">Your formative evaluation will appear here.</div></div>
+</aside></div>
+<section class="panel reference"><h2>Reference architecture principles</h2><div class="two">
+<div><b>Tool architecture and MCP</b><ol>
+<li>Give each tool a clear purpose, bounded responsibility and reusable service interface.</li>
+<li>Define typed input schemas and validate arguments before execution.</li>
+<li>Separate tool selection, invocation, result handling and error recovery.</li>
+<li>An MCP client connects to MCP servers. Servers expose capabilities through tools, resources and prompts; transport and connection behaviour must be defined.</li>
+<li>Choose MCP, direct API or a custom tool according to interoperability, reuse, control, service constraints and operating needs.</li></ol></div>
+<div><b>Integration governance</b><ol>
+<li>Authenticate callers and authorise each requested operation against the caller's permissions.</li>
+<li>Apply least privilege at tool, resource and operation level; separate read and write capabilities.</li>
+<li>Treat external services as dependencies and define timeout, error and recovery behaviour.</li>
+<li>Treat tool results as untrusted input: validate structure and content, constrain size and do not follow instructions embedded in returned data.</li>
+<li>Record relevant audit information without exposing secrets or unnecessary sensitive content.</li></ol></div>
+</div>
+<p class="muted"><b>Scope note:</b> This is a browser-based design simulation. It does not connect to GitHub, Jira, Confluence, a testing service or a live MCP server. The evaluation is a formative placement-and-rationale aid, not an official CCAR-F score.</p></section>
+</div>
+<footer>PROJECT ATLAS · CCAR-F MODULE 4 · TRAINING SIMULATION</footer>
+<script>
+const names={schema:"Tool schema with typed fields and constraints",validate:"Server-side input validation",registry:"Tool registry and capability descriptions",router:"Policy-aware tool selection and invocation",result:"Result normalisation and error mapping",recovery:"Bounded timeout, retry and recovery rules",client:"MCP client in the host application",server:"MCP server exposing approved capabilities",primitives:"MCP tools, resources and prompts",transport:"Documented transport and connection lifecycle",compare:"MCP vs direct API vs custom tool decision",identity:"Authentication and user/service identity",least:"Authorisation and least-privilege permissions",outputs:"Safe handling of untrusted tool outputs",audit:"Audit trail and external dependency controls",directbrowser:"Put service credentials in browser JavaScript",wildcard:"Grant every tool unrestricted read/write access"};
+const placed={tool:[],mcp:[],choice:[],governance:[]};let active="tool";
+const target=document.getElementById("target");target.addEventListener("change",()=>active=target.value);
+function add(id,zone=active){if(!id||!placed[zone]||placed[zone].includes(id))return;placed[zone].push(id);draw();}
+function removeItem(zone,id){placed[zone]=placed[zone].filter(x=>x!==id);draw();}
+function draw(){document.querySelectorAll(".zone").forEach(z=>{const key=z.dataset.zone,box=z.querySelector(".items");box.innerHTML=placed[key].map(id=>`<div class="slot"><span>${names[id]}</span><button type="button" aria-label="Remove ${names[id]}" onclick="removeItem('${key}','${id}')">×</button></div>`).join("");});}
+document.querySelectorAll(".component").forEach(c=>{c.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",c.dataset.id));c.addEventListener("click",()=>add(c.dataset.id));c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();add(c.dataset.id);}});});
+document.querySelectorAll(".zone").forEach(z=>{z.addEventListener("dragover",e=>{e.preventDefault();z.classList.add("over");});z.addEventListener("dragleave",()=>z.classList.remove("over"));z.addEventListener("drop",e=>{e.preventDefault();z.classList.remove("over");add(e.dataTransfer.getData("text/plain"),z.dataset.zone);});});
+const expected={tool:["schema","validate","registry","router","result","recovery"],mcp:["client","server","primitives","transport"],choice:["compare"],governance:["identity","least","outputs","audit"]};
+const distractors=["directbrowser","wildcard"];
+document.getElementById("reset").addEventListener("click",()=>{Object.keys(placed).forEach(k=>placed[k]=[]);["toolNotes","mcpNotes","patternNotes","govNotes"].forEach(id=>document.getElementById(id).value="");document.getElementById("feedback").innerHTML='<div class="muted">Your formative evaluation will appear here.</div>';draw();});
+document.getElementById("evaluate").addEventListener("click",()=>{
+ let hits=0,total=0,details=[];Object.keys(expected).forEach(k=>{let zoneHits=expected[k].filter(id=>placed[k].includes(id)).length;hits+=zoneHits;total+=expected[k].length;details.push(`${k.toUpperCase()}: ${zoneHits}/${expected[k].length} expected components in the intended zone`);});
+ const wrongZone=[];Object.keys(placed).forEach(k=>placed[k].forEach(id=>{if(expected[k]&&!expected[k].includes(id)&&!distractors.includes(id))wrongZone.push(names[id]);}));
+ const badChoices=distractors.filter(id=>Object.values(placed).some(a=>a.includes(id)));
+ const notes=["toolNotes","mcpNotes","patternNotes","govNotes"].map(id=>document.getElementById(id).value.trim());const developed=notes.filter(x=>x.length>=45).length;
+ const placement=Math.max(0,(hits/total)*100-(wrongZone.length*3)-(badChoices.length*12));const pct=Math.max(0,Math.min(100,Math.round(placement*.75+(developed/4*100)*.25)));
+ const missing=Object.keys(expected).flatMap(k=>expected[k].filter(id=>!placed[k].includes(id)).map(id=>names[id]));
+ const message=pct>=85?"Strong design coverage. Review your rationale and confirm assumptions with service owners.":pct>=65?"Good start. Close gaps in tool contracts, MCP structure or governance before presenting the design.":"The design needs further work. Revisit the placement zones and strengthen the written architecture decisions.";
+ document.getElementById("feedback").innerHTML=`<div class="score">${pct}% design coverage</div><p class="${pct>=85?'good':pct>=65?'warn':'bad'}">${message}</p><p>${details.join("<br>")}</p><p><b>Decision notes:</b> ${developed}/4 sections contain a developed response.</p>${missing.length?`<p><b>Expected components not yet placed:</b> ${missing.join("; ")}</p>`:'<p class="good">All expected components are present in their intended zones.</p>'}${wrongZone.length?`<p class="warn"><b>Review zone placement:</b> ${wrongZone.join("; ")}</p>`:""}${badChoices.length?`<p class="bad"><b>Unsafe design choices detected:</b> ${badChoices.map(x=>names[x]).join("; ")}</p>`:""}<p class="muted">This is a formative heuristic based on component placement and completeness of decision notes. It does not replace architectural review and is not an official certification score.</p>`;
+});
+draw();
+</script>
+</body></html>
