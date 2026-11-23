@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCAR-F Module 2 – Enterprise Solution Architecture and System Design | Timed Practice Exam</title>
+<style>
+:root{--bg:#080d18;--panel:#111b2d;--panel2:#17243a;--line:#2b3b55;--text:#edf3ff;--muted:#9aabc4;--accent:#69b7ff;--good:#35c98a;--bad:#ff6b78;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#172b48 0,#080d18 42%);color:var(--text);font:15px/1.55 Segoe UI,Arial,sans-serif}
+header{padding:28px max(22px,calc((100% - 1100px)/2));border-bottom:1px solid var(--line);background:#0b1322}
+.eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+h1{font-size:clamp(24px,4vw,36px);line-height:1.15;margin:8px 0}.sub{color:var(--muted);max-width:900px}
+.wrap{max-width:1100px;margin:24px auto;padding:0 18px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px}
+.card{background:linear-gradient(145deg,var(--panel),#0e1727);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 14px 36px #0004}
+.sidebar{position:sticky;top:14px;height:max-content}.timer{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
+.progress{height:7px;background:#26364f;border-radius:8px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:var(--accent);transition:width .2s}
+.qtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+h2{font-size:21px;margin:14px 0 18px}.option{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;margin:10px 0;background:var(--panel2);border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.option:hover{border-color:var(--accent)}.option input{margin-top:4px;accent-color:#69b7ff;transform:scale(1.15)}.option span{flex:1}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+button{border:1px solid #39506f;border-radius:9px;padding:10px 16px;background:#1a2b43;color:var(--text);font-weight:650;cursor:pointer}button.primary{background:#2366a5;border-color:#398bd1}button:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}.grid button{padding:8px 0;font-size:12px}.grid button.answered{border-color:var(--good);background:#143b36}.grid button.current{outline:2px solid var(--accent)}
+.note{color:var(--muted);font-size:13px}.tag{display:inline-block;border:1px solid #39506f;color:#b8d8f6;border-radius:99px;padding:3px 9px;font-size:11px}
+.result{display:none}.review-item{border-top:1px solid var(--line);padding:16px 0}.correct{color:var(--good)}.incorrect{color:var(--bad)}.explain{color:#c0cee1;background:#0b1422;border-left:3px solid var(--accent);padding:10px 13px;margin-top:10px}
+footer{max-width:1100px;margin:0 auto 30px;padding:0 18px;color:var(--muted);font-size:12px}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}.sidebar{position:static;order:-1}.grid{grid-template-columns:repeat(10,1fr)}}
+</style></head>
+<body>
+<header><div class="eyebrow">Claude Certified Architect – Foundations • Original practice assessment</div>
+<h1>CCAR-F Module 2 – Enterprise Solution Architecture and System Design</h1><div class="sub">Requirements, NFRs, assumptions, acceptance criteria, enterprise layers, boundaries, APIs/workflows/agents, build-versus-integrate, diagrams and ADRs.</div></header>
+<div class="wrap" id="exam">
+<main class="card" id="questionPanel">
+<div class="qtop"><span id="qCount">Question 1 of 10</span><span id="qType" class="tag">Single answer</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<h2 id="qText"></h2><div id="options"></div>
+<div class="actions"><button id="prev">← Previous</button><span class="note" id="saved">Your selections are saved in this session.</span><button class="primary" id="next">Next →</button></div>
+</main>
+<aside class="card sidebar"><div class="eyebrow">Time remaining</div><div class="timer" id="timer">25:00</div>
+<div class="progress"><div class="bar" id="timebar" style="width:100%"></div></div>
+<div><b id="answered">0</b> / 10 answered</div><p class="note">Question navigator</p><div class="grid" id="nav"></div>
+<hr style="border-color:var(--line);margin:18px 0">
+<p class="note">Multiple-response questions may have two or more correct answers. Select all correct options. Scoring is all-or-nothing per question.</p>
+<button class="primary" style="width:100%" id="submit">Submit exam</button>
+<p class="note">The exam auto-submits when the timer reaches zero.</p></aside></div>
+<main class="wrap result" id="results"><section class="card" style="grid-column:1/-1">
+<div class="eyebrow">Assessment complete</div><h1 id="scoreTitle"></h1><p id="scoreText" class="sub"></p>
+<div id="review"></div><button class="primary" onclick="location.reload()">Retake this exam</button></section></main>
+<footer>Practice material only. These are original scenario-based questions, not actual or recalled live certification questions. Module scope follows the supplied CCAR-F training curriculum. Answers are scored only when the complete correct set is selected.</footer>
+<script>
+const questions=[["A business sponsor asks for an AI assistant that reduces service-desk resolution time. What should the architect establish first?", ["Select the most capable model", "Translate the objective into measurable functional and non-functional requirements", "Choose a vector database", "Create a multi-agent diagram"], [1], "Architecture should begin with measurable requirements, constraints and acceptance criteria.", "Architecture should begin with measurable requirements, constraints and acceptance criteria."], ["A solution must respond within two seconds for 95% of requests and remain available during downstream CRM outages. These statements primarily describe:", ["Functional requirements", "Non-functional requirements", "Prompt examples", "Data schemas"], [1], "Latency and availability are quality attributes and therefore non-functional requirements.", "Latency and availability are quality attributes and therefore non-functional requirements."], ["An enterprise already has a ticketing platform with supported APIs. The new Claude solution needs to create and retrieve tickets. Which design is generally preferable?", ["Replace the ticketing platform with a custom agent database", "Integrate through the existing platform APIs", "Allow the model to access the production database directly", "Duplicate all ticket data in prompts"], [1], "Reusing supported enterprise APIs preserves the system of record and existing controls.", "Reusing supported enterprise APIs preserves the system of record and existing controls."], ["Which responsibilities should be clearly separated in an enterprise Claude architecture? Select THREE.", ["Application orchestration and business logic", "Model interaction", "Tool/service execution", "Combining credentials, policy and data into a single prompt"], [0, 1, 2], "Separating application, model and tool responsibilities improves maintainability and security.", "Separating application, model and tool responsibilities improves maintainability and security."], ["A team is choosing between building a custom approval workflow and integrating an existing workflow product. Which factors should be documented in the decision?", ["Only the initial development estimate", "Capabilities, integration fit, operational ownership, security and total cost", "The model's preferred coding style", "The number of prompt examples"], [1], "Build-versus-integrate decisions require technical and operational trade-off analysis.", "Build-versus-integrate decisions require technical and operational trade-off analysis."], ["An architecture diagram shows the model directly connecting to payroll, HR and finance databases with no service layer. What is the strongest concern?", ["The diagram has too many components", "System boundaries, access control and data responsibilities are unclear", "The model context window is too small", "The solution is necessarily too expensive"], [1], "Direct model-to-database access blurs boundaries and makes governance difficult.", "Direct model-to-database access blurs boundaries and makes governance difficult."], ["A requirement says 'the assistant should be reliable'. What is the best next step?", ["Accept it as an adequate acceptance criterion", "Clarify measurable availability, error, recovery and service-level expectations", "Increase the prompt length", "Choose a larger model"], [1], "Vague objectives must be translated into measurable criteria.", "Vague objectives must be translated into measurable criteria."], ["An enterprise has a stable API-based lookup process and a separate ambiguous case-triage task. Which pattern selection is most appropriate?", ["Agentic execution for both tasks", "API/workflow for stable lookup and agentic reasoning for ambiguous triage", "One autonomous agent with unrestricted access", "No application layer"], [1], "Pattern selection should reflect task determinism and ambiguity.", "Pattern selection should reflect task determinism and ambiguity."], ["A design review reveals that the source data owner and retention policy have not been confirmed. How should these be treated?", ["Assume the application team owns the data", "Record them as open assumptions or constraints and resolve before production approval", "Ignore them because the model does not store data", "Let the agent decide at runtime"], [1], "Unresolved ownership and retention are architecture risks that must be explicit.", "Unresolved ownership and retention are architecture risks that must be explicit."], ["Why maintain an Architecture Decision Record (ADR)?", ["To replace all technical diagrams", "To capture the decision, context, alternatives, rationale and consequences", "To store production secrets", "To document only the final source code"], [1], "ADRs preserve decision rationale and make trade-offs reviewable.", "ADRs preserve decision rationale and make trade-offs reviewable."]];
+const duration=25*60; let remaining=duration, current=0, answers=questions.map(()=>[]);
+let finished=false, tick;
+const $=id=>document.getElementById(id);
+function render(){
+ const q=questions[current], multi=q[2].length>1;
+ $('qCount').textContent=`Question ${current+1} of ${questions.length}`;
+ $('qType').textContent=multi?'Multiple response • Select all that apply':'Single answer';
+ $('qText').textContent=q[0]; $('options').innerHTML='';
+ q[1].forEach((opt,i)=>{
+  const lab=document.createElement('label');lab.className='option';
+  const inp=document.createElement('input');inp.type=multi?'checkbox':'radio';inp.name='answer';inp.checked=answers[current].includes(i);
+  inp.addEventListener('change',()=>{if(multi){answers[current]=inp.checked?[...answers[current],i]:answers[current].filter(x=>x!==i)}else{answers[current]=[i]} updateNav();});
+  const span=document.createElement('span');span.textContent=String.fromCharCode(65+i)+'. '+opt;lab.append(inp,span);$('options').append(lab);
+ });
+ $('prev').disabled=current===0;$('next').disabled=current===questions.length-1;
+ $('bar').style.width=((current+1)/questions.length*100)+'%';updateNav();
+}
+function updateNav(){
+ $('answered').textContent=answers.filter(a=>a.length).length;
+ $('nav').innerHTML='';answers.forEach((a,i)=>{const b=document.createElement('button');b.textContent=i+1;if(a.length)b.classList.add('answered');if(i===current)b.classList.add('current');b.onclick=()=>{current=i;render()};$('nav').append(b)});
+}
+$('prev').onclick=()=>{current--;render()};$('next').onclick=()=>{current++;render()};
+function submit(auto=false){
+ if(finished)return;finished=true;clearInterval(tick);
+ const score=questions.reduce((s,q,i)=>s+(answers[i].length===q[2].length&&q[2].every(x=>answers[i].includes(x))?1:0),0);
+ $('exam').style.display='none';$('results').style.display='grid';
+ $('scoreTitle').textContent=`Score: ${score} / ${questions.length} (${Math.round(score/questions.length*100)}%)`;
+ $('scoreText').textContent=(auto?'Time expired. The exam was automatically submitted. ':'You submitted the exam. ')+'Review each answer and rationale below.';
+ questions.forEach((q,i)=>{
+  const ok=answers[i].length===q[2].length&&q[2].every(x=>answers[i].includes(x));
+  const div=document.createElement('div');div.className='review-item';
+  const correct=q[2].map(x=>String.fromCharCode(65+x)).join(', ');
+  const chosen=answers[i].length?answers[i].map(x=>String.fromCharCode(65+x)).join(', '):'No answer';
+  div.innerHTML=`<b>${i+1}. ${q[0]}</b><p class="${ok?'correct':'incorrect'}">${ok?'Correct':'Incorrect'} • Your answer: ${chosen} • Correct answer: ${correct}</p><div class="explain">${q[3]}</div>`;
+  $('review').append(div);
+ });
+}
+$('submit').onclick=()=>{const unanswered=answers.filter(a=>!a.length).length;if(unanswered&&!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`))return;submit(false)};
+function clock(){
+ remaining--;const mm=Math.floor(Math.max(0,remaining)/60),ss=Math.max(0,remaining)%60;
+ $('timer').textContent=`${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+ $('timebar').style.width=(Math.max(0,remaining)/duration*100)+'%';
+ if(remaining<=0)submit(true);
+}
+render();tick=setInterval(clock,1000);
+</script></body></html>

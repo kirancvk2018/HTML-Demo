@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCAR-F Module 8 – Enterprise Architecture Review and Design Decisions | Timed Practice Exam</title>
+<style>
+:root{--bg:#080d18;--panel:#111b2d;--panel2:#17243a;--line:#2b3b55;--text:#edf3ff;--muted:#9aabc4;--accent:#69b7ff;--good:#35c98a;--bad:#ff6b78;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#172b48 0,#080d18 42%);color:var(--text);font:15px/1.55 Segoe UI,Arial,sans-serif}
+header{padding:28px max(22px,calc((100% - 1100px)/2));border-bottom:1px solid var(--line);background:#0b1322}
+.eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+h1{font-size:clamp(24px,4vw,36px);line-height:1.15;margin:8px 0}.sub{color:var(--muted);max-width:900px}
+.wrap{max-width:1100px;margin:24px auto;padding:0 18px;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px}
+.card{background:linear-gradient(145deg,var(--panel),#0e1727);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 14px 36px #0004}
+.sidebar{position:sticky;top:14px;height:max-content}.timer{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
+.progress{height:7px;background:#26364f;border-radius:8px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:var(--accent);transition:width .2s}
+.qtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+h2{font-size:21px;margin:14px 0 18px}.option{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;margin:10px 0;background:var(--panel2);border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.option:hover{border-color:var(--accent)}.option input{margin-top:4px;accent-color:#69b7ff;transform:scale(1.15)}.option span{flex:1}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+button{border:1px solid #39506f;border-radius:9px;padding:10px 16px;background:#1a2b43;color:var(--text);font-weight:650;cursor:pointer}button.primary{background:#2366a5;border-color:#398bd1}button:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}.grid button{padding:8px 0;font-size:12px}.grid button.answered{border-color:var(--good);background:#143b36}.grid button.current{outline:2px solid var(--accent)}
+.note{color:var(--muted);font-size:13px}.tag{display:inline-block;border:1px solid #39506f;color:#b8d8f6;border-radius:99px;padding:3px 9px;font-size:11px}
+.result{display:none}.review-item{border-top:1px solid var(--line);padding:16px 0}.correct{color:var(--good)}.incorrect{color:var(--bad)}.explain{color:#c0cee1;background:#0b1422;border-left:3px solid var(--accent);padding:10px 13px;margin-top:10px}
+footer{max-width:1100px;margin:0 auto 30px;padding:0 18px;color:var(--muted);font-size:12px}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}.sidebar{position:static;order:-1}.grid{grid-template-columns:repeat(10,1fr)}}
+</style></head>
+<body>
+<header><div class="eyebrow">Claude Certified Architect – Foundations • Original practice assessment</div>
+<h1>CCAR-F Module 8 – Enterprise Architecture Review and Design Decisions</h1><div class="sub">Review against functional/NFRs, agentic design, boundaries, security/reliability/scalability/maintainability, alternatives, TCO, ADRs, production readiness and recommendations.</div></header>
+<div class="wrap" id="exam">
+<main class="card" id="questionPanel">
+<div class="qtop"><span id="qCount">Question 1 of 10</span><span id="qType" class="tag">Single answer</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<h2 id="qText"></h2><div id="options"></div>
+<div class="actions"><button id="prev">← Previous</button><span class="note" id="saved">Your selections are saved in this session.</span><button class="primary" id="next">Next →</button></div>
+</main>
+<aside class="card sidebar"><div class="eyebrow">Time remaining</div><div class="timer" id="timer">25:00</div>
+<div class="progress"><div class="bar" id="timebar" style="width:100%"></div></div>
+<div><b id="answered">0</b> / 10 answered</div><p class="note">Question navigator</p><div class="grid" id="nav"></div>
+<hr style="border-color:var(--line);margin:18px 0">
+<p class="note">Multiple-response questions may have two or more correct answers. Select all correct options. Scoring is all-or-nothing per question.</p>
+<button class="primary" style="width:100%" id="submit">Submit exam</button>
+<p class="note">The exam auto-submits when the timer reaches zero.</p></aside></div>
+<main class="wrap result" id="results"><section class="card" style="grid-column:1/-1">
+<div class="eyebrow">Assessment complete</div><h1 id="scoreTitle"></h1><p id="scoreText" class="sub"></p>
+<div id="review"></div><button class="primary" onclick="location.reload()">Retake this exam</button></section></main>
+<footer>Practice material only. These are original scenario-based questions, not actual or recalled live certification questions. Module scope follows the supplied CCAR-F training curriculum. Answers are scored only when the complete correct set is selected.</footer>
+<script>
+const questions=[["An architecture meets functional requirements but has no defined recovery approach for model-provider outages. What should the review conclude?", ["Approve because the core feature works", "Record a production reliability gap and require a recovery design", "Ignore the outage scenario", "Add more prompt examples"], [1], "Production readiness includes operational resilience, not only functional correctness.", "Production readiness includes operational resilience, not only functional correctness."], ["Two designs meet business needs. Design A has more autonomy but higher operational risk; Design B uses workflows with controlled agent steps. What should drive the decision?", ["Choose the most autonomous design by default", "Compare requirements, risk, performance, maintainability and total cost", "Choose the newest technology", "Avoid documenting trade-offs"], [1], "Architecture choices should be justified by evidence and business constraints.", "Architecture choices should be justified by evidence and business constraints."], ["Which evidence should be reviewed before production approval? Select THREE.", ["Security and governance controls", "Evaluation and monitoring readiness", "Incident and recovery procedures", "Only a polished architecture diagram"], [0, 1, 2], "Production readiness requires security, quality and operational evidence.", "Production readiness requires security, quality and operational evidence."], ["An architecture review finds that no component is clearly accountable for authorising tool actions. What is the main issue?", ["Insufficient model capability", "Unclear responsibility and security boundary", "Excessive caching", "Low throughput"], [1], "Authorisation ownership and enforcement must be explicit in the architecture.", "Authorisation ownership and enforcement must be explicit in the architecture."], ["A proposal claims 99.99% availability but provides no dependency analysis or recovery design. What should reviewers request?", ["Accept the target as evidence", "Supporting availability assumptions, dependency failure analysis and recovery mechanisms", "A larger model", "More agent roles"], [1], "Availability targets need an architecture and operational design that can support them.", "Availability targets need an architecture and operational design that can support them."], ["A design decision has two viable options and material long-term consequences. What should the team produce?", ["An undocumented verbal agreement", "An ADR capturing context, alternatives, rationale and consequences", "A prompt that asks the model to decide", "A list of vendor slogans"], [1], "ADRs preserve rationale and make trade-offs auditable.", "ADRs preserve rationale and make trade-offs auditable."], ["A proposed system uses multiple agents but the tasks are tightly coupled and share mutable state. What should the review examine?", ["Whether simpler orchestration or a single agent would reduce coordination complexity", "Whether more agents can be added", "Whether all state can be made public", "Whether testing can be skipped"], [0], "Multi-agent complexity should be justified by real decomposition benefits.", "Multi-agent complexity should be justified by real decomposition benefits."], ["Which review dimensions are relevant to enterprise architecture? Select FOUR.", ["Functional fit", "Security and governance", "Scalability and reliability", "Maintainability and operational ownership", "Decorative animations"], [0, 1, 2, 3], "A sound review spans business fit and technical/operational quality attributes.", "A sound review spans business fit and technical/operational quality attributes."], ["An architecture recommendation includes unresolved data retention, unclear ownership and untested fallback behaviour. How should these be presented?", ["As completed controls", "As explicit risks, assumptions or conditions for adoption", "Omit them to keep the recommendation positive", "Let the production team discover them later"], [1], "A credible recommendation makes unresolved issues visible and defines conditions for proceeding.", "A credible recommendation makes unresolved issues visible and defines conditions for proceeding."], ["A design passes a prototype demo but lacks monitoring, incident response and acceptance criteria. What is the appropriate status?", ["Production ready", "Prototype validated, but not production ready", "Fully governed", "Automatically approved"], [1], "A successful demo does not establish production readiness.", "A successful demo does not establish production readiness."]];
+const duration=25*60; let remaining=duration, current=0, answers=questions.map(()=>[]);
+let finished=false, tick;
+const $=id=>document.getElementById(id);
+function render(){
+ const q=questions[current], multi=q[2].length>1;
+ $('qCount').textContent=`Question ${current+1} of ${questions.length}`;
+ $('qType').textContent=multi?'Multiple response • Select all that apply':'Single answer';
+ $('qText').textContent=q[0]; $('options').innerHTML='';
+ q[1].forEach((opt,i)=>{
+  const lab=document.createElement('label');lab.className='option';
+  const inp=document.createElement('input');inp.type=multi?'checkbox':'radio';inp.name='answer';inp.checked=answers[current].includes(i);
+  inp.addEventListener('change',()=>{if(multi){answers[current]=inp.checked?[...answers[current],i]:answers[current].filter(x=>x!==i)}else{answers[current]=[i]} updateNav();});
+  const span=document.createElement('span');span.textContent=String.fromCharCode(65+i)+'. '+opt;lab.append(inp,span);$('options').append(lab);
+ });
+ $('prev').disabled=current===0;$('next').disabled=current===questions.length-1;
+ $('bar').style.width=((current+1)/questions.length*100)+'%';updateNav();
+}
+function updateNav(){
+ $('answered').textContent=answers.filter(a=>a.length).length;
+ $('nav').innerHTML='';answers.forEach((a,i)=>{const b=document.createElement('button');b.textContent=i+1;if(a.length)b.classList.add('answered');if(i===current)b.classList.add('current');b.onclick=()=>{current=i;render()};$('nav').append(b)});
+}
+$('prev').onclick=()=>{current--;render()};$('next').onclick=()=>{current++;render()};
+function submit(auto=false){
+ if(finished)return;finished=true;clearInterval(tick);
+ const score=questions.reduce((s,q,i)=>s+(answers[i].length===q[2].length&&q[2].every(x=>answers[i].includes(x))?1:0),0);
+ $('exam').style.display='none';$('results').style.display='grid';
+ $('scoreTitle').textContent=`Score: ${score} / ${questions.length} (${Math.round(score/questions.length*100)}%)`;
+ $('scoreText').textContent=(auto?'Time expired. The exam was automatically submitted. ':'You submitted the exam. ')+'Review each answer and rationale below.';
+ questions.forEach((q,i)=>{
+  const ok=answers[i].length===q[2].length&&q[2].every(x=>answers[i].includes(x));
+  const div=document.createElement('div');div.className='review-item';
+  const correct=q[2].map(x=>String.fromCharCode(65+x)).join(', ');
+  const chosen=answers[i].length?answers[i].map(x=>String.fromCharCode(65+x)).join(', '):'No answer';
+  div.innerHTML=`<b>${i+1}. ${q[0]}</b><p class="${ok?'correct':'incorrect'}">${ok?'Correct':'Incorrect'} • Your answer: ${chosen} • Correct answer: ${correct}</p><div class="explain">${q[3]}</div>`;
+  $('review').append(div);
+ });
+}
+$('submit').onclick=()=>{const unanswered=answers.filter(a=>!a.length).length;if(unanswered&&!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`))return;submit(false)};
+function clock(){
+ remaining--;const mm=Math.floor(Math.max(0,remaining)/60),ss=Math.max(0,remaining)%60;
+ $('timer').textContent=`${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+ $('timebar').style.width=(Math.max(0,remaining)/duration*100)+'%';
+ if(remaining<=0)submit(true);
+}
+render();tick=setInterval(clock,1000);
+</script></body></html>
