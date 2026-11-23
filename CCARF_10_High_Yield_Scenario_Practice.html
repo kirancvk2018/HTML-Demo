@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>CCAR-F | High-Yield Scenario Practice</title>
+<style>
+:root{--ink:#172033;--muted:#64748b;--navy:#101827;--navy2:#18263b;--blue:#2563eb;--cyan:#38bdf8;--paper:#f4f7fb;--line:#dce4ef;--good:#087443;--goodbg:#e9f8f0;--bad:#b42318;--badbg:#fff0ee;--amber:#9a6700;--amberbg:#fff7df}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--navy),#1d3554);color:#fff;padding:34px 22px 30px}
+.wrap{max-width:1060px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800;color:#8bdcff}
+h1{font-size:clamp(27px,4vw,40px);line-height:1.12;margin:9px 0 12px;letter-spacing:-.03em}
+header p{max-width:780px;color:#d3dfed;margin:0;font-size:16px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.pill{border:1px solid #49617e;border-radius:99px;padding:5px 11px;font-size:12px;color:#e4edf7}
+main{max-width:1060px;margin:24px auto;padding:0 18px 50px}
+.notice{background:#fff;border:1px solid var(--line);border-left:4px solid var(--cyan);border-radius:12px;padding:15px 18px;margin-bottom:18px;color:#344256}
+.notice strong{color:#172033}.dashboard{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 18px;margin-bottom:18px}
+.progress-label{font-size:12px;color:var(--muted);font-weight:700}.bar{height:8px;background:#e8eef6;border-radius:99px;overflow:hidden;margin-top:7px}.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .25s}
+.score{text-align:right;min-width:100px}.score b{font-size:24px;display:block;line-height:1.1}.score small{color:var(--muted)}
+.question{background:#fff;border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden;box-shadow:0 5px 18px #17203308}
+.qhead{padding:19px 22px 14px;border-bottom:1px solid #edf1f6}.qtop{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.qnum{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--blue);text-transform:uppercase}
+.domain{font-size:11px;font-weight:750;color:#40536b;background:#edf3fa;border-radius:99px;padding:5px 10px}
+h2{font-size:19px;line-height:1.35;margin:12px 0 8px;letter-spacing:-.015em}
+.scenario{color:#475569;margin:0}
+.qbody{padding:18px 22px 22px}
+.instruction{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+.options{display:grid;gap:9px}
+.option{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:12px 13px;cursor:pointer;transition:.15s;background:#fff}
+.option:hover{border-color:#8bb5f4;background:#f8fbff}
+.option input{margin:4px 0 0;accent-color:var(--blue);width:16px;height:16px;flex:0 0 auto}
+.option span{flex:1}.letter{font-weight:800;color:#64748b;margin-right:5px}
+.option.selected{border-color:#5b91ed;background:#f2f7ff}
+.option.correct{border-color:#52b788;background:var(--goodbg)}
+.option.wrong{border-color:#e58b83;background:var(--badbg)}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+button{border:0;border-radius:9px;padding:10px 15px;font:700 13px inherit;cursor:pointer}
+.check{background:var(--navy2);color:#fff}.secondary{background:#eaf0f7;color:#25364c}.check:hover{background:#263f60}
+.feedback{display:none;margin-top:17px;border-top:1px solid #e9eef5;padding-top:17px}
+.feedback.show{display:block}.verdict{font-weight:850;margin-bottom:9px}.verdict.good{color:var(--good)}.verdict.bad{color:var(--bad)}
+.explain-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px}
+.explain{border:1px solid var(--line);border-radius:11px;padding:13px;background:#fbfcfe}
+.explain h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;color:#52647a}
+.explain p{margin:0;color:#344256;font-size:14px}
+.reason-list{display:grid;gap:7px;margin-top:12px}
+.reason{font-size:13px;padding:9px 11px;border-radius:8px;background:#f4f7fb;color:#3d4b60}
+.reason b{color:#172033}
+.reason.right{background:var(--goodbg)}.reason.miss{background:var(--badbg)}
+.tip{background:var(--amberbg);border:1px solid #f2df9a;border-radius:10px;padding:12px 14px;margin-top:12px;color:#604a13;font-size:14px}
+.summary{display:none;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:22px}
+.summary.show{display:block}.summary h2{margin-top:0}.summary strong.big{font-size:34px;color:var(--blue)}
+.footer{color:var(--muted);font-size:12px;text-align:center;margin-top:28px}
+@media(max-width:650px){.dashboard{grid-template-columns:1fr}.score{text-align:left}.explain-grid{grid-template-columns:1fr}.qhead,.qbody{padding-left:16px;padding-right:16px}}
+@media print{header{padding:18px}.question{break-inside:avoid;box-shadow:none}.controls,.dashboard{display:none}.feedback{display:block!important}.feedback .explain-grid{grid-template-columns:1fr 1fr}body{background:#fff}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="eyebrow">Certification preparation • Scenario-based practice</div>
+<h1>CCAR-F: 10 High-Yield Architecture Questions</h1>
+<p>Practice the decision-making patterns behind Claude Certified Architect – Foundations. Each scenario trains you to identify the requirement, eliminate attractive distractors and defend an architecture choice.</p>
+<div class="meta"><span class="pill">10 original practice questions</span><span class="pill">Single & multiple response</span><span class="pill">Answer analysis included</span><span class="pill">Self-paced learning</span></div>
+</div></header>
+<main>
+<div class="notice"><strong>Important:</strong> These are original certification-style practice questions based on the five exam domains in the supplied course outline. They are not actual, recalled or predicted exam questions. No one can reliably know which questions will appear. Use the official current exam guide for definitive scope and policies.</div>
+<div class="dashboard">
+<div><div class="progress-label" id="progressText">0 of 10 questions reviewed</div><div class="bar"><span id="progressBar"></span></div></div>
+<div class="score"><b id="scoreText">—</b><small>Correct so far</small></div>
+</div>
+<div id="quiz"></div>
+<section class="summary" id="summary">
+<h2>Learning review</h2><p><strong class="big" id="finalScore">0/10</strong></p>
+<p id="summaryText"></p>
+<div class="tip"><b>Final exam habit:</b> Read the business constraint first, identify the required control or quality attribute, then choose the simplest architecture that satisfies it. Avoid selecting an option merely because it uses more agents, more tools or more automation.</div>
+<button class="secondary" onclick="resetQuiz()">Restart practice</button>
+</section>
+<div class="footer">CCAR-F learning resource • Independent preparation material • Verify current exam details with Anthropic</div>
+</main>
+<script>
+const questions = [
+{domain:"Agentic Architecture & Orchestration · 27%",type:"single",title:"Choose the right level of autonomy",scenario:"A finance team processes a fixed sequence of steps: validate an invoice, check purchase-order data, calculate a variance and route exceptions to an approver. The steps and approval rules are stable. The team proposes a fully autonomous multi-agent system. What is the strongest architecture recommendation?",opts:[
+["Use a deterministic workflow for the known sequence, invoking Claude for bounded interpretation tasks and escalating exceptions to a human.",""],
+["Create one autonomous agent and let it decide the sequence and approval policy for every invoice.",""],
+["Create a supervisor and a separate agent for every validation step, even though the sequence is fixed.",""],
+["Use a larger model and remove deterministic checks so the system can adapt freely.",""]],answer:[0],
+approach:"Start with the stability of the process. The sequence and rules are known, so orchestration should be deterministic. Use an LLM only where language interpretation or judgment adds value; keep approval and financial controls explicit.",
+why:"A workflow-first design is easier to test, audit and govern. Agent autonomy is useful when the path is genuinely dynamic, not simply because the solution contains an LLM.",
+distractors:["Correct: matches a stable process and preserves human approval for exceptions.","Misleading: autonomy does not improve a predictable process and risks inconsistent control execution.","Misleading: multi-agent decomposition adds coordination overhead without a demonstrated need.","Misleading: model size does not replace business rules, validation or approval controls."],
+trap:"Words such as “agentic” and “autonomous” can sound advanced. The exam is testing whether you can resist unnecessary autonomy."},
+{domain:"Agentic Architecture & Orchestration · 27%",type:"single",title:"Coordinate specialist agents safely",scenario:"A research workflow has a coordinator that delegates market research, legal review and financial analysis to specialist agents. The coordinator must combine the findings and stop if a specialist reports a critical risk. Which design is best?",opts:[
+["Let all specialists share an unrestricted conversation and independently decide when the overall task is complete.",""],
+["Give each specialist a bounded task, explicit input/output contract and execution limit; have the coordinator validate results, apply stop conditions and escalate critical risks.",""],
+["Allow specialists to call one another recursively until they agree on a result.",""],
+["Pass the entire conversation history to every specialist on every delegation, regardless of relevance.",""]],answer:[1],
+approach:"Identify responsibilities and control ownership. Specialists should have narrow tasks and explicit contracts. The coordinator owns aggregation, validation, termination and escalation.",
+why:"Bounded delegation reduces ambiguity and uncontrolled execution. Explicit limits, structured hand-offs and central stop conditions improve reliability and traceability.",
+distractors:["Misleading: unrestricted shared state makes responsibilities and failure diagnosis unclear.","Correct: bounded specialists plus coordinator-level control.","Misleading: recursive peer delegation can create loops, unpredictable cost and unclear accountability.","Misleading: sending everything increases token cost and noise; pass only relevant context."],
+trap:"A multi-agent architecture is not automatically reliable. Look for bounded responsibilities, context hand-off, termination conditions and escalation."},
+{domain:"Tool Design & MCP Integration · 18%",type:"multiple",title:"Design a safe business tool",scenario:"An agent can issue refunds through a payment platform. The tool must be predictable, auditable and safe against accidental or unauthorised refunds. Select the TWO strongest design measures.",opts:[
+["Define a narrow refund tool with a clear description, validated input schema, required fields and bounded refund amount.",""],
+["Give the agent a general-purpose database administrator credential so it can resolve any refund issue.",""],
+["Enforce user/service authorisation and policy checks outside the model; require human approval above a defined threshold.",""],
+["Rely on the system prompt to tell the model not to refund the wrong customer.",""],
+["Return a generic success message for every request so the agent can continue without interruption.",""]],answer:[0,2],
+approach:"Separate interface quality from security enforcement. A schema constrains the request shape; authorisation, policy and approval checks must be enforced by trusted application/tool layers.",
+why:"The model can select and populate a tool call, but it is not the security boundary. Least privilege, validation, policy enforcement and approval gates protect high-impact actions.",
+distractors:["Correct: narrow, explicit, validated tool contract limits ambiguity and invalid input.","Misleading: broad privileged credentials violate least-privilege design and expand blast radius.","Correct: trusted enforcement and human approval are appropriate for financial side effects.","Misleading: prompts are not access-control mechanisms and cannot guarantee safe execution.","Misleading: false success hides failures and breaks recovery, auditability and user trust."],
+trap:"For side-effecting tools, never treat prompt instructions as the security control. Validate and authorise at the tool/service boundary."},
+{domain:"Tool Design & MCP Integration · 18%",type:"single",title:"Understand MCP architecture",scenario:"An enterprise assistant must connect to several approved business systems through a standardised integration layer. The architecture team wants to understand which MCP component is responsible for exposing tools and resources to clients. Which statement is correct?",opts:[
+["The MCP server exposes capabilities such as tools and resources; the MCP client maintains the connection and communicates with the server on behalf of the host.",""],
+["The MCP host is the remote business database, and the server is the language model.",""],
+["The MCP client defines the business authorisation policy and automatically grants every tool permission.",""],
+["MCP replaces the need for authentication, authorisation and application-level security.",""]],answer:[0],
+approach:"Map the roles before evaluating the options: the host is the application containing the AI experience; the client manages a connection to an MCP server; the server exposes capabilities such as tools, resources and prompts.",
+why:"MCP standardises how applications connect to external capabilities. It does not remove the need for identity, access control, consent or least-privilege configuration.",
+distractors:["Correct: accurately distinguishes client and server responsibilities.","Misleading: mixes up the host, server and model; the server is not the model.","Misleading: a client connection does not itself grant business permissions.","Misleading: protocol standardisation is not a security substitute."],
+trap:"Watch for options that swap host, client and server or imply MCP automatically solves security."},
+{domain:"Claude Code Configuration & Workflows · 20%",type:"single",title:"Make repository guidance reusable",scenario:"A development team wants Claude Code to follow repository-specific build commands, coding conventions and test instructions for every contributor. The guidance should be version-controlled with the project. What is the best starting point?",opts:[
+["Put the shared project instructions in a repository-level CLAUDE.md and keep them concise, specific and maintained with the code.",""],
+["Ask every developer to paste the same long instructions into each new conversation.",""],
+["Store all team instructions only in an individual developer's personal settings.",""],
+["Use a lifecycle hook as the only place to document architecture and coding conventions.",""]],answer:[0],
+approach:"The requirement is shared, repository-scoped context. Choose a project-level instruction file committed with the repository. Use narrower scoped guidance or skills where appropriate, and hooks for repeatable lifecycle actions.",
+why:"A version-controlled project instruction file gives the team a consistent baseline and makes changes reviewable alongside code.",
+distractors:["Correct: shared, project-scoped and version-controlled.","Misleading: manual repetition is inconsistent and difficult to maintain.","Misleading: personal settings do not ensure every contributor receives the same project guidance.","Misleading: hooks automate actions; they are not a substitute for clear human-readable project instructions."],
+trap:"Match the mechanism to the purpose: instructions describe expectations; skills package reusable workflows; hooks automate lifecycle actions."},
+{domain:"Claude Code Configuration & Workflows · 20%",type:"multiple",title:"Choose controls for a safe coding workflow",scenario:"A team uses Claude Code on a production repository. They want predictable changes, restricted access to sensitive operations and repeatable validation. Select the TWO best practices.",opts:[
+["Use plan/review steps for significant changes and run tests or other validation before accepting the result.",""],
+["Grant broad permissions by default because the developer can inspect the diff afterwards.",""],
+["Use appropriately scoped permissions and hooks for deterministic checks or lifecycle automation.",""],
+["Assume CLAUDE.md instructions alone can technically prevent every unsafe command.",""],
+["Disable tests for AI-generated changes to avoid slowing down iteration.",""]],answer:[0,2],
+approach:"The requirement combines change control, permission boundaries and repeatable checks. Select complementary controls: review/plan workflow, least-privilege permissions and hooks for deterministic validation.",
+why:"Instructions guide behaviour, permissions constrain what can be done, and hooks can automate checks. Review and tests provide evidence before changes are accepted.",
+distractors:["Correct: explicit review and validation reduce uncontrolled changes.","Misleading: broad permissions increase risk; a later diff review cannot undo every side effect.","Correct: scoped permissions and deterministic hooks address the stated controls.","Misleading: natural-language instructions are not a hard security boundary.","Misleading: testing is a core validation control, not optional merely because code was AI-generated."],
+trap:"Distinguish guidance from enforcement. Documentation, permissions, hooks and human review solve different parts of the problem."},
+{domain:"Prompt Engineering & Structured Output · 20%",type:"single",title:"Make extraction output dependable",scenario:"An application extracts supplier name, invoice date and total amount from documents. Downstream software requires valid JSON with exact field types. Which approach is most reliable?",opts:[
+["Ask for JSON in plain language and trust the model to always follow the requested format.",""],
+["Provide a schema with required fields and types, use structured output/tool constraints where supported, validate the result and apply a bounded retry or error path.",""],
+["Accept any response and use regular expressions to remove text until it looks like JSON.",""],
+["Increase the prompt length with repeated instructions but do not validate the output.",""]],answer:[1],
+approach:"The downstream contract is machine-readable, so define it explicitly. Constrain generation with a schema where supported, validate independently, and handle invalid output through a controlled retry or exception path.",
+why:"Structured generation reduces format drift, but application-side validation is still necessary. A bounded recovery path prevents endless retries and silent data corruption.",
+distractors:["Misleading: prompt-only formatting requests do not guarantee schema compliance.","Correct: combines schema, structured output, validation and controlled recovery.","Misleading: regex cleanup can corrupt values and conceal structural errors.","Misleading: repetition does not replace machine validation."],
+trap:"The key phrase is “downstream software requires”. Think contract, schema, validation and recovery—not merely a better-sounding prompt."},
+{domain:"Prompt Engineering & Structured Output · 20%",type:"single",title:"Improve a prompt without overcomplicating it",scenario:"A classification prompt produces inconsistent labels. The task has four allowed categories and a clear definition for each. Which change is most likely to improve consistency?",opts:[
+["Add explicit category definitions, decision rules, boundary examples and a required output structure; evaluate against representative cases.",""],
+["Tell the model to be more intelligent and use its best judgement.",""],
+["Add unrelated background information so the prompt contains more context.",""],
+["Ask the model to invent a new label whenever none seems perfect.",""]],answer:[0],
+approach:"Find the source of ambiguity: category meaning and decision boundaries. Clarify the taxonomy, include representative examples, constrain output and test on realistic cases.",
+why:"Well-defined labels and boundary examples reduce interpretation variance. Evaluation reveals whether the revised prompt actually improves performance.",
+distractors:["Correct: reduces ambiguity and makes output testable.","Misleading: vague encouragement does not define the classification policy.","Misleading: irrelevant context consumes attention and tokens without resolving label ambiguity.","Misleading: open-ended labels violate the fixed taxonomy and downstream contract."],
+trap:"More prompt text is not automatically better. Add only information that clarifies the task, constraints or success criteria."},
+{domain:"Context Management & Reliability · 15%",type:"multiple",title:"Preserve useful context in a long-running workflow",scenario:"A coordinator delegates work to subagents and the workflow runs across many steps. Token usage is growing, and later agents sometimes miss earlier decisions. Select the TWO strongest improvements.",opts:[
+["Pass each subagent a concise, structured hand-off containing relevant facts, decisions, open questions and required outputs.",""],
+["Send the complete raw conversation and every retrieved document to every agent at every step.",""],
+["Use summarisation or context compaction at appropriate boundaries while preserving critical decisions and provenance.",""],
+["Delete all previous context after every step, including decisions and constraints.",""],
+["Increase the context window and make no changes to context selection or hand-off design.",""]],answer:[0,2],
+approach:"Balance continuity with relevance. Preserve decisions and essential evidence in a compact hand-off; summarise or compact at controlled boundaries rather than blindly forwarding or deleting history.",
+why:"Selective context passing reduces token waste and information overload. Structured hand-offs help downstream agents retain the information required to continue correctly.",
+distractors:["Correct: targeted hand-off preserves what the next agent needs.","Misleading: indiscriminate context increases cost and can bury relevant information.","Correct: compaction helps manage long workflows while retaining essential state.","Misleading: deleting all context causes loss of constraints, decisions and task state.","Misleading: a larger context window alone does not solve irrelevant context, cost or hand-off quality."],
+trap:"The goal is not maximum context. It is sufficient, relevant, trustworthy context with important state preserved."},
+{domain:"Context Management & Reliability · 15%",type:"single",title:"Measure quality and diagnose failures",scenario:"A production agent occasionally gives incorrect answers after retrieving documents and calling tools. The team needs to identify where failures occur and prevent regressions after changes. What is the strongest approach?",opts:[
+["Evaluate only the final answer manually once a month; intermediate steps are not important.",""],
+["Log every user document and secret in plaintext so debugging is easier.",""],
+["Create representative test cases with expected outcomes; trace retrieval, tool calls, prompts, responses, latency and errors; monitor quality and regression results with appropriate data protection.",""],
+["Change the model whenever a failure occurs without measuring the cause.",""]],answer:[2],
+approach:"The problem spans a multi-step execution path. Combine repeatable evaluation with end-to-end traces and operational metrics. Capture enough provenance to diagnose each stage while protecting sensitive data.",
+why:"Test cases and regression checks detect quality changes; traces show where the execution failed; metrics expose latency and operational trends. Privacy controls apply to telemetry too.",
+distractors:["Misleading: infrequent final-answer review misses the failure stage and does not provide repeatable regression coverage.","Misleading: plaintext collection of secrets and sensitive documents creates a serious data-protection risk.","Correct: links measurable evaluation with step-level observability and privacy-aware telemetry.","Misleading: changing models without root-cause analysis may increase cost and leave the actual defect unresolved."],
+trap:"A production-ready answer includes both quality evaluation and observability. More logging is not always better—collect useful, protected telemetry."}
+];
+let reviewed=new Set(), correctCount=0, results={};
+const letters=["A","B","C","D","E"];
+function render(){
+ const root=document.getElementById("quiz");
+ root.innerHTML=questions.map((q,i)=>`<article class="question" id="q${i}">
+ <div class="qhead"><div class="qtop"><span class="qnum">Question ${String(i+1).padStart(2,"0")} / 10 · ${q.type==="multiple"?"Select TWO":"Select ONE"}</span><span class="domain">${q.domain}</span></div>
+ <h2>${q.title}</h2><p class="scenario">${q.scenario}</p></div>
+ <div class="qbody"><p class="instruction">${q.type==="multiple"?"Choose exactly two answers":"Choose the single best answer"}</p>
+ <div class="options">${q.opts.map((o,j)=>`<label class="option" id="q${i}o${j}"><input type="${q.type==="multiple"?"checkbox":"radio"}" name="q${i}" value="${j}" onchange="selectOption(${i})"><span><span class="letter">${letters[j]}.</span>${o[0]}</span></label>`).join("")}</div>
+ <div class="controls"><button class="check" id="check${i}" onclick="checkAnswer(${i})">Check answer & learn</button><button class="secondary" onclick="clearAnswer(${i})">Clear selection</button></div>
+ <div class="feedback" id="feedback${i}"></div></div></article>`).join("");
+ updateProgress();
+}
+function selectOption(i){if(reviewed.has(i))return;document.querySelectorAll(`#q${i} .option`).forEach((el,j)=>{const inp=el.querySelector("input");el.classList.toggle("selected",inp.checked)});}
+function checkAnswer(i){
+ if(reviewed.has(i))return;
+ const q=questions[i], selected=[...document.querySelectorAll(`#q${i} input:checked`)].map(x=>Number(x.value));
+ if(selected.length!==(q.type==="multiple"?2:1)){alert(q.type==="multiple"?"Select exactly two options before checking.":"Select one option before checking.");return;}
+ const good=selected.length===q.answer.length&&selected.every(x=>q.answer.includes(x));
+ results[i]=good;reviewed.add(i);if(good)correctCount++;
+ q.opts.forEach((_,j)=>{const el=document.getElementById(`q${i}o${j}`);el.querySelector("input").disabled=true;el.classList.remove("selected");if(q.answer.includes(j))el.classList.add("correct");else if(selected.includes(j))el.classList.add("wrong");});
+ const f=document.getElementById(`feedback${i}`);
+ f.innerHTML=`<div class="verdict ${good?"good":"bad"}">${good?"Correct — strong architectural judgement.":"Not quite — review the decision logic below."}</div>
+ <div class="explain-grid"><div class="explain"><h3>How to approach this scenario</h3><p>${q.approach}</p></div><div class="explain"><h3>Why this is the best answer</h3><p>${q.why}</p></div></div>
+ <div class="reason-list">${q.distractors.map((t,j)=>`<div class="reason ${q.answer.includes(j)?"right":selected.includes(j)?"miss":""}"><b>${letters[j]} · ${q.answer.includes(j)?"Correct choice":selected.includes(j)?"Your selection":"Distractor"}:</b> ${t}</div>`).join("")}</div>
+ <div class="tip"><b>Exam trap to remember:</b> ${q.trap}</div>`;
+ f.classList.add("show");document.getElementById(`check${i}`).disabled=true;document.getElementById(`check${i}`).textContent="Reviewed";updateProgress();
+ if(reviewed.size===10)showSummary();
+}
+function clearAnswer(i){if(reviewed.has(i))return;document.querySelectorAll(`#q${i} input`).forEach(x=>x.checked=false);selectOption(i);}
+function updateProgress(){document.getElementById("progressText").textContent=`${reviewed.size} of 10 questions reviewed`;document.getElementById("progressBar").style.width=(reviewed.size*10)+"%";document.getElementById("scoreText").textContent=reviewed.size?`${correctCount}/${reviewed.size}`:"—";}
+function showSummary(){document.getElementById("summary").classList.add("show");document.getElementById("finalScore").textContent=`${correctCount}/10`;let msg=correctCount>=9?"Excellent. Focus on explaining why the distractors are unsafe or unnecessarily complex.":correctCount>=7?"Good foundation. Revisit the questions you missed and explain the correct architecture choice in your own words.":correctCount>=5?"Developing understanding. Review the domain concepts and retry, paying particular attention to control boundaries and scenario constraints.":"Use this as a diagnostic. Study the explanations, revisit the relevant course modules and repeat the assessment until you can justify each choice.";document.getElementById("summaryText").textContent=msg;document.getElementById("summary").scrollIntoView({behavior:"smooth",block:"start"});}
+function resetQuiz(){reviewed=new Set();correctCount=0;results={};document.getElementById("summary").classList.remove("show");render();window.scrollTo({top:0,behavior:"smooth"});}
+render();
+</script>
+</body></html>
