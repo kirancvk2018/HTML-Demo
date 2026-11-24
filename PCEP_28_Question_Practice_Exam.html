@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCEP Practice Examination – 28 Questions</title>
+<style>
+:root{--navy:#17365d;--blue:#245b91;--pale:#eef3f8;--line:#c9d4df;--ink:#202b38;--muted:#637181;--green:#237447;--red:#a73535}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f5f8;color:var(--ink);font:15px/1.5 Arial,Helvetica,sans-serif}
+.wrap{max-width:980px;margin:28px auto;padding:0 16px}
+.paper{background:#fff;border:1px solid #d6dfe8;box-shadow:0 8px 28px rgba(20,45,70,.08)}
+.band{height:9px;background:var(--navy)}
+header{padding:28px 34px 22px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--blue);text-transform:uppercase;margin:0 0 7px}
+h1{font-size:27px;line-height:1.2;color:var(--navy);margin:0}
+.sub{margin:9px 0 0;color:var(--muted);font-size:13px}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+.meta span{border:1px solid var(--line);background:#f7f9fb;border-radius:3px;padding:6px 10px;font-size:12px;color:#34465a}
+.instructions{margin:22px 34px 12px;padding:14px 16px;background:#f4f7fa;border-left:4px solid var(--blue);font-size:13px}
+.instructions strong{color:var(--navy)}
+.progress-wrap{margin:0 34px 20px;display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px}
+progress{width:100%;height:8px;accent-color:var(--blue)}
+main{padding:0 34px 30px}
+.question{padding:20px 0 22px;border-top:1px solid #dbe3eb;scroll-margin-top:12px}
+.q-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.q-number{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--blue)}
+.q-type{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:3px 7px;border-radius:2px}
+.domain{font-size:11px;color:#52677e;margin-top:7px;font-weight:700}
+.prompt{font-weight:600;margin:10px 0 11px}
+pre{margin:10px 0 13px;padding:13px 15px;overflow:auto;background:#f1f4f7;border:1px solid #dce3ea;border-radius:3px;color:#1d3147;font:13px/1.5 Consolas,Monaco,monospace;white-space:pre}
+.options{display:grid;gap:7px}
+.option{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border:1px solid #d5dee7;border-radius:3px;cursor:pointer;background:#fff}
+.option:hover{background:#f7f9fb;border-color:#8da7c1}
+.option input{margin:3px 0 0;accent-color:var(--navy)}
+.opt-letter{font-weight:700;color:var(--navy);min-width:17px}
+.option.selected{background:#edf3f9;border-color:#6e8eae}
+.feedback{display:none;margin-top:10px;padding:9px 11px;font-size:12px;border-radius:3px}
+.feedback.correct{display:block;background:#edf7f0;color:#1d633a;border:1px solid #b9dcc5}
+.feedback.incorrect{display:block;background:#fbefef;color:#8d2e2e;border:1px solid #e5c1c1}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:18px 34px;border-top:1px solid var(--line);background:#f8fafc}
+button{border:0;border-radius:3px;padding:11px 17px;font-weight:700;cursor:pointer;font-size:13px}
+.primary{background:var(--navy);color:#fff}
+.secondary{background:#e7edf3;color:var(--navy);border:1px solid #cbd6e1}
+button:hover{filter:brightness(.96)}
+#result{display:none;margin:18px 34px 28px;padding:17px;border:1px solid var(--line);background:#f5f8fb}
+#result h2{margin:0 0 5px;color:var(--navy);font-size:19px}
+#scoreline{font-size:22px;font-weight:700;color:var(--navy)}
+.small{font-size:12px;color:var(--muted)}
+footer{padding:14px 34px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:12px}
+@media(max-width:620px){.wrap{margin:0;padding:0}.paper{border:0}header,main{padding-left:18px;padding-right:18px}.instructions{margin-left:18px;margin-right:18px}.progress-wrap{margin-left:18px;margin-right:18px}.actions{padding-left:18px;padding-right:18px}#result{margin-left:18px;margin-right:18px}footer{padding-left:18px;padding-right:18px}h1{font-size:23px}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none;padding:0}.paper{border:0;box-shadow:none}.actions,.progress-wrap{display:none}.question{break-inside:avoid}.option{padding:5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="paper">
+<div class="band"></div>
+<header>
+  <p class="eyebrow">Python Institute · Practice Assessment</p>
+  <h1>PCEP – Practice Examination</h1>
+  <p class="sub">Certified Entry-Level Python Programmer | Original practice questions aligned to selected exam domains</p>
+  <div class="meta">
+    <span><strong>Questions:</strong> 28</span>
+    <span><strong>Suggested time:</strong> 40 minutes</span>
+    <span><strong>Question format:</strong> Single best answer</span>
+    <span><strong>Coverage:</strong> Domains 1, 2, 3 and 5</span>
+  </div>
+</header>
+<div class="instructions">
+  <strong>Instructions</strong><br>
+  Select one best answer for each question. Questions are original practice items written in a
+  certification-style format; they are not copied from or endorsed as official examination questions.
+  The Functions and Exceptions domain is intentionally excluded. Submit your answers to see your score
+  and explanations.
+</div>
+<div class="progress-wrap">
+  <span id="answered">0 of 28 answered</span>
+  <progress id="progress" value="0" max="28"></progress>
+</div>
+<main>
+
+    <article class="question" id="question-1" data-answer="0">
+      <div class="q-top">
+        <span class="q-number">QUESTION 01 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">What is displayed by the following code?</p>
+      <pre><code>x = 7\ny = 2\nprint(x // y, x % y)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q1" value="0">
+          <span class="opt-letter">A</span>
+          <span>3 1</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q1" value="1">
+          <span class="opt-letter">B</span>
+          <span>3.5 1</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q1" value="2">
+          <span class="opt-letter">C</span>
+          <span>3 0</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q1" value="3">
+          <span class="opt-letter">D</span>
+          <span>4 1</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-2" data-answer="0">
+      <div class="q-top">
+        <span class="q-number">QUESTION 02 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">Which statement assigns the floating-point value 4.0 to the variable result?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q2" value="0">
+          <span class="opt-letter">A</span>
+          <span>result = 8 / 2</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q2" value="1">
+          <span class="opt-letter">B</span>
+          <span>result = 8 // 2</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q2" value="2">
+          <span class="opt-letter">C</span>
+          <span>result = int(8 / 2)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q2" value="3">
+          <span class="opt-letter">D</span>
+          <span>result = &quot;8 / 2&quot;</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-3" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 03 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">What is the value of the expression below?</p>
+      <pre><code>not (5 &gt; 2 and 3 == 3)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q3" value="0">
+          <span class="opt-letter">A</span>
+          <span>True</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q3" value="1">
+          <span class="opt-letter">B</span>
+          <span>False</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q3" value="2">
+          <span class="opt-letter">C</span>
+          <span>None</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q3" value="3">
+          <span class="opt-letter">D</span>
+          <span>An exception is raised</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-4" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 04 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">What is displayed by this code?</p>
+      <pre><code>a = &quot;Py&quot;\nb = 3\nprint(a * b)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q4" value="0">
+          <span class="opt-letter">A</span>
+          <span>Py3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q4" value="1">
+          <span class="opt-letter">B</span>
+          <span>Py Py Py</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q4" value="2">
+          <span class="opt-letter">C</span>
+          <span>PyPyPy</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q4" value="3">
+          <span class="opt-letter">D</span>
+          <span>TypeError</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-5" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 05 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">What is the data type of the value returned by input() before any explicit conversion?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q5" value="0">
+          <span class="opt-letter">A</span>
+          <span>int</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q5" value="1">
+          <span class="opt-letter">B</span>
+          <span>float</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q5" value="2">
+          <span class="opt-letter">C</span>
+          <span>str</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q5" value="3">
+          <span class="opt-letter">D</span>
+          <span>bool</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-6" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 06 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">1 · Computer Programming and Python Fundamentals</div>
+      <p class="prompt">Which expression evaluates to 16?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q6" value="0">
+          <span class="opt-letter">A</span>
+          <span>2 ** 3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q6" value="1">
+          <span class="opt-letter">B</span>
+          <span>2 ** 4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q6" value="2">
+          <span class="opt-letter">C</span>
+          <span>4 ** 1</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q6" value="3">
+          <span class="opt-letter">D</span>
+          <span>16 // 4</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-7" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 07 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">What is displayed by the following code?</p>
+      <pre><code>score = 72\nif score &gt;= 80:\n    print(&quot;A&quot;)\nelif score &gt;= 60:\n    print(&quot;B&quot;)\nelse:\n    print(&quot;C&quot;)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q7" value="0">
+          <span class="opt-letter">A</span>
+          <span>A</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q7" value="1">
+          <span class="opt-letter">B</span>
+          <span>B</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q7" value="2">
+          <span class="opt-letter">C</span>
+          <span>C</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q7" value="3">
+          <span class="opt-letter">D</span>
+          <span>Nothing is displayed</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-8" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 08 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">How many times is the word Python displayed?</p>
+      <pre><code>for i in range(2, 8, 2):\n    print(&quot;Python&quot;)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q8" value="0">
+          <span class="opt-letter">A</span>
+          <span>2</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q8" value="1">
+          <span class="opt-letter">B</span>
+          <span>3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q8" value="2">
+          <span class="opt-letter">C</span>
+          <span>4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q8" value="3">
+          <span class="opt-letter">D</span>
+          <span>5</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-9" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 09 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">What is the final value of total?</p>
+      <pre><code>total = 0\nfor n in range(1, 5):\n    total += n\nprint(total)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q9" value="0">
+          <span class="opt-letter">A</span>
+          <span>6</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q9" value="1">
+          <span class="opt-letter">B</span>
+          <span>10</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q9" value="2">
+          <span class="opt-letter">C</span>
+          <span>15</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q9" value="3">
+          <span class="opt-letter">D</span>
+          <span>4</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-10" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 10 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">What is displayed by this code?</p>
+      <pre><code>x = 1\nwhile x &lt; 5:\n    x += 2\nprint(x)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q10" value="0">
+          <span class="opt-letter">A</span>
+          <span>3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q10" value="1">
+          <span class="opt-letter">B</span>
+          <span>4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q10" value="2">
+          <span class="opt-letter">C</span>
+          <span>5</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q10" value="3">
+          <span class="opt-letter">D</span>
+          <span>6</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-11" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 11 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">What is displayed?</p>
+      <pre><code>for n in range(5):\n    if n == 2:\n        continue\n    print(n, end=&quot; &quot;)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q11" value="0">
+          <span class="opt-letter">A</span>
+          <span>0 1 2 3 4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q11" value="1">
+          <span class="opt-letter">B</span>
+          <span>0 1 3 4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q11" value="2">
+          <span class="opt-letter">C</span>
+          <span>1 2 3 4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q11" value="3">
+          <span class="opt-letter">D</span>
+          <span>0 1</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-12" data-answer="0">
+      <div class="q-top">
+        <span class="q-number">QUESTION 12 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">What is the output of the code?</p>
+      <pre><code>for n in range(1, 6):\n    if n == 4:\n        break\n    print(n, end=&quot; &quot;)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q12" value="0">
+          <span class="opt-letter">A</span>
+          <span>1 2 3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q12" value="1">
+          <span class="opt-letter">B</span>
+          <span>1 2 3 4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q12" value="2">
+          <span class="opt-letter">C</span>
+          <span>1 2 3 4 5</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q12" value="3">
+          <span class="opt-letter">D</span>
+          <span>4 5</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-13" data-answer="3">
+      <div class="q-top">
+        <span class="q-number">QUESTION 13 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">How many times does the inner statement execute?</p>
+      <pre><code>count = 0\nfor i in range(3):\n    for j in range(2):\n        count += 1\nprint(count)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q13" value="0">
+          <span class="opt-letter">A</span>
+          <span>2</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q13" value="1">
+          <span class="opt-letter">B</span>
+          <span>3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q13" value="2">
+          <span class="opt-letter">C</span>
+          <span>5</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q13" value="3">
+          <span class="opt-letter">D</span>
+          <span>6</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-14" data-answer="3">
+      <div class="q-top">
+        <span class="q-number">QUESTION 14 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">2 · Control Flow – Conditional Blocks and Loops</div>
+      <p class="prompt">Which value of n makes the condition below True?</p>
+      <pre><code>n % 2 == 0 and n &gt; 5</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q14" value="0">
+          <span class="opt-letter">A</span>
+          <span>3</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q14" value="1">
+          <span class="opt-letter">B</span>
+          <span>4</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q14" value="2">
+          <span class="opt-letter">C</span>
+          <span>5</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q14" value="3">
+          <span class="opt-letter">D</span>
+          <span>8</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-15" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 15 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is displayed by this code?</p>
+      <pre><code>items = [10, 20, 30, 40]\nprint(items[-2])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q15" value="0">
+          <span class="opt-letter">A</span>
+          <span>10</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q15" value="1">
+          <span class="opt-letter">B</span>
+          <span>20</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q15" value="2">
+          <span class="opt-letter">C</span>
+          <span>30</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q15" value="3">
+          <span class="opt-letter">D</span>
+          <span>40</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-16" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 16 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is the value of numbers after the code runs?</p>
+      <pre><code>numbers = [1, 2]\nnumbers.append([3, 4])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q16" value="0">
+          <span class="opt-letter">A</span>
+          <span>[1, 2, 3, 4]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q16" value="1">
+          <span class="opt-letter">B</span>
+          <span>[1, 2, [3, 4]]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q16" value="2">
+          <span class="opt-letter">C</span>
+          <span>[[1, 2], 3, 4]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q16" value="3">
+          <span class="opt-letter">D</span>
+          <span>An exception is raised</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-17" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 17 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is displayed?</p>
+      <pre><code>values = [2, 4, 6, 8, 10]\nprint(values[1:4])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q17" value="0">
+          <span class="opt-letter">A</span>
+          <span>[2, 4, 6]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q17" value="1">
+          <span class="opt-letter">B</span>
+          <span>[4, 6, 8]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q17" value="2">
+          <span class="opt-letter">C</span>
+          <span>[4, 6, 8, 10]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q17" value="3">
+          <span class="opt-letter">D</span>
+          <span>[2, 4, 6, 8]</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-18" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 18 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">Which statement about tuples is correct?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q18" value="0">
+          <span class="opt-letter">A</span>
+          <span>A tuple can be modified after creation.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q18" value="1">
+          <span class="opt-letter">B</span>
+          <span>A tuple uses square brackets by default.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q18" value="2">
+          <span class="opt-letter">C</span>
+          <span>A tuple is immutable.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q18" value="3">
+          <span class="opt-letter">D</span>
+          <span>A tuple cannot contain strings.</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-19" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 19 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is the result of the expression?</p>
+      <pre><code>set([1, 2, 2, 3, 1])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q19" value="0">
+          <span class="opt-letter">A</span>
+          <span>{1, 2, 2, 3, 1}</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q19" value="1">
+          <span class="opt-letter">B</span>
+          <span>{1, 2, 3}</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q19" value="2">
+          <span class="opt-letter">C</span>
+          <span>[1, 2, 3]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q19" value="3">
+          <span class="opt-letter">D</span>
+          <span>(1, 2, 3)</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-20" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 20 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is displayed by this code?</p>
+      <pre><code>employee = {&quot;name&quot;: &quot;Mira&quot;, &quot;level&quot;: 2}\nprint(employee[&quot;level&quot;])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q20" value="0">
+          <span class="opt-letter">A</span>
+          <span>name</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q20" value="1">
+          <span class="opt-letter">B</span>
+          <span>Mira</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q20" value="2">
+          <span class="opt-letter">C</span>
+          <span>2</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q20" value="3">
+          <span class="opt-letter">D</span>
+          <span>2.0</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-21" data-answer="0">
+      <div class="q-top">
+        <span class="q-number">QUESTION 21 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">Which expression checks whether the key &#x27;city&#x27; exists in the dictionary data?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q21" value="0">
+          <span class="opt-letter">A</span>
+          <span>&#x27;city&#x27; in data</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q21" value="1">
+          <span class="opt-letter">B</span>
+          <span>data.has(&#x27;city&#x27;)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q21" value="2">
+          <span class="opt-letter">C</span>
+          <span>data.value(&#x27;city&#x27;)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q21" value="3">
+          <span class="opt-letter">D</span>
+          <span>&#x27;city&#x27; in data.values()</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-22" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 22 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is displayed?</p>
+      <pre><code>text = &quot;PYTHON&quot;\nprint(text[1:5:2])</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q22" value="0">
+          <span class="opt-letter">A</span>
+          <span>YT</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q22" value="1">
+          <span class="opt-letter">B</span>
+          <span>YH</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q22" value="2">
+          <span class="opt-letter">C</span>
+          <span>PTO</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q22" value="3">
+          <span class="opt-letter">D</span>
+          <span>TH</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-23" data-answer="0">
+      <div class="q-top">
+        <span class="q-number">QUESTION 23 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">3 · Data Collections</div>
+      <p class="prompt">What is the result of the expression?</p>
+      <pre><code>&quot;red,blue,green&quot;.split(&quot;,&quot;)</code></pre>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q23" value="0">
+          <span class="opt-letter">A</span>
+          <span>[&#x27;red&#x27;, &#x27;blue&#x27;, &#x27;green&#x27;]</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q23" value="1">
+          <span class="opt-letter">B</span>
+          <span>(&#x27;red&#x27;, &#x27;blue&#x27;, &#x27;green&#x27;)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q23" value="2">
+          <span class="opt-letter">C</span>
+          <span>&#x27;red blue green&#x27;</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q23" value="3">
+          <span class="opt-letter">D</span>
+          <span>[&#x27;red,blue,green&#x27;]</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-24" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 24 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">5 · File Handling and Module Imports</div>
+      <p class="prompt">Which file mode opens an existing text file for reading without modifying its contents?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q24" value="0">
+          <span class="opt-letter">A</span>
+          <span>&#x27;w&#x27;</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q24" value="1">
+          <span class="opt-letter">B</span>
+          <span>&#x27;a&#x27;</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q24" value="2">
+          <span class="opt-letter">C</span>
+          <span>&#x27;r&#x27;</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q24" value="3">
+          <span class="opt-letter">D</span>
+          <span>&#x27;x&#x27;</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-25" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 25 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">5 · File Handling and Module Imports</div>
+      <p class="prompt">What happens when a file is opened using mode &#x27;w&#x27;?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q25" value="0">
+          <span class="opt-letter">A</span>
+          <span>Data is always appended to the end.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q25" value="1">
+          <span class="opt-letter">B</span>
+          <span>The file is opened for reading only.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q25" value="2">
+          <span class="opt-letter">C</span>
+          <span>The file is created if needed, and existing contents are truncated.</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q25" value="3">
+          <span class="opt-letter">D</span>
+          <span>The file must already exist or an exception is always raised.</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-26" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 26 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">5 · File Handling and Module Imports</div>
+      <p class="prompt">Which statement correctly opens a file and ensures it is closed after the block finishes?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q26" value="0">
+          <span class="opt-letter">A</span>
+          <span>file = open(&#x27;notes.txt&#x27;)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q26" value="1">
+          <span class="opt-letter">B</span>
+          <span>with open(&#x27;notes.txt&#x27;, &#x27;r&#x27;) as file:</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q26" value="2">
+          <span class="opt-letter">C</span>
+          <span>open(&#x27;notes.txt&#x27;, close=True)</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q26" value="3">
+          <span class="opt-letter">D</span>
+          <span>with file(&#x27;notes.txt&#x27;):</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-27" data-answer="2">
+      <div class="q-top">
+        <span class="q-number">QUESTION 27 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">5 · File Handling and Module Imports</div>
+      <p class="prompt">Which csv module object is designed to read rows as dictionaries, using the first row as field names?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q27" value="0">
+          <span class="opt-letter">A</span>
+          <span>csv.reader()</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q27" value="1">
+          <span class="opt-letter">B</span>
+          <span>csv.writer()</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q27" value="2">
+          <span class="opt-letter">C</span>
+          <span>csv.DictReader()</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q27" value="3">
+          <span class="opt-letter">D</span>
+          <span>csv.DictWriter()</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+    <article class="question" id="question-28" data-answer="1">
+      <div class="q-top">
+        <span class="q-number">QUESTION 28 OF 28</span>
+        <span class="q-type">Single choice</span>
+      </div>
+      <div class="domain">5 · File Handling and Module Imports</div>
+      <p class="prompt">Which code imports only the sqrt function from the math module?</p>
+      
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q28" value="0">
+          <span class="opt-letter">A</span>
+          <span>import sqrt from math</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q28" value="1">
+          <span class="opt-letter">B</span>
+          <span>from math import sqrt</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q28" value="2">
+          <span class="opt-letter">C</span>
+          <span>include math.sqrt</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q28" value="3">
+          <span class="opt-letter">D</span>
+          <span>using math.sqrt</span>
+        </label></div>
+      <div class="feedback" aria-live="polite"></div>
+    </article>
+</main>
+<div class="actions">
+  <button class="primary" id="submit">Submit examination</button>
+  <button class="secondary" id="reset" type="button">Reset answers</button>
+  <button class="secondary" id="print" type="button">Print / Save as PDF</button>
+</div>
+<section id="result" aria-live="polite">
+  <h2>Examination result</h2>
+  <div id="scoreline"></div>
+  <p id="resultdetail" class="small"></p>
+</section>
+<footer>
+  <span>PCEP-style practice assessment</span>
+  <span>Independent learning material · Not an official exam paper</span>
+</footer>
+</div>
+</div>
+<script>
+const questions = [...document.querySelectorAll('.question')];
+const progress = document.getElementById('progress');
+const answeredLabel = document.getElementById('answered');
+function updateProgress() {
+  const count = questions.filter(q => q.querySelector('input:checked')).length;
+  progress.value = count;
+  answeredLabel.textContent = `${count} of 28 answered`;
+}
+document.querySelectorAll('input[type=radio]').forEach(input => {
+  input.addEventListener('change', () => {
+    const group = input.closest('.options');
+    group.querySelectorAll('.option').forEach(label => label.classList.remove('selected'));
+    input.closest('.option').classList.add('selected');
+    updateProgress();
+  });
+});
+document.getElementById('submit').addEventListener('click', () => {
+  let score = 0, unanswered = 0;
+  questions.forEach(q => {
+    const answer = q.dataset.answer.split(',').map(Number);
+    const selected = q.querySelector('input:checked');
+    const feedback = q.querySelector('.feedback');
+    if (!selected) {
+      unanswered++;
+      feedback.className = 'feedback incorrect';
+      feedback.textContent = 'Not answered. ' + explanations[q.id];
+      return;
+    }
+    const correct = answer.length === 1 && Number(selected.value) === answer[0];
+    if (correct) score++;
+    feedback.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+    feedback.textContent = (correct ? 'Correct. ' : 'Incorrect. ') + explanations[q.id];
+  });
+  const result = document.getElementById('result');
+  document.getElementById('scoreline').textContent = `${score} / 28  (${Math.round(score / 28 * 100)}%)`;
+  document.getElementById('resultdetail').textContent =
+    `${unanswered} unanswered. Review the feedback beneath each question. This practice score is not an official PCEP result.`;
+  result.style.display = 'block';
+  result.scrollIntoView({behavior:'smooth', block:'center'});
+});
+document.getElementById('reset').addEventListener('click', () => {
+  if (!confirm('Clear all selected answers and feedback?')) return;
+  document.querySelectorAll('input[type=radio]').forEach(i => i.checked = false);
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.feedback').forEach(f => {f.className='feedback'; f.textContent='';});
+  document.getElementById('result').style.display='none';
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+document.getElementById('print').addEventListener('click', () => window.print());
+const explanations = {"question-1": "The // operator performs floor division (7 // 2 is 3), while % returns the remainder (7 % 2 is 1).", "question-2": "The / operator performs true division and returns a float, so 8 / 2 evaluates to 4.0.", "question-3": "Both comparisons are True. True and True is True; not True is False.", "question-4": "Multiplying a string by an integer repeats the string three times.", "question-5": "input() returns the entered text as a string, even if the user types digits.", "question-6": "The exponentiation operator ** raises 2 to the power of 4, producing 16.", "question-7": "The first condition is False. The elif condition is True, so B is displayed.", "question-8": "range(2, 8, 2) generates 2, 4 and 6. The loop executes three times.", "question-9": "The loop adds 1 + 2 + 3 + 4, giving 10.", "question-10": "x changes from 1 to 3, then to 5. The condition 5 < 5 is False, so 5 is displayed.", "question-11": "continue skips the rest of the current iteration when n equals 2. The other values are printed.", "question-12": "break terminates the loop when n reaches 4, before 4 is printed.", "question-13": "The inner loop runs twice for each of the three outer-loop iterations: 3 × 2 = 6.", "question-14": "The number must be even and greater than 5. Only 8 satisfies both conditions.", "question-15": "Negative indexing starts from the end: -1 is 40 and -2 is 30.", "question-16": "append() adds its argument as one element. The list [3, 4] becomes a nested element.", "question-17": "The slice starts at index 1 and stops before index 4, selecting 4, 6 and 8.", "question-18": "Tuples are immutable sequences: their element references cannot be reassigned after creation.", "question-19": "A set stores unique elements, so duplicate values are removed.", "question-20": "The dictionary lookup by key 'level' returns the integer value 2.", "question-21": "The in operator checks dictionary keys by default.", "question-22": "The slice selects indices 1 and 3 (stopping before 5, stepping by 2): Y and H.", "question-23": "split(',') divides the string at each comma and returns a list of strings.", "question-24": "The r mode opens a file for reading. It does not overwrite or append to the file.", "question-25": "Write mode creates the file if it does not exist and truncates an existing file.", "question-26": "The with statement uses a context manager, which closes the file when the block exits.", "question-27": "DictReader maps each row to a dictionary keyed by the header fields.", "question-28": "The syntax 'from math import sqrt' imports the named function into the current namespace."};
+</script>
+</body>
+</html>
